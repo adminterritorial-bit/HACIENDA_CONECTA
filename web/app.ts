@@ -20,6 +20,31 @@ let authMode: "login"|"signup" = "login";
 let selectedRegistryActivities: Array<{ciiu:string;activity:string;primary:boolean}> = [];
 let lastIcaCalculation: AnyRow | null = null;
 let lastReteicaCalculation: AnyRow | null = null;
+let registryStep = 1;
+
+const icon = (name:string) => {
+  const common='viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+  const paths:Record<string,string>={
+    dashboard:'<path d="M4 13h6V4H4z"/><path d="M14 20h6V11h-6z"/><path d="M14 8h6V4h-6z"/><path d="M4 20h6v-3H4z"/>',
+    registry:'<circle cx="9" cy="8" r="3"/><path d="M3.5 20c.7-4 2.7-6 5.5-6s4.8 2 5.5 6"/><path d="M16 7h5M18.5 4.5v5"/>',
+    declarations:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h5M9 12h7M9 16h7"/>',
+    ica:'<path d="M5 5h14M5 12h14M5 19h14"/><path d="M9 3 6 21M18 3l-3 18"/>',
+    reteica:'<path d="m7 7-4 4 4 4"/><path d="M3 11h13a5 5 0 0 1 5 5v2"/><path d="m17 17 4 4 4-4" transform="translate(-4 -3)"/>',
+    payments:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/>',
+    security:'<path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"/><path d="m9 12 2 2 4-5"/>',
+    certificates:'<path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6"/><circle cx="12" cy="16" r="2"/>',
+    predial:'<path d="m3 11 9-7 9 7"/><path d="M5 10v10h14V10M9 20v-6h6v6"/>',
+    agreements:'<path d="M7 3h10v4H7z"/><path d="M5 7h14v14H5z"/><path d="M9 12h6M9 16h4"/>',
+    refunds:'<path d="M4 10a8 8 0 1 0 2-5"/><path d="M4 4v6h6"/><path d="M9 12h6"/>',
+    audit:'<circle cx="11" cy="11" r="7"/><path d="m16 16 5 5M8 11h6M11 8v6"/>',
+    revenues:'<path d="M4 7h16v13H4z"/><path d="M8 7V4h8v3M8 12h8M8 16h5"/>',
+    legal:'<path d="M4 5h16M7 5v15M17 5v15M7 9h10M7 15h10"/>',
+    staff:'<path d="M4 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="10" cy="7" r="3"/><path d="M17 8h4M19 6v4"/>',
+    arrow:'<path d="m9 18 6-6-6-6"/>',
+    check:'<path d="m5 12 4 4L19 6"/>'
+  };
+  return `<svg class="ui-icon" ${common}>${paths[name]||paths.dashboard}</svg>`;
+};
 
 const esc = (v:any) => String(v ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]!));
 const money = (v:any) => new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(Number(v||0));
@@ -76,46 +101,67 @@ async function bootstrap(){
   render();
 }
 
-function navItem(id:string,icon:string,label:string){return `<button data-route="${id}" class="${route===id?"active":""}"><span class="ico">${icon}</span><span>${label}</span></button>`;}
+function navItem(id:string,iconName:string,label:string){
+  return `<button data-route="${id}" class="${route===id?"active":""}">
+    <span class="nav-icon">${icon(iconName)}</span>
+    <span class="nav-label">${label}</span>
+    <span class="nav-arrow">${icon("arrow")}</span>
+  </button>`;
+}
 function shell(content:string){
   const official=profile && profile.role!=="citizen";
   return `<div class="app-shell">
     <aside class="sidebar" id="sidebar">
-      <div class="brand"><div class="brand-badge">HC</div><div><strong>Hacienda Conecta</strong><small>San Pedro · Valle</small></div></div>
+      <div class="brand">
+        <div class="brand-badge"><span>HC</span></div>
+        <div class="brand-copy"><strong>Hacienda Conecta</strong><small>San Pedro · Valle del Cauca</small></div>
+      </div>
+      <div class="sidebar-context">
+        <span class="live-dot"></span>
+        <div><strong>Servicios tributarios</strong><small>Plataforma municipal segura</small></div>
+      </div>
       <nav class="nav">
-        <div class="sep">Principal</div>
-        ${navItem("dashboard","⌂","Inicio")}
-        ${navItem("registry","◎","Registro Tributario")}
-        ${navItem("declarations","▤","Mis declaraciones")}
+        <div class="sep">Mi cuenta</div>
+        ${navItem("dashboard","dashboard","Inicio")}
+        ${navItem("registry","registry","Registro Tributario")}
+        ${navItem("declarations","declarations","Mis declaraciones")}
         <div class="sep">Declaraciones y recaudo</div>
-        ${navItem("ica","Σ","ICA · Avisos")}
-        ${navItem("reteica","⇄","RETEICA")}
-        ${navItem("payments","$","Pagos")}
-        ${navItem("security","✓","Firma y MFA")}
-        ${navItem("certificates","▣","Certificados")}
-        <div class="sep">Hacienda</div>
-        ${navItem("predial","⌂","Predial y paz y salvo")}
-        ${navItem("agreements","▦","Acuerdos de pago")}
-        ${navItem("refunds","↶","Devoluciones")}
-        ${navItem("audit","◉","Fiscalización")}
-        ${navItem("revenues","◇","Demás rentas")}
-        ${navItem("legal","§","Normativa y parámetros")}
-        ${official?'<div class="sep">Funcionarios</div>'+navItem("staff","◆","Consola de Hacienda"):""}
+        ${navItem("ica","ica","ICA · Avisos")}
+        ${navItem("reteica","reteica","RETEICA")}
+        ${navItem("payments","payments","Pagos")}
+        ${navItem("security","security","Identidad y firma")}
+        ${navItem("certificates","certificates","Certificados")}
+        <div class="sep">Otros servicios</div>
+        ${navItem("predial","predial","Predial y paz y salvo")}
+        ${navItem("agreements","agreements","Acuerdos de pago")}
+        ${navItem("refunds","refunds","Devoluciones")}
+        ${navItem("audit","audit","Fiscalización")}
+        ${navItem("revenues","revenues","Demás rentas")}
+        ${navItem("legal","legal","Normativa")}
+        ${official?'<div class="sep">Funcionarios</div>'+navItem("staff","staff","Consola de Hacienda"):""}
       </nav>
-      <div class="side-status"><strong>Base tributaria 2026</strong><small>UVT $52.374 · 324 actividades ICA</small></div>
+      <div class="side-status">
+        <div class="side-status-top"><span class="security-shield">${icon("security")}</span><div><strong>Base tributaria 2026</strong><small>Parámetros versionados</small></div></div>
+        <div class="side-stats"><span><b>$52.374</b>UVT</span><span><b>324</b>CIIU</span></div>
+      </div>
     </aside>
     <section class="content">
+      <div class="gov-strip"><span>Municipio de San Pedro · Secretaría de Hacienda</span><span class="gov-strip-right">Portal oficial de servicios tributarios</span></div>
       <header class="topbar">
-        <div class="top-left"><button class="btn ghost small mobile-menu" id="menuBtn">☰</button><div><span class="top-title">Secretaría de Hacienda</span><span class="top-sub">Servicios tributarios digitales</span></div></div>
+        <div class="top-left">
+          <button class="icon-button mobile-menu" id="menuBtn" aria-label="Abrir menú">☰</button>
+          <div><span class="top-title">${route==="dashboard"?"Resumen tributario":"Hacienda Conecta"}</span><span class="top-sub">Gestión segura, trazable y digital</span></div>
+        </div>
         <div class="top-actions">
-          <span class="pill">🔒 Sesión segura</span>
-          ${session?`<span class="avatar">${esc(userInitials())}</span><button class="btn ghost small" id="logoutBtn">Salir</button>`:`<button class="btn small" data-action="login">Ingresar</button>`}
+          <span class="secure-pill"><span class="secure-dot"></span>Conexión segura</span>
+          ${session?`<div class="user-chip"><span class="avatar">${esc(userInitials())}</span><div class="user-copy"><strong>${esc(profile?.full_name||session.user.email||"Usuario")}</strong><small>${esc(profile?.role==="citizen"?"Contribuyente":profile?.role||"Usuario")}</small></div></div><button class="btn ghost small" id="logoutBtn">Salir</button>`:`<button class="btn small" data-action="login">Ingresar</button>`}
         </div>
       </header>
       <main class="main">${content}</main>
     </section>
   </div>`;
 }
+
 function bindShell(){
   document.querySelectorAll<HTMLElement>("[data-route]").forEach(b=>b.onclick=()=>{location.hash=b.dataset.route!;});
   document.querySelector("#menuBtn")?.addEventListener("click",()=>document.querySelector("#sidebar")?.classList.toggle("open"));
@@ -126,37 +172,44 @@ function bindShell(){
 function renderAuth(){
   app.innerHTML=`<div class="auth-page">
     <section class="auth-visual">
-      <div class="brand-badge">HC</div>
-      <div class="kicker" style="color:#b9ddff;margin-top:24px">Municipio de San Pedro · Valle del Cauca</div>
-      <h1>Hacienda Conecta</h1>
-      <p>Un solo portal para registro tributario, declaraciones ICA y RETEICA, firma con autenticación reforzada, pagos, certificados, predial, acuerdos de pago, devoluciones y seguimiento de trámites.</p>
-      <div class="kpi-strip"><span class="kpi-chip"><strong>324</strong>Códigos ICA</span><span class="kpi-chip"><strong>2026</strong>UVT parametrizada</span><span class="kpi-chip"><strong>RLS</strong>Privacidad por usuario</span></div>
+      <div class="auth-brand"><div class="brand-badge large"><span>HC</span></div><div><strong>Hacienda Conecta</strong><small>Municipio de San Pedro · Valle del Cauca</small></div></div>
+      <div class="auth-copy">
+        <span class="eyebrow-light">Servicios tributarios digitales</span>
+        <h1>Tu Hacienda municipal,<br><span>más clara y más cerca.</span></h1>
+        <p>Regístrate, declara, firma, paga y consulta tus trámites desde una plataforma segura, con trazabilidad y reglas tributarias versionadas.</p>
+      </div>
+      <div class="auth-feature-grid">
+        <article><span class="feature-icon">${icon("security")}</span><div><strong>Firma reforzada</strong><small>Segundo factor para operaciones sensibles.</small></div></article>
+        <article><span class="feature-icon">${icon("ica")}</span><div><strong>Cálculos automáticos</strong><small>ICA y RETEICA con parámetros 2026.</small></div></article>
+        <article><span class="feature-icon">${icon("certificates")}</span><div><strong>Documentos verificables</strong><small>Certificados con serial, hash y QR.</small></div></article>
+      </div>
+      <div class="auth-trust"><span>UVT 2026 · $52.374</span><span>324 actividades ICA</span><span>RLS + MFA</span></div>
+      <div class="auth-orb orb-a"></div><div class="auth-orb orb-b"></div>
     </section>
-    <section class="auth-panel"><div class="auth-card">
-      <div class="kicker">Acceso ciudadano</div><h2>${authMode==="login"?"Ingresar":"Crear cuenta"}</h2>
-      <p class="muted">Tu sesión se gestiona mediante Supabase Auth y los datos tributarios se aíslan mediante Row Level Security.</p>
-      <button class="btn secondary" type="button" id="googleLoginBtn" style="width:100%;margin:14px 0 4px">G&nbsp;&nbsp;Continuar con Google</button>
-      <div class="hint" style="text-align:center;margin-bottom:12px">Google identifica tu cuenta. Para firmar y autorizar pagos se valida además tu celular por SMS.</div>
-      <div class="auth-tabs"><button id="loginTab" class="${authMode==="login"?"active":""}">Ingresar</button><button id="signupTab" class="${authMode==="signup"?"active":""}">Registrarme</button></div>
-      <form id="authForm" class="stack">
-        ${authMode==="signup"?'<div class="field"><label>Nombre completo / razón social</label><input class="input" name="name" required autocomplete="name"></div>':""}
-        <div class="field"><label>Correo electrónico</label><input class="input" type="email" name="email" required autocomplete="email"></div>
-        ${authMode==="signup"?'<div class="field"><label>Teléfono</label><input class="input" name="phone" placeholder="+573001234567" required autocomplete="tel"></div>':""}
-        <div class="field"><label>Contraseña</label><input class="input" type="password" name="password" minlength="10" required autocomplete="${authMode==="login"?"current-password":"new-password"}"><span class="hint">Mínimo 10 caracteres. Para firmar se exigirá un segundo factor.</span></div>
-        <button class="btn" type="submit">${authMode==="login"?"Ingresar":"Crear cuenta segura"}</button>
-      </form>
-      <div class="note mt">El registro de usuario no sustituye el Registro Tributario. Al ingresar deberás completar NIT/identificación, actividad CIIU, establecimiento y relaciones tributarias.</div>
-      <button class="btn ghost mt" id="publicBtn">Continuar sin cuenta a servicios públicos</button>
-    </div></section>
+    <section class="auth-panel">
+      <div class="auth-card">
+        <div class="auth-card-head"><div class="kicker">Acceso seguro</div><h2>${authMode==="login"?"Bienvenido de nuevo":"Crea tu cuenta"}</h2><p>${authMode==="login"?"Ingresa para continuar con tus obligaciones y trámites.":"Crea tu acceso; después verificaremos tu celular para operaciones sensibles."}</p></div>
+        <button class="google-btn" type="button" id="googleLoginBtn"><span class="google-g">G</span><span>Continuar con Google</span></button>
+        <div class="auth-divider"><span>o usa tu correo</span></div>
+        <div class="auth-tabs"><button id="loginTab" class="${authMode==="login"?"active":""}">Ingresar</button><button id="signupTab" class="${authMode==="signup"?"active":""}">Crear cuenta</button></div>
+        <form id="authForm" class="stack">
+          ${authMode==="signup"?'<div class="field"><label>Nombre completo / razón social</label><input class="input" name="name" required autocomplete="name" placeholder="Nombre del contribuyente"></div>':""}
+          <div class="field"><label>Correo electrónico</label><input class="input" type="email" name="email" required autocomplete="email" placeholder="correo@ejemplo.com"></div>
+          ${authMode==="signup"?'<div class="field"><label>Celular</label><input class="input" name="phone" placeholder="+573001234567" required autocomplete="tel"><span class="hint">Se verificará por SMS antes de firmar o autorizar pagos.</span></div>':""}
+          <div class="field"><label>Contraseña</label><input class="input" type="password" name="password" minlength="10" required autocomplete="${authMode==="login"?"current-password":"new-password"}" placeholder="••••••••••"><span class="hint">Mínimo 10 caracteres.</span></div>
+          <button class="btn primary-wide" type="submit">${authMode==="login"?"Ingresar a Hacienda Conecta":"Crear cuenta segura"}</button>
+        </form>
+        <div class="auth-security-note"><span>${icon("security")}</span><p>Google o correo validan tu cuenta. El celular funciona como segundo factor para firma y autorización de pagos.</p></div>
+        <button class="text-button" id="publicBtn">Consultar servicios públicos sin iniciar sesión</button>
+      </div>
+      <p class="auth-foot">Tus datos tributarios se protegen mediante Row Level Security y controles de acceso por rol.</p>
+    </section>
   </div>`;
   document.querySelector("#googleLoginBtn")?.addEventListener("click",async()=>{
     try{
-      const {error}=await supabase.auth.signInWithOAuth({
-        provider:"google",
-        options:{redirectTo:appBaseUrl()}
-      });
+      const {error}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:appBaseUrl()}});
       if(error) throw error;
-    }catch(err:any){toast(err.message||"No fue posible iniciar con Google.","error");}
+    }catch(err:any){toast(err.message||"Google aún no está habilitado en el proveedor de autenticación.","error");}
   });
   document.querySelector("#loginTab")!.addEventListener("click",()=>{authMode="login";renderAuth();});
   document.querySelector("#signupTab")!.addEventListener("click",()=>{authMode="signup";renderAuth();});
@@ -171,7 +224,7 @@ function renderAuth(){
       }else{
         const name=String(fd.get("name")||"").trim(), phone=String(fd.get("phone")||"").trim();
         const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name,phone}}}); if(error)throw error;
-        if(!data.session) toast("Cuenta creada. Revisa tu correo para confirmar el acceso. Al ingresar verificaremos tu celular por SMS.","warn"); else {toast("Cuenta creada. Ahora verifica tu celular por SMS.");location.hash="security";}
+        if(!data.session) toast("Cuenta creada. Confirma tu correo y luego verificaremos tu celular.","warn"); else {toast("Cuenta creada. Verifica tu celular para continuar.");location.hash="security";}
       }
     }catch(err:any){toast(err.message||"No fue posible autenticar.","error");}
   });
@@ -208,32 +261,74 @@ async function render(){
 async function viewDashboard(){
   let summary:any={declarations:0,pendingPayments:0,certificates:0,notifications:0,registrationStatus:null};
   if(session){try{summary=await api(supabase.rpc("dashboard_summary"));}catch{}}
-  const {data:catalog}=await supabase.from("revenue_catalog").select("code,name,implementation_phase,implementation_status").order("implementation_phase").limit(8);
-  return `<section class="hero"><div><div class="kicker" style="color:#b9ddff">Portal tributario municipal</div><h1>Hacienda sin filas, con trazabilidad.</h1><p>Consulta, liquida, presenta y realiza seguimiento a tus obligaciones desde un entorno único. Los cálculos ICA/RETEICA usan reglas almacenadas y versionadas en la base tributaria.</p><div class="actions"><button class="btn" data-route="ica">Liquidar ICA</button><button class="btn secondary" data-route="reteica">Calcular RETEICA</button></div></div><div class="hero-panel"><small>Parámetro oficial cargado</small><strong>UVT 2026 · $52.374</strong><small>Resolución DIAN 000238 de 2025</small></div></section>
-  <div class="grid cols-4 mb">
-    ${metric("▤",summary.declarations,"Declaraciones")}
-    ${metric("$",summary.pendingPayments,"Pagos pendientes")}
-    ${metric("▣",summary.certificates,"Certificados")}
-    ${metric("●",summary.registrationStatus||"No iniciado","Registro tributario")}
+  const {data:catalog}=await supabase.from("revenue_catalog").select("code,name,implementation_phase,implementation_status").order("implementation_phase").limit(6);
+  const phoneVerified=session?!!(await getVerifiedPhoneFactor().catch(()=>null)):false;
+  const registryReady=!!summary.registrationStatus;
+  const journeyStep=!session?1:!phoneVerified?2:!registryReady?3:4;
+  return `<section class="hero premium-hero">
+    <div class="hero-copy">
+      <span class="hero-kicker">Portal tributario municipal</span>
+      <h1>Gestiona tus obligaciones<br><span>sin filas y con trazabilidad.</span></h1>
+      <p>Un único espacio para registro tributario, declaraciones, firma electrónica, pagos, certificados y seguimiento de trámites ante la Secretaría de Hacienda.</p>
+      <div class="actions hero-actions"><button class="btn hero-primary" data-route="ica">Liquidar ICA</button><button class="btn hero-secondary" data-route="reteica">Calcular RETEICA</button></div>
+      <div class="hero-trust"><span>${icon("security")} Datos protegidos</span><span>${icon("check")} Reglas versionadas</span><span>${icon("certificates")} Documentos verificables</span></div>
+    </div>
+    <div class="hero-dashboard">
+      <div class="hero-dashboard-head"><span>Estado tributario 2026</span><span class="status ok">En línea</span></div>
+      <div class="hero-stat"><div><small>UVT vigente</small><strong>$52.374</strong></div><span class="hero-stat-icon">UVT</span></div>
+      <div class="hero-stat"><div><small>Catálogo ICA</small><strong>324 actividades</strong></div><span class="hero-stat-icon">CIIU</span></div>
+      <div class="hero-law">Resolución DIAN 000238 de 2025</div>
+    </div>
+    <div class="hero-glow glow-a"></div><div class="hero-glow glow-b"></div>
+  </section>
+
+  <section class="journey-card mb">
+    <div class="journey-head"><div><div class="kicker">Tu ruta en Hacienda Conecta</div><h2>Completa tu habilitación tributaria</h2></div><span class="journey-count">Paso ${journeyStep} de 4</span></div>
+    <div class="journey-track">
+      ${journeyItem(1,journeyStep,"Cuenta","Acceso creado","dashboard")}
+      ${journeyItem(2,journeyStep,"Celular","Segundo factor","security")}
+      ${journeyItem(3,journeyStep,"Registro","Datos tributarios","registry")}
+      ${journeyItem(4,journeyStep,"Operar","Declarar y pagar","declarations")}
+    </div>
+  </section>
+
+  <div class="metric-grid mb">
+    ${metric("declarations",summary.declarations,"Declaraciones","Borradores y radicadas")}
+    ${metric("payments",summary.pendingPayments,"Pagos pendientes","Referencias por completar")}
+    ${metric("certificates",summary.certificates,"Certificados","Documentos emitidos")}
+    ${metric("registry",summary.registrationStatus||"No iniciado","Registro tributario","Estado del contribuyente")}
   </div>
-  <div class="grid cols-2">
-    <section class="card"><div class="section-title"><div><div class="kicker">Accesos rápidos</div><h2>Trámites principales</h2></div></div>
-      <div class="module-grid">
-        ${moduleCard("◎","Registro Tributario","Actualiza identificación, CIIU, establecimiento y responsables.","registry","Fase 1")}
-        ${moduleCard("Σ","Declaración ICA","Liquidación multiactividad, avisos y mínimo tributario.","ica","Operativo")}
-        ${moduleCard("⇄","RETEICA","Cálculo por compra/servicio y base mínima en UVT.","reteica","Operativo")}
-        ${moduleCard("⌂","Predial","Consulta de cuenta, deuda y solicitudes de paz y salvo.","predial","Integración")}
-        ${moduleCard("▦","Acuerdos de pago","Radica solicitudes y consulta su estado.","agreements","Disponible")}
-        ${moduleCard("↶","Devoluciones","Solicitud, soportes y seguimiento.","refunds","Disponible")}
+
+  <div class="dashboard-layout">
+    <section class="card services-card">
+      <div class="section-title"><div><div class="kicker">Servicios</div><h2>¿Qué necesitas hacer hoy?</h2><p class="section-desc">Accede directamente a los trámites tributarios más utilizados.</p></div></div>
+      <div class="module-grid premium-modules">
+        ${moduleCard("registry","Registro Tributario","Identificación, CIIU, establecimientos y responsables.","registry","Cuenta")}
+        ${moduleCard("ica","Declaración ICA","Liquidación por actividad, avisos y mínimo tributario.","ica","Operativo")}
+        ${moduleCard("reteica","RETEICA","Retenciones por operación y bases mínimas UVT.","reteica","Operativo")}
+        ${moduleCard("predial","Predial y paz y salvo","Consulta y solicitudes asociadas al impuesto predial.","predial","Integración")}
+        ${moduleCard("agreements","Acuerdos de pago","Radica solicitudes y consulta su avance.","agreements","Disponible")}
+        ${moduleCard("refunds","Devoluciones","Radicación de saldos a favor y seguimiento.","refunds","Disponible")}
       </div>
     </section>
-    <section class="card accent"><div class="section-title"><div><div class="kicker">Estado del sistema</div><h2>Implementación por módulos</h2></div><button class="btn ghost small" data-route="revenues">Ver todas</button></div>
-      <div class="timeline">${(catalog||[]).map((x:any)=>`<div class="timeline-item"><span class="timeline-dot"></span><div><strong>${esc(x.name)}</strong><br><small>Fase ${x.implementation_phase} · ${esc(humanStatus(x.implementation_status))}</small></div></div>`).join("")}</div>
-    </section>
+    <aside class="card activity-card">
+      <div class="section-title"><div><div class="kicker">Cobertura del sistema</div><h2>Módulos habilitados</h2></div><button class="btn ghost small" data-route="revenues">Ver catálogo</button></div>
+      <div class="timeline premium-timeline">${(catalog||[]).map((x:any)=>`<div class="timeline-item"><span class="timeline-dot"></span><div class="timeline-copy"><strong>${esc(x.name)}</strong><small>Fase ${x.implementation_phase} · ${esc(humanStatus(x.implementation_status))}</small></div><span class="mini-chevron">${icon("arrow")}</span></div>`).join("")}</div>
+      <div class="compliance-card"><span>${icon("legal")}</span><div><strong>Gobernanza normativa</strong><p>Los parámetros de cálculo se activan solo cuando su fuente y vigencia están registradas.</p></div></div>
+    </aside>
   </div>`;
 }
-function metric(icon:string,value:any,label:string){return `<div class="card"><div class="metric"><div><div class="value">${esc(value)}</div><div class="label">${label}</div></div><div class="metric-icon">${icon}</div></div></div>`;}
-function moduleCard(icon:string,title:string,desc:string,to:string,status:string){return `<article class="module" data-route="${to}"><div class="module-top"><span class="metric-icon">${icon}</span><span class="status info">${status}</span></div><h3>${title}</h3><p>${desc}</p></article>`;}
+function journeyItem(step:number,current:number,title:string,desc:string,to:string){
+  const state=step<current?"done":step===current?"active":"pending";
+  return `<button class="journey-item ${state}" data-route="${to}"><span class="journey-index">${step<current?icon("check"):step}</span><span><strong>${title}</strong><small>${desc}</small></span></button>`;
+}
+
+function metric(iconName:string,value:any,label:string,detail=""){
+  return `<article class="metric-card"><div class="metric-icon">${icon(iconName)}</div><div class="metric-body"><div class="metric-value">${esc(value)}</div><div class="metric-label">${label}</div><div class="metric-detail">${detail}</div></div><span class="metric-arrow">${icon("arrow")}</span></article>`;
+}
+function moduleCard(iconName:string,title:string,desc:string,to:string,status:string){
+  return `<article class="module" data-route="${to}"><div class="module-top"><span class="module-icon">${icon(iconName)}</span><span class="status info">${status}</span></div><h3>${title}</h3><p>${desc}</p><span class="module-link">Abrir servicio ${icon("arrow")}</span></article>`;
+}
 
 async function viewRegistry(){
   if(!requireSession()) return "";
