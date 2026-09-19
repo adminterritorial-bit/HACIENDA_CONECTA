@@ -20,6 +20,31 @@ let authMode: "login"|"signup" = "login";
 let selectedRegistryActivities: Array<{ciiu:string;activity:string;primary:boolean}> = [];
 let lastIcaCalculation: AnyRow | null = null;
 let lastReteicaCalculation: AnyRow | null = null;
+let registryStep = 1;
+
+const icon = (name:string) => {
+  const common='viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+  const paths:Record<string,string>={
+    dashboard:'<path d="M4 13h6V4H4z"/><path d="M14 20h6V11h-6z"/><path d="M14 8h6V4h-6z"/><path d="M4 20h6v-3H4z"/>',
+    registry:'<circle cx="9" cy="8" r="3"/><path d="M3.5 20c.7-4 2.7-6 5.5-6s4.8 2 5.5 6"/><path d="M16 7h5M18.5 4.5v5"/>',
+    declarations:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h5M9 12h7M9 16h7"/>',
+    ica:'<path d="M5 5h14M5 12h14M5 19h14"/><path d="M9 3 6 21M18 3l-3 18"/>',
+    reteica:'<path d="m7 7-4 4 4 4"/><path d="M3 11h13a5 5 0 0 1 5 5v2"/><path d="m17 17 4 4 4-4" transform="translate(-4 -3)"/>',
+    payments:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/>',
+    security:'<path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"/><path d="m9 12 2 2 4-5"/>',
+    certificates:'<path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6"/><circle cx="12" cy="16" r="2"/>',
+    predial:'<path d="m3 11 9-7 9 7"/><path d="M5 10v10h14V10M9 20v-6h6v6"/>',
+    agreements:'<path d="M7 3h10v4H7z"/><path d="M5 7h14v14H5z"/><path d="M9 12h6M9 16h4"/>',
+    refunds:'<path d="M4 10a8 8 0 1 0 2-5"/><path d="M4 4v6h6"/><path d="M9 12h6"/>',
+    audit:'<circle cx="11" cy="11" r="7"/><path d="m16 16 5 5M8 11h6M11 8v6"/>',
+    revenues:'<path d="M4 7h16v13H4z"/><path d="M8 7V4h8v3M8 12h8M8 16h5"/>',
+    legal:'<path d="M4 5h16M7 5v15M17 5v15M7 9h10M7 15h10"/>',
+    staff:'<path d="M4 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="10" cy="7" r="3"/><path d="M17 8h4M19 6v4"/>',
+    arrow:'<path d="m9 18 6-6-6-6"/>',
+    check:'<path d="m5 12 4 4L19 6"/>'
+  };
+  return `<svg class="ui-icon" ${common}>${paths[name]||paths.dashboard}</svg>`;
+};
 
 const esc = (v:any) => String(v ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]!));
 const money = (v:any) => new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(Number(v||0));
@@ -76,46 +101,67 @@ async function bootstrap(){
   render();
 }
 
-function navItem(id:string,icon:string,label:string){return `<button data-route="${id}" class="${route===id?"active":""}"><span class="ico">${icon}</span><span>${label}</span></button>`;}
+function navItem(id:string,iconName:string,label:string){
+  return `<button data-route="${id}" class="${route===id?"active":""}">
+    <span class="nav-icon">${icon(iconName)}</span>
+    <span class="nav-label">${label}</span>
+    <span class="nav-arrow">${icon("arrow")}</span>
+  </button>`;
+}
 function shell(content:string){
   const official=profile && profile.role!=="citizen";
   return `<div class="app-shell">
     <aside class="sidebar" id="sidebar">
-      <div class="brand"><div class="brand-badge">HC</div><div><strong>Hacienda Conecta</strong><small>San Pedro · Valle</small></div></div>
+      <div class="brand">
+        <div class="brand-badge"><span>HC</span></div>
+        <div class="brand-copy"><strong>Hacienda Conecta</strong><small>San Pedro · Valle del Cauca</small></div>
+      </div>
+      <div class="sidebar-context">
+        <span class="live-dot"></span>
+        <div><strong>Servicios tributarios</strong><small>Plataforma municipal segura</small></div>
+      </div>
       <nav class="nav">
-        <div class="sep">Principal</div>
-        ${navItem("dashboard","⌂","Inicio")}
-        ${navItem("registry","◎","Registro Tributario")}
-        ${navItem("declarations","▤","Mis declaraciones")}
+        <div class="sep">Mi cuenta</div>
+        ${navItem("dashboard","dashboard","Inicio")}
+        ${navItem("registry","registry","Registro Tributario")}
+        ${navItem("declarations","declarations","Mis declaraciones")}
         <div class="sep">Declaraciones y recaudo</div>
-        ${navItem("ica","Σ","ICA · Avisos")}
-        ${navItem("reteica","⇄","RETEICA")}
-        ${navItem("payments","$","Pagos")}
-        ${navItem("security","✓","Firma y MFA")}
-        ${navItem("certificates","▣","Certificados")}
-        <div class="sep">Hacienda</div>
-        ${navItem("predial","⌂","Predial y paz y salvo")}
-        ${navItem("agreements","▦","Acuerdos de pago")}
-        ${navItem("refunds","↶","Devoluciones")}
-        ${navItem("audit","◉","Fiscalización")}
-        ${navItem("revenues","◇","Demás rentas")}
-        ${navItem("legal","§","Normativa y parámetros")}
-        ${official?'<div class="sep">Funcionarios</div>'+navItem("staff","◆","Consola de Hacienda"):""}
+        ${navItem("ica","ica","ICA · Avisos")}
+        ${navItem("reteica","reteica","RETEICA")}
+        ${navItem("payments","payments","Pagos")}
+        ${navItem("security","security","Identidad y firma")}
+        ${navItem("certificates","certificates","Certificados")}
+        <div class="sep">Otros servicios</div>
+        ${navItem("predial","predial","Predial y paz y salvo")}
+        ${navItem("agreements","agreements","Acuerdos de pago")}
+        ${navItem("refunds","refunds","Devoluciones")}
+        ${navItem("audit","audit","Fiscalización")}
+        ${navItem("revenues","revenues","Demás rentas")}
+        ${navItem("legal","legal","Normativa")}
+        ${official?'<div class="sep">Funcionarios</div>'+navItem("staff","staff","Consola de Hacienda"):""}
       </nav>
-      <div class="side-status"><strong>Base tributaria 2026</strong><small>UVT $52.374 · 324 actividades ICA</small></div>
+      <div class="side-status">
+        <div class="side-status-top"><span class="security-shield">${icon("security")}</span><div><strong>Base tributaria 2026</strong><small>Parámetros versionados</small></div></div>
+        <div class="side-stats"><span><b>$52.374</b>UVT</span><span><b>324</b>CIIU</span></div>
+      </div>
     </aside>
     <section class="content">
+      <div class="gov-strip"><span>Municipio de San Pedro · Secretaría de Hacienda</span><span class="gov-strip-right">Portal oficial de servicios tributarios</span></div>
       <header class="topbar">
-        <div class="top-left"><button class="btn ghost small mobile-menu" id="menuBtn">☰</button><div><span class="top-title">Secretaría de Hacienda</span><span class="top-sub">Servicios tributarios digitales</span></div></div>
+        <div class="top-left">
+          <button class="icon-button mobile-menu" id="menuBtn" aria-label="Abrir menú">☰</button>
+          <div><span class="top-title">${route==="dashboard"?"Resumen tributario":"Hacienda Conecta"}</span><span class="top-sub">Gestión segura, trazable y digital</span></div>
+        </div>
         <div class="top-actions">
-          <span class="pill">🔒 Sesión segura</span>
-          ${session?`<span class="avatar">${esc(userInitials())}</span><button class="btn ghost small" id="logoutBtn">Salir</button>`:`<button class="btn small" data-action="login">Ingresar</button>`}
+          <span class="secure-pill"><span class="secure-dot"></span>Conexión segura</span>
+          ${session?`<div class="user-chip"><span class="avatar">${esc(userInitials())}</span><div class="user-copy"><strong>${esc(profile?.full_name||session.user.email||"Usuario")}</strong><small>${esc(profile?.role==="citizen"?"Contribuyente":profile?.role||"Usuario")}</small></div></div><button class="btn ghost small" id="logoutBtn">Salir</button>`:`<button class="btn small" data-action="login">Ingresar</button>`}
         </div>
       </header>
       <main class="main">${content}</main>
     </section>
   </div>`;
 }
+
 function bindShell(){
   document.querySelectorAll<HTMLElement>("[data-route]").forEach(b=>b.onclick=()=>{location.hash=b.dataset.route!;});
   document.querySelector("#menuBtn")?.addEventListener("click",()=>document.querySelector("#sidebar")?.classList.toggle("open"));
@@ -126,37 +172,44 @@ function bindShell(){
 function renderAuth(){
   app.innerHTML=`<div class="auth-page">
     <section class="auth-visual">
-      <div class="brand-badge">HC</div>
-      <div class="kicker" style="color:#b9ddff;margin-top:24px">Municipio de San Pedro · Valle del Cauca</div>
-      <h1>Hacienda Conecta</h1>
-      <p>Un solo portal para registro tributario, declaraciones ICA y RETEICA, firma con autenticación reforzada, pagos, certificados, predial, acuerdos de pago, devoluciones y seguimiento de trámites.</p>
-      <div class="kpi-strip"><span class="kpi-chip"><strong>324</strong>Códigos ICA</span><span class="kpi-chip"><strong>2026</strong>UVT parametrizada</span><span class="kpi-chip"><strong>RLS</strong>Privacidad por usuario</span></div>
+      <div class="auth-brand"><div class="brand-badge large"><span>HC</span></div><div><strong>Hacienda Conecta</strong><small>Municipio de San Pedro · Valle del Cauca</small></div></div>
+      <div class="auth-copy">
+        <span class="eyebrow-light">Servicios tributarios digitales</span>
+        <h1>Tu Hacienda municipal,<br><span>más clara y más cerca.</span></h1>
+        <p>Regístrate, declara, firma, paga y consulta tus trámites desde una plataforma segura, con trazabilidad y reglas tributarias versionadas.</p>
+      </div>
+      <div class="auth-feature-grid">
+        <article><span class="feature-icon">${icon("security")}</span><div><strong>Firma reforzada</strong><small>Segundo factor para operaciones sensibles.</small></div></article>
+        <article><span class="feature-icon">${icon("ica")}</span><div><strong>Cálculos automáticos</strong><small>ICA y RETEICA con parámetros 2026.</small></div></article>
+        <article><span class="feature-icon">${icon("certificates")}</span><div><strong>Documentos verificables</strong><small>Certificados con serial, hash y QR.</small></div></article>
+      </div>
+      <div class="auth-trust"><span>UVT 2026 · $52.374</span><span>324 actividades ICA</span><span>RLS + MFA</span></div>
+      <div class="auth-orb orb-a"></div><div class="auth-orb orb-b"></div>
     </section>
-    <section class="auth-panel"><div class="auth-card">
-      <div class="kicker">Acceso ciudadano</div><h2>${authMode==="login"?"Ingresar":"Crear cuenta"}</h2>
-      <p class="muted">Tu sesión se gestiona mediante Supabase Auth y los datos tributarios se aíslan mediante Row Level Security.</p>
-      <button class="btn secondary" type="button" id="googleLoginBtn" style="width:100%;margin:14px 0 4px">G&nbsp;&nbsp;Continuar con Google</button>
-      <div class="hint" style="text-align:center;margin-bottom:12px">Google identifica tu cuenta. Para firmar y autorizar pagos se valida además tu celular por SMS.</div>
-      <div class="auth-tabs"><button id="loginTab" class="${authMode==="login"?"active":""}">Ingresar</button><button id="signupTab" class="${authMode==="signup"?"active":""}">Registrarme</button></div>
-      <form id="authForm" class="stack">
-        ${authMode==="signup"?'<div class="field"><label>Nombre completo / razón social</label><input class="input" name="name" required autocomplete="name"></div>':""}
-        <div class="field"><label>Correo electrónico</label><input class="input" type="email" name="email" required autocomplete="email"></div>
-        ${authMode==="signup"?'<div class="field"><label>Teléfono</label><input class="input" name="phone" placeholder="+573001234567" required autocomplete="tel"></div>':""}
-        <div class="field"><label>Contraseña</label><input class="input" type="password" name="password" minlength="10" required autocomplete="${authMode==="login"?"current-password":"new-password"}"><span class="hint">Mínimo 10 caracteres. Para firmar se exigirá un segundo factor.</span></div>
-        <button class="btn" type="submit">${authMode==="login"?"Ingresar":"Crear cuenta segura"}</button>
-      </form>
-      <div class="note mt">El registro de usuario no sustituye el Registro Tributario. Al ingresar deberás completar NIT/identificación, actividad CIIU, establecimiento y relaciones tributarias.</div>
-      <button class="btn ghost mt" id="publicBtn">Continuar sin cuenta a servicios públicos</button>
-    </div></section>
+    <section class="auth-panel">
+      <div class="auth-card">
+        <div class="auth-card-head"><div class="kicker">Acceso seguro</div><h2>${authMode==="login"?"Bienvenido de nuevo":"Crea tu cuenta"}</h2><p>${authMode==="login"?"Ingresa para continuar con tus obligaciones y trámites.":"Crea tu acceso; después verificaremos tu celular para operaciones sensibles."}</p></div>
+        <button class="google-btn" type="button" id="googleLoginBtn"><span class="google-g">G</span><span>Continuar con Google</span></button>
+        <div class="auth-divider"><span>o usa tu correo</span></div>
+        <div class="auth-tabs"><button id="loginTab" class="${authMode==="login"?"active":""}">Ingresar</button><button id="signupTab" class="${authMode==="signup"?"active":""}">Crear cuenta</button></div>
+        <form id="authForm" class="stack">
+          ${authMode==="signup"?'<div class="field"><label>Nombre completo / razón social</label><input class="input" name="name" required autocomplete="name" placeholder="Nombre del contribuyente"></div>':""}
+          <div class="field"><label>Correo electrónico</label><input class="input" type="email" name="email" required autocomplete="email" placeholder="correo@ejemplo.com"></div>
+          ${authMode==="signup"?'<div class="field"><label>Celular</label><input class="input" name="phone" placeholder="+573001234567" required autocomplete="tel"><span class="hint">Se verificará por SMS antes de firmar o autorizar pagos.</span></div>':""}
+          <div class="field"><label>Contraseña</label><input class="input" type="password" name="password" minlength="10" required autocomplete="${authMode==="login"?"current-password":"new-password"}" placeholder="••••••••••"><span class="hint">Mínimo 10 caracteres.</span></div>
+          <button class="btn primary-wide" type="submit">${authMode==="login"?"Ingresar a Hacienda Conecta":"Crear cuenta segura"}</button>
+        </form>
+        <div class="auth-security-note"><span>${icon("security")}</span><p>Google o correo validan tu cuenta. El celular funciona como segundo factor para firma y autorización de pagos.</p></div>
+        <button class="text-button" id="publicBtn">Consultar servicios públicos sin iniciar sesión</button>
+      </div>
+      <p class="auth-foot">Tus datos tributarios se protegen mediante Row Level Security y controles de acceso por rol.</p>
+    </section>
   </div>`;
   document.querySelector("#googleLoginBtn")?.addEventListener("click",async()=>{
     try{
-      const {error}=await supabase.auth.signInWithOAuth({
-        provider:"google",
-        options:{redirectTo:appBaseUrl()}
-      });
+      const {error}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:appBaseUrl()}});
       if(error) throw error;
-    }catch(err:any){toast(err.message||"No fue posible iniciar con Google.","error");}
+    }catch(err:any){toast(err.message||"Google aún no está habilitado en el proveedor de autenticación.","error");}
   });
   document.querySelector("#loginTab")!.addEventListener("click",()=>{authMode="login";renderAuth();});
   document.querySelector("#signupTab")!.addEventListener("click",()=>{authMode="signup";renderAuth();});
@@ -171,7 +224,7 @@ function renderAuth(){
       }else{
         const name=String(fd.get("name")||"").trim(), phone=String(fd.get("phone")||"").trim();
         const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name,phone}}}); if(error)throw error;
-        if(!data.session) toast("Cuenta creada. Revisa tu correo para confirmar el acceso. Al ingresar verificaremos tu celular por SMS.","warn"); else {toast("Cuenta creada. Ahora verifica tu celular por SMS.");location.hash="security";}
+        if(!data.session) toast("Cuenta creada. Confirma tu correo y luego verificaremos tu celular.","warn"); else {toast("Cuenta creada. Verifica tu celular para continuar.");location.hash="security";}
       }
     }catch(err:any){toast(err.message||"No fue posible autenticar.","error");}
   });
@@ -208,41 +261,91 @@ async function render(){
 async function viewDashboard(){
   let summary:any={declarations:0,pendingPayments:0,certificates:0,notifications:0,registrationStatus:null};
   if(session){try{summary=await api(supabase.rpc("dashboard_summary"));}catch{}}
-  const {data:catalog}=await supabase.from("revenue_catalog").select("code,name,implementation_phase,implementation_status").order("implementation_phase").limit(8);
-  return `<section class="hero"><div><div class="kicker" style="color:#b9ddff">Portal tributario municipal</div><h1>Hacienda sin filas, con trazabilidad.</h1><p>Consulta, liquida, presenta y realiza seguimiento a tus obligaciones desde un entorno único. Los cálculos ICA/RETEICA usan reglas almacenadas y versionadas en la base tributaria.</p><div class="actions"><button class="btn" data-route="ica">Liquidar ICA</button><button class="btn secondary" data-route="reteica">Calcular RETEICA</button></div></div><div class="hero-panel"><small>Parámetro oficial cargado</small><strong>UVT 2026 · $52.374</strong><small>Resolución DIAN 000238 de 2025</small></div></section>
-  <div class="grid cols-4 mb">
-    ${metric("▤",summary.declarations,"Declaraciones")}
-    ${metric("$",summary.pendingPayments,"Pagos pendientes")}
-    ${metric("▣",summary.certificates,"Certificados")}
-    ${metric("●",summary.registrationStatus||"No iniciado","Registro tributario")}
+  const {data:catalog}=await supabase.from("revenue_catalog").select("code,name,implementation_phase,implementation_status").order("implementation_phase").limit(6);
+  const phoneVerified=session?!!(await getVerifiedPhoneFactor().catch(()=>null)):false;
+  const registryReady=!!summary.registrationStatus;
+  const journeyStep=!session?1:!phoneVerified?2:!registryReady?3:4;
+  return `<section class="hero premium-hero">
+    <div class="hero-copy">
+      <span class="hero-kicker">Portal tributario municipal</span>
+      <h1>Gestiona tus obligaciones<br><span>sin filas y con trazabilidad.</span></h1>
+      <p>Un único espacio para registro tributario, declaraciones, firma electrónica, pagos, certificados y seguimiento de trámites ante la Secretaría de Hacienda.</p>
+      <div class="actions hero-actions"><button class="btn hero-primary" data-route="ica">Liquidar ICA</button><button class="btn hero-secondary" data-route="reteica">Calcular RETEICA</button></div>
+      <div class="hero-trust"><span>${icon("security")} Datos protegidos</span><span>${icon("check")} Reglas versionadas</span><span>${icon("certificates")} Documentos verificables</span></div>
+    </div>
+    <div class="hero-dashboard">
+      <div class="hero-dashboard-head"><span>Estado tributario 2026</span><span class="status ok">En línea</span></div>
+      <div class="hero-stat"><div><small>UVT vigente</small><strong>$52.374</strong></div><span class="hero-stat-icon">UVT</span></div>
+      <div class="hero-stat"><div><small>Catálogo ICA</small><strong>324 actividades</strong></div><span class="hero-stat-icon">CIIU</span></div>
+      <div class="hero-law">Resolución DIAN 000238 de 2025</div>
+    </div>
+    <div class="hero-glow glow-a"></div><div class="hero-glow glow-b"></div>
+  </section>
+
+  <section class="journey-card mb">
+    <div class="journey-head"><div><div class="kicker">Tu ruta en Hacienda Conecta</div><h2>Completa tu habilitación tributaria</h2></div><span class="journey-count">Paso ${journeyStep} de 4</span></div>
+    <div class="journey-track">
+      ${journeyItem(1,journeyStep,"Cuenta","Acceso creado","dashboard")}
+      ${journeyItem(2,journeyStep,"Celular","Segundo factor","security")}
+      ${journeyItem(3,journeyStep,"Registro","Datos tributarios","registry")}
+      ${journeyItem(4,journeyStep,"Operar","Declarar y pagar","declarations")}
+    </div>
+  </section>
+
+  <div class="metric-grid mb">
+    ${metric("declarations",summary.declarations,"Declaraciones","Borradores y radicadas")}
+    ${metric("payments",summary.pendingPayments,"Pagos pendientes","Referencias por completar")}
+    ${metric("certificates",summary.certificates,"Certificados","Documentos emitidos")}
+    ${metric("registry",summary.registrationStatus||"No iniciado","Registro tributario","Estado del contribuyente")}
   </div>
-  <div class="grid cols-2">
-    <section class="card"><div class="section-title"><div><div class="kicker">Accesos rápidos</div><h2>Trámites principales</h2></div></div>
-      <div class="module-grid">
-        ${moduleCard("◎","Registro Tributario","Actualiza identificación, CIIU, establecimiento y responsables.","registry","Fase 1")}
-        ${moduleCard("Σ","Declaración ICA","Liquidación multiactividad, avisos y mínimo tributario.","ica","Operativo")}
-        ${moduleCard("⇄","RETEICA","Cálculo por compra/servicio y base mínima en UVT.","reteica","Operativo")}
-        ${moduleCard("⌂","Predial","Consulta de cuenta, deuda y solicitudes de paz y salvo.","predial","Integración")}
-        ${moduleCard("▦","Acuerdos de pago","Radica solicitudes y consulta su estado.","agreements","Disponible")}
-        ${moduleCard("↶","Devoluciones","Solicitud, soportes y seguimiento.","refunds","Disponible")}
+
+  <div class="dashboard-layout">
+    <section class="card services-card">
+      <div class="section-title"><div><div class="kicker">Servicios</div><h2>¿Qué necesitas hacer hoy?</h2><p class="section-desc">Accede directamente a los trámites tributarios más utilizados.</p></div></div>
+      <div class="module-grid premium-modules">
+        ${moduleCard("registry","Registro Tributario","Identificación, CIIU, establecimientos y responsables.","registry","Cuenta")}
+        ${moduleCard("ica","Declaración ICA","Liquidación por actividad, avisos y mínimo tributario.","ica","Operativo")}
+        ${moduleCard("reteica","RETEICA","Retenciones por operación y bases mínimas UVT.","reteica","Operativo")}
+        ${moduleCard("predial","Predial y paz y salvo","Consulta y solicitudes asociadas al impuesto predial.","predial","Integración")}
+        ${moduleCard("agreements","Acuerdos de pago","Radica solicitudes y consulta su avance.","agreements","Disponible")}
+        ${moduleCard("refunds","Devoluciones","Radicación de saldos a favor y seguimiento.","refunds","Disponible")}
       </div>
     </section>
-    <section class="card accent"><div class="section-title"><div><div class="kicker">Estado del sistema</div><h2>Implementación por módulos</h2></div><button class="btn ghost small" data-route="revenues">Ver todas</button></div>
-      <div class="timeline">${(catalog||[]).map((x:any)=>`<div class="timeline-item"><span class="timeline-dot"></span><div><strong>${esc(x.name)}</strong><br><small>Fase ${x.implementation_phase} · ${esc(humanStatus(x.implementation_status))}</small></div></div>`).join("")}</div>
-    </section>
+    <aside class="card activity-card">
+      <div class="section-title"><div><div class="kicker">Cobertura del sistema</div><h2>Módulos habilitados</h2></div><button class="btn ghost small" data-route="revenues">Ver catálogo</button></div>
+      <div class="timeline premium-timeline">${(catalog||[]).map((x:any)=>`<div class="timeline-item"><span class="timeline-dot"></span><div class="timeline-copy"><strong>${esc(x.name)}</strong><small>Fase ${x.implementation_phase} · ${esc(humanStatus(x.implementation_status))}</small></div><span class="mini-chevron">${icon("arrow")}</span></div>`).join("")}</div>
+      <div class="compliance-card"><span>${icon("legal")}</span><div><strong>Gobernanza normativa</strong><p>Los parámetros de cálculo se activan solo cuando su fuente y vigencia están registradas.</p></div></div>
+    </aside>
   </div>`;
 }
-function metric(icon:string,value:any,label:string){return `<div class="card"><div class="metric"><div><div class="value">${esc(value)}</div><div class="label">${label}</div></div><div class="metric-icon">${icon}</div></div></div>`;}
-function moduleCard(icon:string,title:string,desc:string,to:string,status:string){return `<article class="module" data-route="${to}"><div class="module-top"><span class="metric-icon">${icon}</span><span class="status info">${status}</span></div><h3>${title}</h3><p>${desc}</p></article>`;}
+function journeyItem(step:number,current:number,title:string,desc:string,to:string){
+  const state=step<current?"done":step===current?"active":"pending";
+  return `<button class="journey-item ${state}" data-route="${to}"><span class="journey-index">${step<current?icon("check"):step}</span><span><strong>${title}</strong><small>${desc}</small></span></button>`;
+}
+
+function metric(iconName:string,value:any,label:string,detail=""){
+  return `<article class="metric-card"><div class="metric-icon">${icon(iconName)}</div><div class="metric-body"><div class="metric-value">${esc(value)}</div><div class="metric-label">${label}</div><div class="metric-detail">${detail}</div></div><span class="metric-arrow">${icon("arrow")}</span></article>`;
+}
+function moduleCard(iconName:string,title:string,desc:string,to:string,status:string){
+  return `<article class="module" data-route="${to}"><div class="module-top"><span class="module-icon">${icon(iconName)}</span><span class="status info">${status}</span></div><h3>${title}</h3><p>${desc}</p><span class="module-link">Abrir servicio ${icon("arrow")}</span></article>`;
+}
 
 async function viewRegistry(){
   if(!requireSession()) return "";
   const phoneFactor=await getVerifiedPhoneFactor();
   if(!phoneFactor){
-    return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Primero verifica tu celular</h1><p>El número telefónico será el segundo factor para firma electrónica y autorización de pago.</p></div></div>
-    <section class="card accent"><div class="note warn"><strong>Registro bloqueado hasta verificar el teléfono.</strong><br>Ingresa tu celular, recibe el código SMS y confírmalo. Luego Hacienda Conecta permitirá diligenciar el Registro Tributario.</div><div class="actions mt"><button class="btn" data-route="security">Verificar mi celular</button></div></section>`;
+    return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Completa tu identidad digital</h1><p>Antes de registrar información tributaria debemos verificar el celular que usarás para firma y autorización de pagos.</p></div></div>
+    <section class="identity-gate">
+      <div class="identity-gate-icon">${icon("security")}</div>
+      <div><span class="status warn">Paso obligatorio</span><h2>Verifica tu número celular</h2><p>Recibirás un código SMS para vincular el número a tu cuenta. Después podrás completar el Registro Tributario y usar los servicios transaccionales.</p><div class="actions"><button class="btn" data-route="security">Verificar celular</button><button class="btn ghost" data-route="dashboard">Volver al inicio</button></div></div>
+      <div class="identity-gate-steps"><span class="done">${icon("check")} Cuenta</span><span class="active">2 · Celular</span><span>3 · Registro</span><span>4 · Operar</span></div>
+    </section>`;
   }
-  const {data:reg}=await supabase.from("taxpayer_registrations").select("*").eq("user_id",session!.user.id).maybeSingle();
+
+  const [{data:reg},{data:rels}]=await Promise.all([
+    supabase.from("taxpayer_registrations").select("*").eq("user_id",session!.user.id).maybeSingle(),
+    supabase.from("taxpayer_relationships").select("relation_type,related_name,related_email,professional_card").order("created_at",{ascending:false})
+  ]);
   const {data:acts}=reg?await supabase.from("taxpayer_activities").select("ciiu,is_primary").eq("registration_id",reg.id):{data:null};
   if(acts){
     const codes=(acts as any[]).map(a=>a.ciiu);
@@ -250,75 +353,161 @@ async function viewRegistry(){
     const names=new Map((catalog||[]).map((x:any)=>[x.ciiu,x.activity]));
     selectedRegistryActivities=(acts as any[]).map(a=>({ciiu:a.ciiu,activity:names.get(a.ciiu)||"",primary:a.is_primary}));
   }
-  const readonly=reg && reg.status!=="PENDING";
-  return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Identificación del contribuyente</h1><p>Consolida los datos necesarios para presentar declaraciones y operar trámites de Hacienda. Los documentos de identificación se almacenan como huellas criptográficas, no en texto plano.</p></div><span class="status ${statusClass(reg?.status||"PENDING")}">${esc(reg?.status||"SIN REGISTRO")}</span></div>
-  ${readonly?'<div class="note warn mb">El registro ya fue enviado a validación. Los campos tributarios quedan bloqueados para evitar alteraciones posteriores sin trazabilidad.</div>':""}
-  <form id="registryForm" class="card">
-    <div class="section-title"><h2>Datos generales</h2><span class="status info">RLS protegido</span></div>
-    <div class="form-grid">
-      <div class="field"><label>Tipo de persona</label><select class="select" name="personType" ${readonly?"disabled":""}><option value="NATURAL" ${reg?.person_type==="NATURAL"?"selected":""}>Persona natural</option><option value="JURIDICA" ${reg?.person_type==="JURIDICA"?"selected":""}>Persona jurídica</option></select></div>
-      <div class="field"><label>Tipo de identificación</label><select class="select" name="documentType" ${readonly?"disabled":""}><option>CC</option><option>NIT</option><option>CE</option><option>PASAPORTE</option></select></div>
-      <div class="field"><label>Número de identificación / NIT</label><input class="input" name="documentNumber" required placeholder="Se procesa para generar una huella SHA-256" ${readonly?"disabled":""}></div>
-      <div class="field"><label>Nombre completo / razón social</label><input class="input" name="name" required value="${esc(reg?.business_name||profile?.full_name||session!.user.user_metadata?.full_name||"")}" ${readonly?"disabled":""}></div>
-      <div class="field"><label>Correo</label><input class="input" type="email" name="email" required value="${esc(profile?.email||session!.user.email||"")}" ${readonly?"disabled":""}></div>
-      <div class="field"><label>Teléfono verificado para firma</label><input class="input" name="phone" readonly value="${esc(phoneFactor.phone||profile?.phone_e164||"")}"><span class="hint">Verificado por SMS · se utilizará para firma y autorización de pago.</span></div>
-      <div class="field full"><label>Dirección fiscal</label><input class="input" name="address" required value="${esc(reg?.fiscal_address||"")}" ${readonly?"disabled":""}></div>
+  const representative=(rels||[]).find((x:any)=>x.relation_type==="LEGAL_REPRESENTATIVE");
+  const accountant=(rels||[]).find((x:any)=>x.relation_type==="ACCOUNTANT");
+  const readonly=!!reg && reg.status!=="PENDING";
+  const currentStep=Math.max(1,Math.min(4,registryStep));
+
+  if(readonly){
+    return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Perfil tributario</h1><p>Tu información fue enviada a validación. Se conserva bloqueada para mantener integridad y trazabilidad.</p></div><span class="status ${statusClass(reg.status)}">${esc(humanStatus(reg.status))}</span></div>
+    <div class="profile-summary-grid">
+      <section class="card profile-identity"><div class="profile-avatar">${esc(userInitials())}</div><div><span class="kicker">Contribuyente</span><h2>${esc(reg.business_name)}</h2><p>${esc(reg.person_type==="JURIDICA"?"Persona jurídica":"Persona natural")} · San Pedro, Valle del Cauca</p></div><span class="verified-mark">${icon("check")} Datos registrados</span></section>
+      <section class="card"><div class="section-title"><h2>Contacto tributario</h2><span class="status ok">Celular verificado</span></div><div class="detail-list"><div><span>Correo</span><strong>${esc(profile?.email||session!.user.email||"—")}</strong></div><div><span>Celular</span><strong>${esc(maskPhone(phoneFactor.phone||profile?.phone_e164||""))}</strong></div><div><span>Dirección fiscal</span><strong>${esc(reg.fiscal_address)}</strong></div></div></section>
     </div>
-    <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
-    <div class="section-title"><div><h2>Actividades económicas</h2><span class="hint">Selecciona del catálogo municipal de 324 códigos.</span></div></div>
-    <div id="selectedActivities">${renderSelectedActivities(readonly)}</div>
-    ${readonly?"":`<div class="searchbox mt"><input id="ciiuSearch" class="input" placeholder="Buscar por CIIU o descripción"><button class="btn secondary" type="button" id="ciiuSearchBtn">Buscar</button></div><div id="ciiuResults"></div>`}
-    <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
-    <details><summary><strong>Representante legal y contador</strong> <span class="muted tiny">Opcional / según obligación</span></summary>
-      <div class="grid cols-2 mt">
-        <div class="card"><h3>Representante legal</h3><div class="stack"><input class="input" name="repName" placeholder="Nombre completo" ${readonly?"disabled":""}><input class="input" name="repDoc" placeholder="Documento" ${readonly?"disabled":""}><input class="input" type="email" name="repEmail" placeholder="Correo" ${readonly?"disabled":""}></div></div>
-        <div class="card"><h3>Contador</h3><div class="stack"><input class="input" name="accName" placeholder="Nombre completo" ${readonly?"disabled":""}><input class="input" name="accDoc" placeholder="Documento" ${readonly?"disabled":""}><input class="input" name="accCard" placeholder="Tarjeta profesional" ${readonly?"disabled":""}></div></div>
+    <section class="card mt"><div class="section-title"><div><div class="kicker">Actividades económicas</div><h2>Clasificación CIIU registrada</h2></div><span class="pill">${selectedRegistryActivities.length} actividades</span></div>${renderSelectedActivities(true)}</section>
+    <section class="card mt"><div class="section-title"><div><div class="kicker">Estado</div><h2>¿Qué sigue?</h2></div></div><div class="next-action-grid"><button class="next-action" data-route="ica"><span class="module-icon">${icon("ica")}</span><span><strong>Liquidar ICA</strong><small>Preparar declaración anual.</small></span>${icon("arrow")}</button><button class="next-action" data-route="declarations"><span class="module-icon">${icon("declarations")}</span><span><strong>Mis declaraciones</strong><small>Continuar borradores y firmas.</small></span>${icon("arrow")}</button><button class="next-action" data-route="certificates"><span class="module-icon">${icon("certificates")}</span><span><strong>Certificados</strong><small>Solicitar o verificar documentos.</small></span>${icon("arrow")}</button></div></section>`;
+  }
+
+  return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Crea tu perfil de contribuyente</h1><p>Completa la información en cuatro pasos. Puedes revisar todo antes de enviarlo a Hacienda.</p></div><span class="status info">Borrador seguro</span></div>
+  <form id="registryForm" class="wizard-card">
+    <div class="wizard-header">
+      <button type="button" class="wizard-step ${currentStep===1?"active":currentStep>1?"done":""}" data-reg-step="1"><span>${currentStep>1?icon("check"):"1"}</span><div><strong>Identificación</strong><small>Datos básicos</small></div></button>
+      <span class="wizard-line ${currentStep>1?"done":""}"></span>
+      <button type="button" class="wizard-step ${currentStep===2?"active":currentStep>2?"done":""}" data-reg-step="2"><span>${currentStep>2?icon("check"):"2"}</span><div><strong>Actividad</strong><small>Clasificación CIIU</small></div></button>
+      <span class="wizard-line ${currentStep>2?"done":""}"></span>
+      <button type="button" class="wizard-step ${currentStep===3?"active":currentStep>3?"done":""}" data-reg-step="3"><span>${currentStep>3?icon("check"):"3"}</span><div><strong>Responsables</strong><small>Representante y contador</small></div></button>
+      <span class="wizard-line ${currentStep>3?"done":""}"></span>
+      <button type="button" class="wizard-step ${currentStep===4?"active":""}" data-reg-step="4"><span>4</span><div><strong>Confirmación</strong><small>Revisar y enviar</small></div></button>
+    </div>
+
+    <section class="wizard-panel ${currentStep===1?"active":""}" data-reg-panel="1">
+      <div class="panel-heading"><span class="panel-icon">${icon("registry")}</span><div><h2>Identificación y contacto</h2><p>Información principal del contribuyente y domicilio fiscal.</p></div></div>
+      <div class="form-grid">
+        <div class="field"><label>Tipo de persona</label><select class="select" name="personType" required><option value="NATURAL" ${reg?.person_type==="NATURAL"?"selected":""}>Persona natural</option><option value="JURIDICA" ${reg?.person_type==="JURIDICA"?"selected":""}>Persona jurídica</option></select></div>
+        <div class="field"><label>Tipo de identificación</label><select class="select" name="documentType" required><option>CC</option><option>NIT</option><option>CE</option><option>PASAPORTE</option></select></div>
+        <div class="field"><label>Número de identificación / NIT</label><input class="input" name="documentNumber" required placeholder="Ej. 900123456-7"><span class="hint">La aplicación genera una huella criptográfica para identificación interna.</span></div>
+        <div class="field"><label>Nombre completo / razón social</label><input class="input" name="name" required value="${esc(reg?.business_name||profile?.full_name||session!.user.user_metadata?.full_name||"")}" placeholder="Nombre del contribuyente"></div>
+        <div class="field"><label>Correo electrónico</label><input class="input" type="email" name="email" required value="${esc(profile?.email||session!.user.email||"")}"></div>
+        <div class="field verified-field"><label>Celular verificado</label><div class="verified-input"><input class="input" name="phone" readonly value="${esc(phoneFactor.phone||profile?.phone_e164||"")}"><span>${icon("check")}</span></div><span class="hint">Segundo factor habilitado para firma y autorización de pagos.</span></div>
+        <div class="field full"><label>Dirección fiscal</label><input class="input" name="address" required value="${esc(reg?.fiscal_address||"")}" placeholder="Dirección completa en el municipio"></div>
       </div>
-    </details>
-    ${readonly?"":`<label class="checkbox mt"><input type="checkbox" name="policy" required><span>Autorizo el tratamiento de los datos necesarios para la gestión tributaria, conforme a la política vigente del Municipio y la finalidad del trámite.</span></label><div class="actions mt"><button class="btn" type="submit">Guardar Registro Tributario</button></div>`}
+      <div class="wizard-actions"><span></span><button class="btn" type="button" data-reg-next>Continuar a actividad económica ${icon("arrow")}</button></div>
+    </section>
+
+    <section class="wizard-panel ${currentStep===2?"active":""}" data-reg-panel="2">
+      <div class="panel-heading"><span class="panel-icon">${icon("ica")}</span><div><h2>Actividades económicas</h2><p>Busca y selecciona tus códigos CIIU. Debe existir exactamente una actividad principal.</p></div></div>
+      <div class="ciiu-search-card"><div class="searchbox"><input id="ciiuSearch" class="input" placeholder="Ej. 6201 o desarrollo de software"><button class="btn secondary" type="button" id="ciiuSearchBtn">Buscar CIIU</button></div><div id="ciiuResults"></div></div>
+      <div class="selected-block"><div class="section-title"><div><h3>Actividades seleccionadas</h3><span class="hint">Puedes cambiar la actividad principal antes de enviar.</span></div><span class="pill">${selectedRegistryActivities.length} seleccionadas</span></div><div id="selectedActivities">${renderSelectedActivities(false)}</div></div>
+      <div class="wizard-actions"><button class="btn ghost" type="button" data-reg-prev>Volver</button><button class="btn" type="button" data-reg-next>Continuar a responsables ${icon("arrow")}</button></div>
+    </section>
+
+    <section class="wizard-panel ${currentStep===3?"active":""}" data-reg-panel="3">
+      <div class="panel-heading"><span class="panel-icon">${icon("staff")}</span><div><h2>Responsables tributarios</h2><p>Registra representante legal o contador cuando corresponda a tu obligación.</p></div></div>
+      <div class="role-cards">
+        <article class="role-card"><div class="role-head"><span class="module-icon">${icon("registry")}</span><div><h3>Representante legal</h3><small>Obligatorio para persona jurídica</small></div></div><div class="stack"><div class="field"><label>Nombre completo</label><input class="input" name="repName" value="${esc(representative?.related_name||"")}" placeholder="Nombre del representante"></div><div class="field"><label>Documento</label><input class="input" name="repDoc" placeholder="Se almacenará como huella"></div><div class="field"><label>Correo</label><input class="input" type="email" name="repEmail" value="${esc(representative?.related_email||"")}" placeholder="correo@ejemplo.com"></div></div></article>
+        <article class="role-card"><div class="role-head"><span class="module-icon">${icon("declarations")}</span><div><h3>Contador</h3><small>Cuando exista obligación profesional</small></div></div><div class="stack"><div class="field"><label>Nombre completo</label><input class="input" name="accName" value="${esc(accountant?.related_name||"")}" placeholder="Nombre del contador"></div><div class="field"><label>Documento</label><input class="input" name="accDoc" placeholder="Se almacenará como huella"></div><div class="field"><label>Tarjeta profesional</label><input class="input" name="accCard" value="${esc(accountant?.professional_card||"")}" placeholder="Número de tarjeta"></div></div></article>
+      </div>
+      <div class="note mt"><strong>Importante:</strong> la plataforma conserva la relación y evidencia del responsable. Las reglas de obligatoriedad de firma de contador/revisor se validan por tipo de obligación antes de la presentación definitiva.</div>
+      <div class="wizard-actions"><button class="btn ghost" type="button" data-reg-prev>Volver</button><button class="btn" type="button" data-reg-next>Revisar información ${icon("arrow")}</button></div>
+    </section>
+
+    <section class="wizard-panel ${currentStep===4?"active":""}" data-reg-panel="4">
+      <div class="panel-heading"><span class="panel-icon">${icon("check")}</span><div><h2>Revisa antes de enviar</h2><p>Confirma que la información es correcta. El envío queda registrado con fecha y usuario.</p></div></div>
+      <div id="registryReview" class="review-grid"></div>
+      <label class="consent-card"><input type="checkbox" name="policy" required><span><strong>Autorización y declaración</strong><small>Autorizo el tratamiento de los datos necesarios para la gestión tributaria conforme a la política vigente y declaro que la información suministrada es correcta.</small></span></label>
+      <div class="security-confirm"><span>${icon("security")}</span><div><strong>Tu celular ya está verificado</strong><p>El número asociado se utilizará posteriormente para confirmar firma y pagos mediante códigos de un solo uso.</p></div></div>
+      <div class="wizard-actions"><button class="btn ghost" type="button" data-reg-prev>Volver</button><button class="btn" type="submit">Guardar Registro Tributario</button></div>
+    </section>
   </form>`;
 }
+
 function renderSelectedActivities(readonly=false){
   if(!selectedRegistryActivities.length)return '<div class="empty">Aún no has seleccionado actividades económicas.</div>';
   return `<div class="table-wrap"><table class="table"><thead><tr><th>CIIU</th><th>Actividad</th><th>Tipo</th><th></th></tr></thead><tbody>${selectedRegistryActivities.map((a,i)=>`<tr><td><strong>${esc(a.ciiu)}</strong></td><td>${esc(a.activity)}</td><td>${a.primary?'<span class="status ok">Principal</span>':'Secundaria'}</td><td class="right">${readonly?"":`<button type="button" class="btn ghost small" data-primary="${i}">Hacer principal</button> <button type="button" class="btn danger small" data-remove-act="${i}">Quitar</button>`}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 async function viewIca(){
-  return `<div class="page-head"><div><div class="kicker">Industria y Comercio</div><h1>Liquidación ICA 2026</h1><p>Calcula por actividad económica, aplica la tarifa por mil, el complementario de Avisos y Tableros y el mínimo tributario parametrizado. El resultado proviene de funciones de base de datos, no de fórmulas incrustadas en la pantalla.</p></div><span class="status ok">Motor activo</span></div>
-  <div class="split">
-    <section class="card">
-      <div class="section-title"><h2>Datos de liquidación</h2><span class="pill">UVT $52.374</span></div>
-      <div id="icaRows" class="stack">
-        <div class="form-grid ica-row"><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" value="1011"></div><div class="field"><label>Ingreso gravable en San Pedro</label><input class="input" data-income type="number" min="0" value="100000000"></div></div>
+  return `<div class="page-head"><div><div class="kicker">Industria y Comercio</div><h1>Liquidación ICA 2026</h1><p>Construye la liquidación por actividades económicas. Hacienda Conecta consulta la tarifa CIIU, aplica mínimo tributario y calcula Avisos y Tableros cuando corresponda.</p></div><div class="head-badges"><span class="status ok">${icon("check")} Motor activo</span><span class="pill">UVT $52.374</span></div></div>
+  <div class="calculator-layout">
+    <section class="calculator-card">
+      <div class="calculator-head"><div><span class="kicker">Paso 1</span><h2>Ingresos gravables por actividad</h2><p>Agrega todas las actividades realizadas en jurisdicción de San Pedro.</p></div><span class="calc-badge">Vigencia 2026</span></div>
+      <div id="icaRows" class="calc-rows">
+        <article class="calc-row ica-row"><span class="row-number">1</span><div class="field"><label>Código CIIU</label><input class="input" data-ciiu maxlength="4" value="1011" inputmode="numeric"><span class="hint">Código de 4 dígitos.</span></div><div class="field grow"><label>Ingreso gravable en San Pedro</label><div class="money-input"><span>$</span><input class="input" data-income type="number" min="0" value="100000000"></div></div></article>
       </div>
-      <div class="actions mt"><button class="btn secondary" type="button" id="addIcaRow">+ Agregar actividad</button></div>
-      <label class="checkbox mt"><input id="icaNotices" type="checkbox"><span>Liquidar complementario de Avisos y Tableros cuando corresponda.</span></label>
-      <div class="actions mt"><button class="btn" id="calculateIca">Calcular liquidación</button><button class="btn ghost" id="saveIca" disabled>Guardar declaración</button></div>
+      <button class="add-row-btn" type="button" id="addIcaRow">+ Agregar otra actividad</button>
+      <div class="calc-option"><label class="switch"><input id="icaNotices" type="checkbox"><span class="switch-ui"></span></label><div><strong>Avisos y Tableros</strong><small>Actívalo cuando el contribuyente tenga obligación del complementario.</small></div></div>
+      <div class="calc-actions"><button class="btn" id="calculateIca">Calcular liquidación</button><button class="btn secondary" id="saveIca" disabled>Guardar como declaración</button></div>
     </section>
-    <aside class="card accent"><div class="kicker">Resultado</div><h2>Resumen ICA</h2><div id="icaResult">${lastIcaCalculation?renderIcaResult(lastIcaCalculation):'<div class="empty">Realiza el cálculo para ver el detalle.</div>'}</div></aside>
+    <aside class="result-card">
+      <div class="result-card-head"><span class="result-icon">${icon("ica")}</span><div><span class="kicker">Resultado</span><h2>Resumen de liquidación</h2></div></div>
+      <div id="icaResult">${lastIcaCalculation?renderIcaResult(lastIcaCalculation):'<div class="result-empty"><span>Σ</span><strong>Sin cálculo todavía</strong><p>Completa tus actividades y presiona “Calcular liquidación”.</p></div>'}</div>
+      <div class="legal-mini"><span>${icon("legal")}</span><div><strong>Motor de reglas versionado</strong><small>Si el CIIU no tiene una tarifa validada, el cálculo se bloquea.</small></div></div>
+    </aside>
   </div>
-  <section class="card mt"><div class="note">La tarifa se obtiene del catálogo CIIU municipal cargado en Supabase. Si una actividad no existe o no está validada, el motor rechaza el cálculo en lugar de asumir una tarifa.</div></section>`;
+  <div class="info-strip mt"><div><span class="info-strip-icon">${icon("check")}</span><p><strong>Sin doble cobro del mínimo.</strong> El mínimo ICA se aplica al total cuando corresponde, evitando volver a cargar Avisos y Tableros sobre ese mínimo.</p></div><div><span class="info-strip-icon">${icon("legal")}</span><p><strong>Trazabilidad.</strong> Cada cálculo conserva vigencia, parámetros y valores usados para su posterior auditoría.</p></div></div>`;
 }
-function renderIcaResult(r:any){return `<div class="stack"><div class="metric"><div><div class="label">ICA por actividades</div><div class="value">${money(r.subtotalIcaCop)}</div></div></div><div class="kpi-strip"><span class="kpi-chip"><strong>${money(r.minimumTaxCop)}</strong>Mínimo 2 UVT</span><span class="kpi-chip"><strong>${money(r.noticesAndBoardsCop)}</strong>Avisos y Tableros</span><span class="kpi-chip"><strong>${money(r.minimumAdjustmentCop)}</strong>Ajuste a mínimo</span></div><hr style="border:0;border-top:1px solid var(--line)"><div class="metric"><div><div class="label">Total antes de anticipos/retenciones</div><div class="value">${money(r.totalBeforeCreditsCop)}</div></div><span class="status ok">Calculado</span></div><div class="tiny muted">UVT aplicada: ${money(r.uvtValueCop)} · Vigencia ${r.taxYear}</div></div>`;}
+function renderIcaResult(r:any){
+  return `<div class="result-total"><small>Total antes de retenciones / anticipos</small><strong>${money(r.totalBeforeCreditsCop)}</strong><span class="status ok">Calculado</span></div>
+  <div class="result-breakdown">
+    <div><span>ICA por actividades</span><strong>${money(r.subtotalIcaCop)}</strong></div>
+    <div><span>Avisos y Tableros</span><strong>${money(r.noticesAndBoardsCop)}</strong></div>
+    <div><span>Mínimo 2 UVT</span><strong>${money(r.minimumTaxCop)}</strong></div>
+    <div><span>Ajuste al mínimo</span><strong>${money(r.minimumAdjustmentCop)}</strong></div>
+  </div>
+  <div class="result-meta"><span>UVT aplicada <b>${money(r.uvtValueCop)}</b></span><span>Vigencia <b>${r.taxYear}</b></span></div>
+  ${r.lines?.length?`<div class="mini-lines">${r.lines.map((x:any)=>`<div><span><b>${esc(x.ciiu)}</b> ${esc(x.activity||"Actividad")}</span><strong>${money(x.taxCop)}</strong></div>`).join("")}</div>`:""}`;
+}
 
 async function viewReteica(){
-  return `<div class="page-head"><div><div class="kicker">Retención de ICA</div><h1>Calculadora RETEICA</h1><p>Determina si una operación supera la base mínima y calcula la retención con la tarifa de la actividad. La periodicidad de presentación 2026 permanece bloqueada hasta validación jurídica formal.</p></div><span class="status warn">Periodicidad en validación</span></div>
-  <div class="split"><section class="card"><div id="reteRows" class="stack"><div class="form-grid rete-row"><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" value="1011"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field full"><label>Base de la operación</label><input class="input" data-base type="number" min="0" value="500000"></div></div></div><div class="actions mt"><button class="btn secondary" id="addReteRow">+ Agregar operación</button><button class="btn" id="calculateRete">Calcular RETEICA</button><button class="btn ghost" id="saveRete" disabled>Guardar declaración</button></div></section><aside class="card accent"><div class="kicker">Resultado</div><h2>Retención</h2><div id="reteResult">${lastReteicaCalculation?renderReteResult(lastReteicaCalculation):'<div class="empty">Agrega las operaciones y calcula.</div>'}</div></aside></div>
-  <div class="note warn mt"><strong>Control normativo:</strong> el sistema calcula la retención, pero no muestra una fecha de vencimiento ni define mensual/bimestral hasta que Hacienda valide el acto vigente.</div>`;
+  return `<div class="page-head"><div><div class="kicker">Retención de ICA</div><h1>Calculadora RETEICA</h1><p>Registra operaciones sujetas a retención. El motor compara la base con el umbral en UVT y aplica la tarifa CIIU correspondiente.</p></div><div class="head-badges"><span class="status ok">${icon("check")} Cálculo disponible</span><span class="status warn">Periodicidad por validar</span></div></div>
+  <div class="calculator-layout">
+    <section class="calculator-card">
+      <div class="calculator-head"><div><span class="kicker">Operaciones</span><h2>Base y concepto de retención</h2><p>Agrega compras o servicios realizados con cada actividad económica.</p></div><span class="calc-badge">UVT $52.374</span></div>
+      <div id="reteRows" class="calc-rows">
+        <article class="calc-row rete-row"><span class="row-number">1</span><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" value="1011" inputmode="numeric"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field grow"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" data-base type="number" min="0" value="500000"></div></div></article>
+      </div>
+      <button class="add-row-btn" type="button" id="addReteRow">+ Agregar otra operación</button>
+      <div class="calc-actions"><button class="btn" id="calculateRete">Calcular RETEICA</button><button class="btn secondary" id="saveRete" disabled>Guardar borrador</button></div>
+      <div class="normative-lock"><span>${icon("security")}</span><div><strong>Control normativo activo</strong><p>La app calcula la retención, pero no inventa la periodicidad de presentación 2026 mientras exista la diferencia mensual/bimestral en las fuentes revisadas.</p></div></div>
+    </section>
+    <aside class="result-card">
+      <div class="result-card-head"><span class="result-icon">${icon("reteica")}</span><div><span class="kicker">Resultado</span><h2>Retención calculada</h2></div></div>
+      <div id="reteResult">${lastReteicaCalculation?renderReteResult(lastReteicaCalculation):'<div class="result-empty"><span>⇄</span><strong>Sin operaciones calculadas</strong><p>Agrega una base y el concepto para determinar si supera el umbral.</p></div>'}</div>
+    </aside>
+  </div>`;
 }
-function renderReteResult(r:any){return `<div class="metric"><div><div class="label">Total RETEICA</div><div class="value">${money(r.totalWithheldCop)}</div></div><span class="status ok">Calculado</span></div><div class="table-wrap mt"><table class="table"><thead><tr><th>CIIU</th><th>Base</th><th>Umbral</th><th>Tarifa</th><th>Retención</th></tr></thead><tbody>${(r.lines||[]).map((x:any)=>`<tr><td>${esc(x.ciiu)}</td><td>${money(x.baseCop)}</td><td>${money(x.thresholdCop)}</td><td>${x.ratePerThousand}‰</td><td class="money">${money(x.withheldCop)}</td></tr>`).join("")}</tbody></table></div>`;}
+function renderReteResult(r:any){
+  return `<div class="result-total"><small>Total RETEICA</small><strong>${money(r.totalWithheldCop)}</strong><span class="status ok">Calculado</span></div>
+  <div class="result-meta"><span>UVT aplicada <b>${money(r.uvtValueCop)}</b></span><span>Vigencia <b>${r.taxYear}</b></span></div>
+  <div class="mini-lines">${(r.lines||[]).map((x:any)=>`<div class="rete-line"><span><b>${esc(x.ciiu)}</b> · ${esc(x.concept==="goods"?"Compras":"Servicios")}<small>Base ${money(x.baseCop)} · Umbral ${money(x.thresholdCop)} · ${x.ratePerThousand}‰</small></span><strong>${money(x.withheldCop)}</strong></div>`).join("")}</div>`;
+}
 
 async function viewDeclarations(){
   if(!requireSession())return "";
   const {data}=await supabase.from("declarations").select("*").order("created_at",{ascending:false});
-  return `<div class="page-head"><div><div class="kicker">Obligaciones</div><h1>Mis declaraciones</h1><p>Borradores, documentos listos para firma, pagos pendientes y declaraciones radicadas.</p></div><div class="actions"><button class="btn" data-route="ica">Nueva ICA</button><button class="btn secondary" data-route="reteica">Nueva RETEICA</button></div></div>
-  <section class="card">${data?.length?`<div class="table-wrap"><table class="table"><thead><tr><th>Tipo</th><th>Vigencia / período</th><th>Estado</th><th>Saldo</th><th>Creada</th><th></th></tr></thead><tbody>${data.map((d:any)=>`<tr><td><strong>${esc(d.tax_type)}</strong></td><td>${d.tax_year} · ${esc(d.period)}</td><td><span class="status ${statusClass(d.status)}">${esc(humanStatus(d.status))}</span></td><td class="money">${money(d.balance_due_cop)}</td><td>${date(d.created_at)}</td><td class="right">${declarationActions(d)}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty">No tienes declaraciones guardadas.</div>'}</section>`;
+  const rows=data||[];
+  const drafts=rows.filter((x:any)=>["DRAFT","IDENTITY_VERIFIED"].includes(x.status)).length;
+  const signing=rows.filter((x:any)=>x.status==="READY_TO_SIGN").length;
+  const paying=rows.filter((x:any)=>x.status==="PAYMENT_PENDING").length;
+  const filed=rows.filter((x:any)=>["FILED","CERTIFICATE_AVAILABLE"].includes(x.status)).length;
+  return `<div class="page-head"><div><div class="kicker">Obligaciones</div><h1>Mis declaraciones</h1><p>Continúa borradores, firma electrónicamente, autoriza pagos y descarga documentos de tus obligaciones tributarias.</p></div><div class="actions"><button class="btn" data-route="ica">+ Nueva ICA</button><button class="btn secondary" data-route="reteica">+ Nueva RETEICA</button></div></div>
+  <div class="declaration-summary mb">
+    <article><span class="summary-icon draft">${icon("declarations")}</span><div><strong>${drafts}</strong><small>Borradores</small></div></article>
+    <article><span class="summary-icon signing">${icon("security")}</span><div><strong>${signing}</strong><small>Por firmar</small></div></article>
+    <article><span class="summary-icon paying">${icon("payments")}</span><div><strong>${paying}</strong><small>Por pagar</small></div></article>
+    <article><span class="summary-icon filed">${icon("check")}</span><div><strong>${filed}</strong><small>Radicadas</small></div></article>
+  </div>
+  <section class="card">
+    <div class="section-title"><div><div class="kicker">Historial</div><h2>Declaraciones tributarias</h2></div><span class="pill">${rows.length} registros</span></div>
+    ${rows.length?`<div class="declaration-list">${rows.map((d:any)=>`<article class="declaration-item"><div class="declaration-type"><span class="module-icon">${icon(d.tax_type==="RETEICA"?"reteica":"ica")}</span><div><strong>${esc(d.tax_type)}</strong><small>${d.tax_year} · ${esc(d.period)}</small></div></div><div class="declaration-state"><span class="status ${statusClass(d.status)}">${esc(humanStatus(d.status))}</span><small>Creada ${date(d.created_at)}</small></div><div class="declaration-amount"><small>Saldo</small><strong>${money(d.balance_due_cop)}</strong></div><div class="declaration-action">${declarationActions(d)}</div></article>`).join("")}</div>`:'<div class="empty-state"><span class="empty-state-icon">${icon("declarations")}</span><h3>Aún no tienes declaraciones</h3><p>Empieza una liquidación ICA o RETEICA para crear tu primer borrador.</p><div class="actions"><button class="btn" data-route="ica">Crear ICA</button><button class="btn secondary" data-route="reteica">Crear RETEICA</button></div></div>'}
+  </section>`;
 }
+
 function declarationActions(d:any){
   if(d.status==="DRAFT"||d.status==="IDENTITY_VERIFIED") return `<button class="btn small" data-prepare="${d.id}">Preparar firma</button>`;
-  if(d.status==="READY_TO_SIGN") return `<button class="btn small" data-sign="${d.id}">Firmar con MFA</button>`;
-  if(d.status==="PAYMENT_PENDING") return `<button class="btn small" data-pay="${d.id}">Solicitar pago</button>`;
-  return `<button class="btn ghost small" data-pdf="${d.id}">PDF</button>`;
+  if(d.status==="READY_TO_SIGN") return `<button class="btn small" data-sign="${d.id}">Firmar con SMS</button>`;
+  if(d.status==="PAYMENT_PENDING") return `<button class="btn small" data-pay="${d.id}">Autorizar pago</button>`;
+  return `<button class="btn ghost small" data-pdf="${d.id}">Descargar PDF</button>`;
 }
 
 async function viewPayments(){
@@ -328,108 +517,165 @@ async function viewPayments(){
     supabase.from("payments").select("*,declarations(tax_type,tax_year,period)").order("created_at",{ascending:false}),
     supabase.from("declarations").select("id,tax_type,tax_year,period,balance_due_cop,status").eq("status","PAYMENT_PENDING")
   ]);
-  return `<div class="page-head"><div><div class="kicker">Recaudo</div><h1>Pagos y conciliación</h1><p>Los pagos definitivos solo avanzarán después de confirmación server-to-server de la pasarela y conciliación. El navegador nunca marca un impuesto como pagado por sí solo.</p></div></div>
-  <div class="note warn mb"><strong>Integración comercial pendiente:</strong> todavía no hay credenciales de una pasarela PSE/tarjetas asociadas al Municipio. Puedes generar la solicitud y referencia; el cobro real permanecerá bloqueado hasta conectar el proveedor.</div>
-  ${decls?.length?`<section class="card mb"><h2>Declaraciones pendientes de pago</h2><div class="actions">${decls.map((d:any)=>`<button class="btn" data-pay="${d.id}">${d.tax_type} ${d.period} · ${money(d.balance_due_cop)}</button>`).join("")}</div></section>`:""}
-  <section class="card"><h2>Solicitudes de pago</h2>${reqs?.length?tableRows(reqs.map((p:any)=>[`<strong>${esc(p.reference)}</strong>`,esc(p.declarations?.tax_type||""),money(p.amount_cop),`<span class="status ${statusClass(p.status)}">${humanStatus(p.status)}</span>`,date(p.created_at)]),["Referencia","Tributo","Valor","Estado","Fecha"]):'<div class="empty">Aún no hay solicitudes de pago.</div>'}</section>
-  ${paid?.length?`<section class="card mt"><h2>Pagos confirmados</h2>${tableRows(paid.map((p:any)=>[esc(p.reference),money(p.amount_cop),`<span class="status ok">${p.status}</span>`,date(p.verified_at)]),["Referencia","Valor","Estado","Verificado"])}</section>`:""}`;
+  return `<div class="page-head"><div><div class="kicker">Recaudo</div><h1>Pagos y conciliación</h1><p>La plataforma separa autorización del ciudadano, creación de referencia y confirmación bancaria. Un retorno del navegador nunca cambia por sí solo una obligación a “pagada”.</p></div><span class="status info">Control server-to-server</span></div>
+  <section class="payment-flow mb">
+    <div class="payment-flow-step done"><span>${icon("declarations")}</span><div><strong>Declaración</strong><small>Liquidación guardada</small></div></div>
+    <span class="flow-line"></span>
+    <div class="payment-flow-step active"><span>${icon("security")}</span><div><strong>Autorización SMS</strong><small>Segundo factor reciente</small></div></div>
+    <span class="flow-line"></span>
+    <div class="payment-flow-step"><span>${icon("payments")}</span><div><strong>Pasarela</strong><small>PSE / tarjetas</small></div></div>
+    <span class="flow-line"></span>
+    <div class="payment-flow-step"><span>${icon("check")}</span><div><strong>Confirmación</strong><small>Webhook + conciliación</small></div></div>
+  </section>
+  <div class="integration-banner mb"><span class="integration-banner-icon">${icon("payments")}</span><div><strong>El flujo de recaudo está preparado; faltan credenciales bancarias.</strong><p>Hacienda Conecta ya genera referencias y exige SMS antes del pago. La transacción monetaria real se habilita cuando el Municipio conecte la pasarela y entregue sus credenciales/webhook.</p></div><span class="status warn">Conexión externa</span></div>
+  ${decls?.length?`<section class="card mb"><div class="section-title"><div><div class="kicker">Acción requerida</div><h2>Declaraciones listas para pagar</h2></div></div><div class="payable-grid">${decls.map((d:any)=>`<article class="payable-card"><span class="module-icon">${icon("payments")}</span><div><small>${esc(d.tax_type)} · ${esc(d.period)}</small><strong>${money(d.balance_due_cop)}</strong><span>Vigencia ${d.tax_year}</span></div><button class="btn small" data-pay="${d.id}">Autorizar pago</button></article>`).join("")}</div></section>`:""}
+  <div class="grid cols-2">
+    <section class="card"><div class="section-title"><div><div class="kicker">Referencias</div><h2>Solicitudes de pago</h2></div><span class="pill">${reqs?.length||0}</span></div>${reqs?.length?tableRows(reqs.map((p:any)=>[`<strong>${esc(p.reference)}</strong>`,esc(p.declarations?.tax_type||""),money(p.amount_cop),`<span class="status ${statusClass(p.status)}">${humanStatus(p.status)}</span>`,date(p.created_at)]),["Referencia","Tributo","Valor","Estado","Fecha"]):'<div class="empty">Aún no has generado referencias de pago.</div>'}</section>
+    <section class="card"><div class="section-title"><div><div class="kicker">Conciliación</div><h2>Pagos confirmados</h2></div><span class="pill">${paid?.length||0}</span></div>${paid?.length?tableRows(paid.map((p:any)=>[esc(p.reference),money(p.amount_cop),`<span class="status ok">${p.status}</span>`,date(p.verified_at)]),["Referencia","Valor","Estado","Verificado"]):'<div class="empty">Todavía no existen pagos confirmados por la pasarela.</div>'}</section>
+  </div>`;
 }
 
 async function viewSecurity(){
   if(!requireSession())return "";
-  const [aal,factors]=await Promise.all([
-    supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
-    supabase.auth.mfa.listFactors()
-  ]);
+  const [aal,factors]=await Promise.all([supabase.auth.mfa.getAuthenticatorAssuranceLevel(),supabase.auth.mfa.listFactors()]);
   const current=aal.data?.currentLevel||"aal1";
   const phone=((factors.data?.phone||[]) as any[]).find((f:any)=>f.status==="verified");
   const pendingPhone=((factors.data?.phone||[]) as any[]).find((f:any)=>f.status!=="verified");
   const suggestedPhone=phone?.phone || pendingPhone?.phone || profile?.phone_e164 || session?.user.user_metadata?.phone || "";
-  return `<div class="page-head"><div><div class="kicker">Identidad y firma electrónica</div><h1>Verificación por celular</h1><p>Tu acceso puede hacerse con Google o correo. Las acciones sensibles usan un segundo factor independiente: un código enviado al celular verificado.</p></div><span class="status ${phone?"ok":"warn"}">${phone?"CELULAR VERIFICADO":"CELULAR PENDIENTE"}</span></div>
-  <div class="grid cols-2">
-    <section class="card accent">
-      <div class="section-title"><div><div class="kicker">Segundo factor obligatorio</div><h2>${phone?"Celular vinculado":"Vincular celular"}</h2></div><span class="status ${current==="aal2"?"ok":"info"}">${current.toUpperCase()}</span></div>
+  const provider=session?.user.app_metadata?.provider||"email";
+  return `<div class="page-head"><div><div class="kicker">Identidad digital</div><h1>Seguridad, celular y firma</h1><p>El acceso y la autorización de operaciones sensibles se separan. Puedes entrar con Google o correo; firma y pagos requieren una validación adicional del celular.</p></div><div class="head-badges"><span class="status ${phone?"ok":"warn"}">${phone?icon("check")+" Celular verificado":"Celular pendiente"}</span><span class="pill">Sesión ${current.toUpperCase()}</span></div></div>
+  <div class="security-overview mb">
+    <article><span class="security-step-icon">${icon("registry")}</span><div><small>Primer factor</small><strong>${provider==="google"?"Google":"Correo / contraseña"}</strong><span>${esc(session?.user.email||"Cuenta autenticada")}</span></div><span class="status ok">Activo</span></article>
+    <article><span class="security-step-icon">${icon("security")}</span><div><small>Segundo factor</small><strong>${phone?"SMS al celular":"Pendiente de vincular"}</strong><span>${phone?esc(maskPhone(phone.phone||"")):"Necesario para operar"}</span></div><span class="status ${phone?"ok":"warn"}">${phone?"Verificado":"Pendiente"}</span></article>
+    <article><span class="security-step-icon">${icon("certificates")}</span><div><small>Firma documental</small><strong>SHA-256 + AAL2</strong><span>Evidencia vinculada al documento</span></div><span class="status info">Preparado</span></article>
+  </div>
+  <div class="security-layout">
+    <section class="card security-action-card">
+      <div class="section-title"><div><div class="kicker">Segundo factor</div><h2>${phone?"Celular protegido":"Vincula tu celular"}</h2></div><span class="security-phone-icon">SMS</span></div>
       ${phone
-        ? `<div class="metric"><div><div class="value" style="font-size:1.25rem">${esc(maskPhone(phone.phone||""))}</div><div class="label">Número protegido para firma y pago</div></div><div class="metric-icon">SMS</div></div>
-           <div class="note mt">Antes de <strong>firmar una declaración</strong> o <strong>crear una solicitud de pago</strong>, Hacienda Conecta enviará un código nuevo a este número. El código no sustituye el acceso con Google: funciona como segundo factor.</div>
-           <div class="actions mt"><button class="btn" id="mfaChallengeBtn">Enviar código SMS de prueba</button></div>`
-        : `<div class="note warn mb">Este paso es obligatorio para completar el Registro Tributario, firmar y autorizar pagos.</div>
-           <div class="field"><label>Número celular</label><input class="input" id="phoneMfaInput" value="${esc(suggestedPhone)}" placeholder="+573001234567" autocomplete="tel"><span class="hint">Formato internacional Colombia: +57 seguido del número, sin espacios.</span></div>
-           <div class="actions mt"><button class="btn" id="phoneEnrollBtn">Enviar código SMS</button></div>`}
+        ? `<div class="verified-phone"><span>${icon("check")}</span><div><small>Número verificado</small><strong>${esc(maskPhone(phone.phone||""))}</strong></div></div><p class="security-copy">Antes de firmar o generar una referencia de pago te enviaremos un código nuevo. El código dura pocos minutos y eleva la sesión a AAL2.</p><button class="btn" id="mfaChallengeBtn">Enviar código de prueba</button>`
+        : `<div class="note warn mb"><strong>Necesario para continuar.</strong> El Registro Tributario, la firma y el pago quedan bloqueados mientras no exista un teléfono verificado.</div><div class="field"><label>Número celular</label><input class="input" id="phoneMfaInput" value="${esc(suggestedPhone)}" placeholder="+573001234567" autocomplete="tel"><span class="hint">Formato Colombia: +57 seguido de 10 dígitos, sin espacios.</span></div><button class="btn mt" id="phoneEnrollBtn">Enviar código SMS</button>`}
       <div id="mfaBox" class="mt"></div>
     </section>
-    <section class="card"><h2>Cómo queda la seguridad</h2>
-      <div class="timeline">
-        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>1. Ingreso</strong><br><small>Google o correo/contraseña identifican la cuenta.</small></div></div>
-        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>2. Celular verificado</strong><br><small>El número queda enrolado como factor MFA de teléfono.</small></div></div>
-        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>3. Firma</strong><br><small>Se envía un SMS nuevo, se valida AAL2 y se firma el hash SHA-256 del documento.</small></div></div>
-        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>4. Pago</strong><br><small>Antes de generar la referencia de recaudo se exige otra validación SMS reciente.</small></div></div>
+    <section class="card"><div class="section-title"><div><div class="kicker">Cómo te protegemos</div><h2>Flujo de autorización</h2></div></div>
+      <div class="security-timeline">
+        <div><span class="timeline-index">1</span><div><strong>Acceso a la cuenta</strong><p>Google o correo identifican al usuario y crean la sesión inicial.</p></div></div>
+        <div><span class="timeline-index">2</span><div><strong>Celular verificado</strong><p>El número queda enrolado como factor MFA asociado a la cuenta.</p></div></div>
+        <div><span class="timeline-index">3</span><div><strong>Documento congelado</strong><p>Antes de firmar se calcula la huella SHA-256 de la declaración.</p></div></div>
+        <div><span class="timeline-index">4</span><div><strong>SMS de un solo uso</strong><p>Un código reciente eleva la sesión a AAL2 y autoriza la operación concreta.</p></div></div>
       </div>
     </section>
   </div>`;
 }
 
 async function viewCertificates(){
-  const publicVerify=`<section class="card"><div class="section-title"><div><div class="kicker">Consulta pública</div><h2>Verificar certificado</h2></div></div><form id="verifyCertForm" class="searchbox"><input class="input" name="token" placeholder="Token de verificación"><button class="btn">Verificar</button></form><div id="verifyCertResult" class="mt"></div></section>`;
-  if(!session)return `<div class="page-head"><div><div class="kicker">Documentos verificables</div><h1>Certificados Hacienda</h1><p>Consulta la autenticidad de un certificado mediante su token de verificación.</p></div></div>${publicVerify}`;
+  const publicVerify=`<section class="verification-card"><div class="verification-graphic"><span>${icon("certificates")}</span></div><div class="verification-body"><div class="kicker">Consulta pública</div><h2>Verifica un documento</h2><p>Ingresa el token impreso o usa el QR del certificado para comprobar su estado, serial y huella documental.</p><form id="verifyCertForm" class="verification-form"><input class="input" name="token" placeholder="Token de verificación" required><button class="btn">Verificar</button></form><div id="verifyCertResult" class="mt"></div></div></section>`;
+  if(!session)return `<div class="page-head"><div><div class="kicker">Documentos verificables</div><h1>Certificados Hacienda</h1><p>Comprueba la autenticidad de documentos emitidos digitalmente por Hacienda Conecta.</p></div></div>${publicVerify}`;
   const [{data:requests},{data:certs},{data:decls}]=await Promise.all([
     supabase.from("certificate_requests").select("*").order("submitted_at",{ascending:false}),
     supabase.from("certificates").select("*,declarations(tax_type,tax_year,period)").order("issued_at",{ascending:false}),
     supabase.from("declarations").select("id,tax_type,tax_year,period,status").in("status",["FILED","CERTIFICATE_AVAILABLE","PAID"])
   ]);
-  return `<div class="page-head"><div><div class="kicker">Documentos</div><h1>Certificados y constancias</h1><p>Solicita documentos, consulta su estado y verifica documentos emitidos mediante serial y huella.</p></div></div>
-  <div class="grid cols-2"><section class="card"><h2>Nueva solicitud</h2><form id="certRequestForm" class="stack"><select class="select" name="type"><option value="DECLARACION_PRESENTADA">Constancia de declaración presentada</option><option value="PAZ_Y_SALVO">Paz y salvo tributario</option><option value="CERTIFICADO_RETENCION">Certificado de retención</option></select><select class="select" name="declarationId"><option value="">Sin declaración asociada</option>${(decls||[]).map((d:any)=>`<option value="${d.id}">${d.tax_type} ${d.tax_year} · ${esc(d.period)}</option>`).join("")}</select><button class="btn">Radicar solicitud</button></form>${(decls||[]).filter((d:any)=>["FILED","CERTIFICATE_AVAILABLE"].includes(d.status)).length?`<hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><h3>Emisión automática habilitada</h3><p class="muted tiny">Las declaraciones ya radicadas pueden generar una constancia verificable de presentación.</p><div class="actions">${(decls||[]).filter((d:any)=>["FILED","CERTIFICATE_AVAILABLE"].includes(d.status)).map((d:any)=>`<button class="btn secondary small" data-issue-cert="${d.id}">${d.tax_type} ${d.tax_year} · ${esc(d.period)}</button>`).join("")}</div>`:""}</section>${publicVerify}</div>
-  <section class="card mt"><h2>Mis solicitudes</h2>${requests?.length?tableRows(requests.map((r:any)=>[esc(r.certificate_type),`<span class="status ${statusClass(r.status)}">${humanStatus(r.status)}</span>`,date(r.submitted_at)]),["Tipo","Estado","Fecha"]):'<div class="empty">No hay solicitudes.</div>'}</section>
-  ${certs?.length?`<section class="card mt"><h2>Certificados emitidos</h2>${tableRows(certs.map((c:any)=>[esc(c.serial),esc(c.type),date(c.issued_at),c.revoked_at?'<span class="status danger">Revocado</span>':'<span class="status ok">Vigente</span>']),["Serial","Tipo","Emisión","Estado"])}</section>`:""}`;
+  const issueable=(decls||[]).filter((d:any)=>["FILED","CERTIFICATE_AVAILABLE"].includes(d.status));
+  return `<div class="page-head"><div><div class="kicker">Documentos</div><h1>Certificados y constancias</h1><p>Solicita documentos, emite constancias disponibles y verifica certificados mediante serial, token y QR.</p></div><span class="status ok">${icon("check")} Verificación pública activa</span></div>
+  <div class="certificate-layout mb">
+    <section class="card">
+      <div class="section-title"><div><div class="kicker">Nueva solicitud</div><h2>Solicitar documento</h2></div></div>
+      <form id="certRequestForm" class="stack">
+        <div class="field"><label>Tipo de documento</label><select class="select" name="type"><option value="DECLARACION_PRESENTADA">Constancia de declaración presentada</option><option value="PAZ_Y_SALVO">Paz y salvo tributario</option><option value="CERTIFICADO_RETENCION">Certificado de retención</option></select></div>
+        <div class="field"><label>Declaración relacionada</label><select class="select" name="declarationId"><option value="">Sin declaración asociada</option>${(decls||[]).map((d:any)=>`<option value="${d.id}">${d.tax_type} ${d.tax_year} · ${esc(d.period)}</option>`).join("")}</select></div>
+        <button class="btn">Radicar solicitud</button>
+      </form>
+      ${issueable.length?`<div class="instant-issue"><div><strong>Emisión automática disponible</strong><small>Constancias para declaraciones ya radicadas.</small></div><div class="actions">${issueable.map((d:any)=>`<button class="btn ghost small" data-issue-cert="${d.id}">${d.tax_type} · ${esc(d.period)}</button>`).join("")}</div></div>`:""}
+    </section>
+    ${publicVerify}
+  </div>
+  <div class="grid cols-2">
+    <section class="card"><div class="section-title"><div><div class="kicker">Seguimiento</div><h2>Mis solicitudes</h2></div><span class="pill">${requests?.length||0}</span></div>${requests?.length?tableRows(requests.map((r:any)=>[esc(r.certificate_type),`<span class="status ${statusClass(r.status)}">${humanStatus(r.status)}</span>`,date(r.submitted_at)]),["Tipo","Estado","Fecha"]):'<div class="empty">No has radicado solicitudes de certificados.</div>'}</section>
+    <section class="card"><div class="section-title"><div><div class="kicker">Emitidos</div><h2>Documentos verificables</h2></div><span class="pill">${certs?.length||0}</span></div>${certs?.length?tableRows(certs.map((c:any)=>[esc(c.serial),esc(c.type),date(c.issued_at),c.revoked_at?'<span class="status danger">Revocado</span>':'<span class="status ok">Vigente</span>']),["Serial","Tipo","Emisión","Estado"]):'<div class="empty">Aún no hay certificados emitidos.</div>'}</section>
+  </div>`;
 }
-
 async function viewPredial(){
   if(!requireSession())return "";
-  const [{data:props},{data:reqs}]=await Promise.all([supabase.from("property_accounts").select("*").order("tax_year",{ascending:false}),supabase.from("paz_y_salvo_requests").select("*").order("submitted_at",{ascending:false})]);
-  return `<div class="page-head"><div><div class="kicker">Impuesto Predial</div><h1>Predial y paz y salvo</h1><p>El módulo ya está conectado a la base segura. La consulta oficial de saldos quedará habilitada en cuanto se conecte la fuente maestra catastral/predial del Municipio.</p></div><span class="status warn">Integración catastral pendiente</span></div>
-  <div class="grid cols-2"><section class="card"><h2>Mis predios</h2>${props?.length?tableRows(props.map((p:any)=>[esc(p.property_number),esc(p.address),String(p.tax_year),money(p.tax_balance_cop),`<button class="btn small" data-paz="${p.id}">Paz y salvo</button>`]),["Cuenta","Dirección","Vigencia","Saldo",""]):'<div class="empty">No hay predios asociados todavía. La base municipal/catastral aún no ha sido integrada.</div>'}</section><section class="card"><h2>Solicitudes de paz y salvo</h2>${reqs?.length?tableRows(reqs.map((r:any)=>[esc(r.request_type),`<span class="status ${statusClass(r.status)}">${humanStatus(r.status)}</span>`,date(r.submitted_at)]),["Tipo","Estado","Radicación"]):'<div class="empty">Sin solicitudes.</div>'}</section></div>`;
+  const [{data:props},{data:reqs}]=await Promise.all([
+    supabase.from("property_accounts").select("*").order("tax_year",{ascending:false}),
+    supabase.from("paz_y_salvo_requests").select("*").order("submitted_at",{ascending:false})
+  ]);
+  return `<div class="page-head"><div><div class="kicker">Impuesto Predial</div><h1>Predial y paz y salvo</h1><p>Consulta cuentas prediales asociadas a tu identificación y radica solicitudes de paz y salvo cuando la fuente maestra municipal esté conectada.</p></div><span class="status warn">Fuente catastral por integrar</span></div>
+  <div class="module-hero compact mb"><span class="module-hero-icon">${icon("predial")}</span><div><h2>Integración preparada</h2><p>La estructura de cuentas, saldos, sobretasa ambiental, sobretasa bomberil y solicitudes ya está en Supabase. No se muestran predios ficticios: el módulo espera la fuente oficial.</p></div><div class="module-hero-stat"><small>Cuentas asociadas</small><strong>${props?.length||0}</strong></div></div>
+  <div class="grid cols-2">
+    <section class="card"><div class="section-title"><div><div class="kicker">Patrimonio</div><h2>Mis predios</h2></div></div>${props?.length?`<div class="property-grid">${props.map((p:any)=>`<article class="property-card"><div class="property-head"><span class="module-icon">${icon("predial")}</span><div><strong>${esc(p.address)}</strong><small>Cuenta ${esc(p.property_number)}</small></div></div><div class="property-values"><div><span>Vigencia</span><b>${p.tax_year}</b></div><div><span>Saldo</span><b>${money(p.tax_balance_cop)}</b></div></div><button class="btn secondary small" data-paz="${p.id}">Solicitar paz y salvo</button></article>`).join("")}</div>`:'<div class="empty-state"><span class="empty-state-icon">${icon("predial")}</span><h3>Sin predios vinculados</h3><p>Cuando se conecte la fuente catastral municipal, tus cuentas aparecerán aquí automáticamente.</p></div>'}</section>
+    <section class="card"><div class="section-title"><div><div class="kicker">Documentos</div><h2>Solicitudes de paz y salvo</h2></div><span class="pill">${reqs?.length||0}</span></div>${reqs?.length?tableRows(reqs.map((r:any)=>[esc(r.request_type),`<span class="status ${statusClass(r.status)}">${humanStatus(r.status)}</span>`,date(r.submitted_at)]),["Tipo","Estado","Radicación"]):'<div class="empty">No hay solicitudes de paz y salvo.</div>'}</section>
+  </div>`;
 }
-
 async function viewAgreements(){
   if(!requireSession())return "";
   const {data}=await supabase.from("payment_agreements").select("*").order("created_at",{ascending:false});
-  return `<div class="page-head"><div><div class="kicker">Cartera</div><h1>Acuerdos de pago</h1><p>Radica una solicitud y conserva trazabilidad. El cálculo oficial de intereses/cuotas no se automatiza hasta cargar el reglamento de recaudo vigente.</p></div></div>
-  <div class="grid cols-2"><section class="card"><h2>Nueva solicitud</h2><form id="agreementForm" class="stack"><div class="field"><label>Tipo de deuda</label><select class="select" name="debt"><option>Predial</option><option>ICA</option><option>RETEICA</option><option>Otra renta</option></select></div><div class="field"><label>Capital adeudado</label><input class="input" type="number" min="1" name="principal" required></div><div class="field"><label>Número de cuotas solicitadas</label><input class="input" type="number" min="1" max="120" name="installments" value="12" required></div><button class="btn">Radicar solicitud</button></form><div class="note warn mt">La simulación oficial de intereses permanecerá bloqueada hasta parametrizar la norma de cartera vigente.</div></section><section class="card"><h2>Mis acuerdos</h2>${data?.length?tableRows(data.map((x:any)=>[esc(x.debt_type),money(x.principal_cop),String(x.requested_installments),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`]),["Deuda","Capital","Cuotas","Estado"]):'<div class="empty">No hay solicitudes.</div>'}</section></div>`;
+  return `<div class="page-head"><div><div class="kicker">Cartera</div><h1>Acuerdos de pago</h1><p>Radica solicitudes de facilidad de pago y consulta su estado. El cálculo oficial de intereses y plan de cuotas se habilita cuando Hacienda cargue el reglamento vigente.</p></div></div>
+  <div class="request-layout">
+    <section class="card request-form-card"><div class="panel-heading"><span class="panel-icon">${icon("agreements")}</span><div><h2>Nueva solicitud</h2><p>Indica la deuda y el plazo solicitado.</p></div></div><form id="agreementForm" class="stack"><div class="field"><label>Tipo de deuda</label><select class="select" name="debt"><option>Predial</option><option>ICA</option><option>RETEICA</option><option>Otra renta</option></select></div><div class="field"><label>Capital adeudado</label><div class="money-input"><span>$</span><input class="input" type="number" min="1" name="principal" required placeholder="0"></div></div><div class="field"><label>Número de cuotas solicitadas</label><input class="input" type="number" min="1" max="120" name="installments" value="12" required></div><button class="btn">Radicar solicitud</button></form><div class="normative-lock mt"><span>${icon("legal")}</span><div><strong>Simulación oficial protegida</strong><p>No se calculan intereses o garantías hasta parametrizar el reglamento de cartera vigente.</p></div></div></section>
+    <section class="card"><div class="section-title"><div><div class="kicker">Seguimiento</div><h2>Mis solicitudes</h2></div><span class="pill">${data?.length||0}</span></div>${data?.length?tableRows(data.map((x:any)=>[esc(x.debt_type),money(x.principal_cop),String(x.requested_installments),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`]),["Deuda","Capital","Cuotas","Estado"]):'<div class="empty-state"><span class="empty-state-icon">${icon("agreements")}</span><h3>Sin acuerdos radicados</h3><p>Completa el formulario para iniciar una solicitud.</p></div>'}</section>
+  </div>`;
 }
-
 async function viewRefunds(){
   if(!requireSession())return "";
   const {data}=await supabase.from("refund_requests").select("*").order("created_at",{ascending:false});
-  return `<div class="page-head"><div><div class="kicker">Devoluciones y compensaciones</div><h1>Solicitud de saldos a favor</h1><p>Radicación electrónica con expediente, soportes y estado. La decisión final corresponde a Hacienda y requiere revisión segregada.</p></div></div>
-  <div class="grid cols-2"><section class="card"><h2>Nueva solicitud</h2><form id="refundForm" class="stack"><select class="select" name="tax"><option>ICA</option><option>RETEICA</option><option>PREDIAL</option><option>OTRO</option></select><input class="input" name="year" type="number" value="2026" min="2021"><input class="input" name="amount" type="number" min="1" placeholder="Valor solicitado" required><textarea class="textarea" name="reason" placeholder="Fundamento de la solicitud" required></textarea><button class="btn">Guardar y radicar</button></form></section><section class="card"><h2>Mis solicitudes</h2>${data?.length?tableRows(data.map((x:any)=>[esc(x.tax_type),money(x.amount_cop),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`,date(x.created_at)]),["Tributo","Valor","Estado","Fecha"]):'<div class="empty">No hay solicitudes registradas.</div>'}</section></div>`;
+  return `<div class="page-head"><div><div class="kicker">Devoluciones y compensaciones</div><h1>Saldos a favor</h1><p>Radica una solicitud electrónica, conserva soportes y sigue el expediente hasta la decisión de Hacienda.</p></div></div>
+  <div class="request-layout">
+    <section class="card request-form-card"><div class="panel-heading"><span class="panel-icon">${icon("refunds")}</span><div><h2>Nueva solicitud</h2><p>Describe el saldo y el fundamento de la petición.</p></div></div><form id="refundForm" class="stack"><div class="form-grid"><div class="field"><label>Tributo</label><select class="select" name="tax"><option>ICA</option><option>RETEICA</option><option>PREDIAL</option><option>OTRO</option></select></div><div class="field"><label>Vigencia</label><input class="input" name="year" type="number" value="2026" min="2021"></div></div><div class="field"><label>Valor solicitado</label><div class="money-input"><span>$</span><input class="input" name="amount" type="number" min="1" required placeholder="0"></div></div><div class="field"><label>Fundamento</label><textarea class="textarea" name="reason" placeholder="Explica el origen del saldo a favor y la solicitud" required></textarea></div><button class="btn">Guardar y radicar</button></form></section>
+    <section class="card"><div class="section-title"><div><div class="kicker">Expedientes</div><h2>Mis solicitudes</h2></div><span class="pill">${data?.length||0}</span></div>${data?.length?tableRows(data.map((x:any)=>[esc(x.tax_type),money(x.amount_cop),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`,date(x.created_at)]),["Tributo","Valor","Estado","Fecha"]):'<div class="empty-state"><span class="empty-state-icon">${icon("refunds")}</span><h3>Sin solicitudes</h3><p>Las devoluciones o compensaciones que radiques aparecerán aquí.</p></div>'}</section>
+  </div>`;
 }
 async function viewAudit(){
   if(!requireSession())return "";
   const {data}=await supabase.from("audit_cases").select("*").order("opened_at",{ascending:false});
-  return `<div class="page-head"><div><div class="kicker">Fiscalización</div><h1>Expedientes y actuaciones</h1><p>Consulta actuaciones de fiscalización asociadas a tu identificación tributaria. La información está sometida a reserva tributaria.</p></div></div><section class="card">${data?.length?tableRows(data.map((x:any)=>[esc(x.case_number),esc(x.tax_type),esc(x.current_stage),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`,date(x.opened_at)]),["Expediente","Tributo","Etapa","Estado","Apertura"]):'<div class="empty">No existen actuaciones de fiscalización asociadas a tu cuenta.</div>'}</section>`;
+  return `<div class="page-head"><div><div class="kicker">Fiscalización</div><h1>Expedientes y actuaciones</h1><p>Consulta actuaciones asociadas a tu identificación tributaria. La información se presenta dentro de un entorno sujeto a reserva y control de acceso.</p></div><span class="status info">${icon("security")} Información reservada</span></div>
+  <section class="module-hero compact mb"><span class="module-hero-icon">${icon("audit")}</span><div><h2>Expediente tributario digital</h2><p>Requerimientos, pruebas, respuestas y decisiones se organizan por caso para mantener trazabilidad cronológica.</p></div><div class="module-hero-stat"><small>Casos abiertos</small><strong>${(data||[]).filter((x:any)=>x.status!=="CLOSED").length}</strong></div></section>
+  <section class="card"><div class="section-title"><div><div class="kicker">Actuaciones</div><h2>Mis expedientes</h2></div><span class="pill">${data?.length||0}</span></div>${data?.length?tableRows(data.map((x:any)=>[esc(x.case_number),esc(x.tax_type),esc(x.current_stage),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`,date(x.opened_at)]),["Expediente","Tributo","Etapa","Estado","Apertura"]):'<div class="empty-state"><span class="empty-state-icon">${icon("audit")}</span><h3>Sin actuaciones vigentes</h3><p>No existen expedientes de fiscalización asociados a tu cuenta.</p></div>'}</section>`;
 }
 async function viewRevenues(){
   const {data}=await supabase.from("revenue_catalog").select("*").order("implementation_phase").order("name");
-  return `<div class="page-head"><div><div class="kicker">Catálogo municipal</div><h1>Impuestos, tasas, contribuciones y estampillas</h1><p>Inventario funcional derivado del Estatuto Tributario municipal. Cada renta se activa únicamente cuando sus reglas estén consolidadas y validadas.</p></div></div><section class="card">${tableRows((data||[]).map((x:any)=>[esc(x.name),esc(x.category),`Fase ${x.implementation_phase}`,`<span class="status ${statusClass(x.implementation_status)}">${humanStatus(x.implementation_status)}</span>`]),["Renta","Categoría","Fase","Estado"])}</section>`;
+  const items=data||[];
+  return `<div class="page-head"><div><div class="kicker">Catálogo municipal</div><h1>Rentas y servicios de Hacienda</h1><p>Inventario funcional de impuestos, tasas, sobretasas, contribuciones y estampillas contempladas por el marco municipal.</p></div><span class="pill">${items.length} conceptos catalogados</span></div>
+  <div class="revenue-summary mb"><div><strong>${items.filter((x:any)=>x.implementation_phase===1).length}</strong><span>Fase 1</span></div><div><strong>${items.filter((x:any)=>x.implementation_phase===2).length}</strong><span>Fase 2</span></div><div><strong>${items.filter((x:any)=>x.implementation_phase>=3).length}</strong><span>Catalogadas</span></div></div>
+  <section class="card"><div class="revenue-grid">${items.map((x:any)=>`<article class="revenue-card"><span class="revenue-icon">${icon(["IMPUESTO","RETENCION"].includes(x.category)?"ica":"revenues")}</span><div><small>${esc(x.category)}</small><strong>${esc(x.name)}</strong><span>Fase ${x.implementation_phase}</span></div><span class="status ${statusClass(x.implementation_status)}">${esc(humanStatus(x.implementation_status))}</span></article>`).join("")}</div></section>`;
 }
 async function viewLegal(){
-  const [{data:sources},{data:params},{data:calendar}]=await Promise.all([supabase.from("legal_sources").select("*").order("norm_year",{ascending:false}),supabase.from("tax_parameters").select("*").eq("tax_year",2026).order("key"),supabase.from("filing_calendar").select("*").eq("tax_year",2026)]);
-  return `<div class="page-head"><div><div class="kicker">Gobernanza de reglas</div><h1>Normativa y parámetros 2026</h1><p>El motor no inventa vigencias: cada parámetro conserva su referencia jurídica y estado de validación.</p></div></div>
-  <div class="grid cols-2"><section class="card"><h2>Parámetros activos</h2>${tableRows((params||[]).map((x:any)=>[esc(x.key),x.numeric_value!==null?esc(x.numeric_value):esc(x.text_value),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`,esc(x.legal_reference)]),["Parámetro","Valor","Estado","Fuente"])}</section><section class="card"><h2>Calendario tributario 2026</h2>${calendar?.length?tableRows(calendar.map((x:any)=>[esc(x.tax_type),esc(x.period),date(x.due_date),esc(x.legal_reference)]),["Tributo","Período","Vence","Fuente"]):'<div class="note warn">Aún no se ha cargado el acto administrativo del calendario tributario 2026. El sistema bloquea la invención automática de vencimientos.</div>'}</section></div>
-  <section class="card mt"><h2>Fuentes jurídicas registradas</h2>${tableRows((sources||[]).map((x:any)=>[`${esc(x.norm_type)} ${esc(x.norm_number||"")} de ${x.norm_year||""}`,esc(x.title),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`,x.source_url?`<a href="${esc(x.source_url)}" target="_blank" rel="noopener">Fuente oficial</a>`:"Fuente suministrada"]),["Norma","Objeto","Estado","Fuente"])}</section>`;
+  const [{data:sources},{data:params},{data:calendar}]=await Promise.all([
+    supabase.from("legal_sources").select("*").order("norm_year",{ascending:false}),
+    supabase.from("tax_parameters").select("*").eq("tax_year",2026).order("key"),
+    supabase.from("filing_calendar").select("*").eq("tax_year",2026)
+  ]);
+  return `<div class="page-head"><div><div class="kicker">Gobernanza tributaria</div><h1>Normativa y parámetros 2026</h1><p>Cada cálculo automático se apoya en parámetros versionados. Hacienda Conecta distingue fuentes localizadas, reglas validadas y bloqueos pendientes.</p></div><span class="status ok">${icon("check")} Motor auditable</span></div>
+  <div class="legal-hero mb"><span class="legal-hero-icon">${icon("legal")}</span><div><h2>Reglas antes que supuestos</h2><p>Una tarifa, vencimiento o beneficio solo pasa al motor cuando su fuente, vigencia y estado están registrados. Las diferencias normativas permanecen visibles en vez de resolverse por inferencia.</p></div><div class="legal-hero-param"><small>UVT 2026</small><strong>$52.374</strong><span>Res. DIAN 000238/2025</span></div></div>
+  <div class="grid cols-2 mb">
+    <section class="card"><div class="section-title"><div><div class="kicker">Motor</div><h2>Parámetros de la vigencia</h2></div></div>${tableRows((params||[]).map((x:any)=>[esc(x.key),x.numeric_value!==null?esc(x.numeric_value):esc(x.text_value),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`,esc(x.legal_reference)]),["Parámetro","Valor","Estado","Fuente"])}</section>
+    <section class="card"><div class="section-title"><div><div class="kicker">Vencimientos</div><h2>Calendario tributario 2026</h2></div></div>${calendar?.length?tableRows(calendar.map((x:any)=>[esc(x.tax_type),esc(x.period),date(x.due_date),esc(x.legal_reference)]),["Tributo","Período","Vence","Fuente"]):'<div class="normative-lock"><span>'+icon("security")+'</span><div><strong>Calendario pendiente de fuente oficial</strong><p>La plataforma no inventará fechas de vencimiento usando calendarios de otra vigencia.</p></div></div>'}</section>
+  </div>
+  <section class="card"><div class="section-title"><div><div class="kicker">Fuentes</div><h2>Registro jurídico</h2></div><span class="pill">${sources?.length||0} fuentes</span></div><div class="legal-source-grid">${(sources||[]).map((x:any)=>`<article class="legal-source"><span class="legal-source-year">${x.norm_year||"—"}</span><div><small>${esc(x.norm_type)} ${esc(x.norm_number||"")}</small><strong>${esc(x.title)}</strong><span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span></div>${x.source_url?`<a class="source-link" href="${esc(x.source_url)}" target="_blank" rel="noopener">Ver fuente ↗</a>`:'<span class="source-link muted">Fuente suministrada</span>'}</article>`).join("")}</div></section>`;
 }
 async function viewStaff(){
-  if(!profile||profile.role==="citizen")return '<div class="note danger">Esta sección requiere rol de funcionario de Hacienda.</div>';
-  const [{data:regs},{data:decls},{data:agreements},{data:refunds}]=await Promise.all([
+  if(!profile||profile.role==="citizen")return '<div class="note danger">Esta sección requiere rol autorizado de la Secretaría de Hacienda.</div>';
+  const [{data:regs},{data:decls},{data:agreements},{data:refunds},{data:integrations}]=await Promise.all([
     supabase.from("taxpayer_registrations").select("id,business_name,person_type,status,created_at").order("created_at",{ascending:false}).limit(50),
     supabase.from("declarations").select("id,tax_type,tax_year,period,status,balance_due_cop,created_at").order("created_at",{ascending:false}).limit(50),
     supabase.from("payment_agreements").select("*").order("created_at",{ascending:false}).limit(30),
-    supabase.from("refund_requests").select("*").order("created_at",{ascending:false}).limit(30)
+    supabase.from("refund_requests").select("*").order("created_at",{ascending:false}).limit(30),
+    supabase.from("system_integrations").select("*").order("code")
   ]);
-  return `<div class="page-head"><div><div class="kicker">Consola interna</div><h1>Gestión de Hacienda</h1><p>Vista operativa de consulta con segregación de funciones. Las acciones de aprobación se habilitarán por rol y flujo administrativo.</p></div><span class="status info">${esc(profile.role)}</span></div>
-  <div class="grid cols-4 mb">${metric("◎",regs?.length||0,"Registros recientes")}${metric("▤",decls?.length||0,"Declaraciones")}${metric("▦",agreements?.length||0,"Acuerdos")}${metric("↶",refunds?.length||0,"Devoluciones")}</div>
-  <section class="card"><h2>Declaraciones recientes</h2>${tableRows((decls||[]).map((d:any)=>[esc(d.tax_type),`${d.tax_year} · ${esc(d.period)}`,money(d.balance_due_cop),`<span class="status ${statusClass(d.status)}">${humanStatus(d.status)}</span>`,date(d.created_at)]),["Tipo","Período","Saldo","Estado","Fecha"])}</section>`;
+  return `<div class="page-head"><div><div class="kicker">Consola interna</div><h1>Gestión operativa de Hacienda</h1><p>Bandejas de consulta con segregación por rol, trazabilidad y acceso a estados del contribuyente.</p></div><span class="status info">${esc(humanStatus(profile.role))}</span></div>
+  <div class="metric-grid mb">
+    ${metric("registry",regs?.length||0,"Registros recientes","Últimos perfiles consultables")}
+    ${metric("declarations",decls?.length||0,"Declaraciones","Actividad reciente")}
+    ${metric("agreements",agreements?.length||0,"Acuerdos","Solicitudes en base")}
+    ${metric("refunds",refunds?.length||0,"Devoluciones","Expedientes registrados")}
+  </div>
+  <section class="card mb"><div class="section-title"><div><div class="kicker">Infraestructura</div><h2>Estado de integraciones</h2><p class="section-desc">Visibilidad operativa de servicios que dependen de proveedores externos.</p></div></div>
+    <div class="integration-grid">${(integrations||[]).map((x:any)=>`<article class="integration-card"><span class="integration-dot ${x.status==="ACTIVE"?"active":"pending"}"></span><div><strong>${esc(x.display_name)}</strong><small>${esc(x.provider||"Servicio")}</small><p>${esc(x.notes||"")}</p></div><span class="status ${x.status==="ACTIVE"?"ok":"warn"}">${esc(humanStatus(x.status))}</span></article>`).join("")}</div>
+  </section>
+  <section class="card"><div class="section-title"><div><div class="kicker">Operación</div><h2>Declaraciones recientes</h2></div></div>${tableRows((decls||[]).map((d:any)=>[esc(d.tax_type),`${d.tax_year} · ${esc(d.period)}`,money(d.balance_due_cop),`<span class="status ${statusClass(d.status)}">${humanStatus(d.status)}</span>`,date(d.created_at)]),["Tipo","Período","Saldo","Estado","Fecha"])}</section>`;
 }
+
 function tableRows(rows:string[][],headers:string[]){
   return `<div class="table-wrap"><table class="table"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
@@ -449,29 +695,134 @@ function bindView(which:string){
 }
 
 function bindRegistry(){
+  const form=document.querySelector<HTMLFormElement>("#registryForm");
+  if(!form) return;
+
+  const updateWizard=(step:number)=>{
+    registryStep=Math.max(1,Math.min(4,step));
+    form.querySelectorAll<HTMLElement>("[data-reg-panel]").forEach(panel=>panel.classList.toggle("active",Number(panel.dataset.regPanel)===registryStep));
+    form.querySelectorAll<HTMLElement>("[data-reg-step]").forEach(btn=>{
+      const n=Number(btn.dataset.regStep);
+      btn.classList.toggle("active",n===registryStep);
+      btn.classList.toggle("done",n<registryStep);
+      const badge=btn.querySelector(":scope > span");
+      if(badge) badge.innerHTML=n<registryStep?icon("check"):String(n);
+    });
+    form.querySelectorAll<HTMLElement>(".wizard-line").forEach((line,i)=>line.classList.toggle("done",i<registryStep-1));
+    if(registryStep===4) renderRegistryReview(form);
+    form.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+
+  const validateStep=(step:number)=>{
+    const panel=form.querySelector<HTMLElement>(`[data-reg-panel="${step}"]`);
+    if(!panel) return true;
+    const controls=[...panel.querySelectorAll<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>("input,select,textarea")].filter(x=>!x.disabled);
+    for(const control of controls){
+      if(!control.checkValidity()){control.reportValidity();return false;}
+    }
+    if(step===2){
+      if(!selectedRegistryActivities.length){toast("Selecciona al menos una actividad económica.","warn");return false;}
+      if(selectedRegistryActivities.filter(a=>a.primary).length!==1){toast("Debe existir exactamente una actividad económica principal.","warn");return false;}
+    }
+    if(step===3){
+      const personType=(form.elements.namedItem("personType") as HTMLSelectElement)?.value;
+      const repName=(form.elements.namedItem("repName") as HTMLInputElement)?.value.trim();
+      const repDoc=(form.elements.namedItem("repDoc") as HTMLInputElement)?.value.trim();
+      const repEmail=(form.elements.namedItem("repEmail") as HTMLInputElement)?.value.trim();
+      if(personType==="JURIDICA" && (!repName||!repDoc||!repEmail)){
+        toast("Para persona jurídica completa representante legal, documento y correo.","warn");
+        return false;
+      }
+    }
+    return true;
+  };
+
+  form.querySelectorAll<HTMLElement>("[data-reg-step]").forEach(btn=>btn.addEventListener("click",()=>{
+    const target=Number(btn.dataset.regStep);
+    if(target<=registryStep || validateStep(registryStep)) updateWizard(target);
+  }));
+  form.querySelectorAll<HTMLElement>("[data-reg-next]").forEach(btn=>btn.addEventListener("click",()=>{if(validateStep(registryStep))updateWizard(registryStep+1);}));
+  form.querySelectorAll<HTMLElement>("[data-reg-prev]").forEach(btn=>btn.addEventListener("click",()=>updateWizard(registryStep-1)));
+
   const search=async()=>{
-    const q=(document.querySelector<HTMLInputElement>("#ciiuSearch")?.value||"").trim(); if(q.length<2)return;
+    const q=(document.querySelector<HTMLInputElement>("#ciiuSearch")?.value||"").trim();
+    if(q.length<2){toast("Escribe al menos 2 caracteres para buscar.","warn");return;}
     const {data,error}=await supabase.from("ica_tariffs").select("ciiu,activity,rate_per_thousand").or(`ciiu.eq.${q},activity.ilike.%${q}%`).limit(20);
     if(error){toast(error.message,"error");return;}
-    const box=document.querySelector("#ciiuResults")!; box.innerHTML=`<div class="ciiu-results">${(data||[]).map((x:any)=>`<div class="ciiu-item" data-ciiu-add="${x.ciiu}" data-activity="${esc(x.activity)}"><strong>${x.ciiu}</strong>${esc(x.activity)} · ${x.rate_per_thousand}‰</div>`).join("")||'<div class="empty">Sin resultados</div>'}</div>`;
+    const box=document.querySelector("#ciiuResults")!;
+    box.innerHTML=`<div class="ciiu-results">${(data||[]).map((x:any)=>`<button type="button" class="ciiu-item" data-ciiu-add="${x.ciiu}" data-activity="${esc(x.activity)}"><span class="ciiu-code">${x.ciiu}</span><span class="ciiu-copy"><strong>${esc(x.activity)}</strong><small>Tarifa ${x.rate_per_thousand}‰</small></span><span class="ciiu-add">+</span></button>`).join("")||'<div class="empty">No encontramos actividades con ese criterio.</div>'}</div>`;
     box.querySelectorAll<HTMLElement>("[data-ciiu-add]").forEach(el=>el.onclick=()=>{
-      if(!selectedRegistryActivities.some(a=>a.ciiu===el.dataset.ciiu)){selectedRegistryActivities.push({ciiu:el.dataset.ciiu!,activity:el.dataset.activity||"",primary:selectedRegistryActivities.length===0});}
-      refreshActivities(); box.innerHTML="";
+      if(!selectedRegistryActivities.some(a=>a.ciiu===el.dataset.ciiu)){
+        selectedRegistryActivities.push({ciiu:el.dataset.ciiu!,activity:el.dataset.activity||"",primary:selectedRegistryActivities.length===0});
+        refreshActivities();
+        toast("Actividad agregada.");
+      }else toast("La actividad ya está seleccionada.","warn");
     });
   };
   document.querySelector("#ciiuSearchBtn")?.addEventListener("click",search);
   document.querySelector<HTMLInputElement>("#ciiuSearch")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();search();}});
   refreshActivities();
-  document.querySelector("#registryForm")?.addEventListener("submit",async(e)=>{
-    e.preventDefault(); if(!selectedRegistryActivities.length){toast("Selecciona al menos una actividad económica.","warn");return;}
-    const fd=new FormData(e.currentTarget as HTMLFormElement);
+  updateWizard(registryStep);
+
+  form.addEventListener("submit",async(e)=>{
+    e.preventDefault();
+    if(!validateStep(1)||!validateStep(2)||!validateStep(3)||!validateStep(4)){return;}
+    const fd=new FormData(form);
     const personType=String(fd.get("personType")||"NATURAL");
-    const payload:any={personType,documentType:String(fd.get("documentType")||""),documentNumber:String(fd.get("documentNumber")||""),fullNameOrBusinessName:String(fd.get("name")||""),email:String(fd.get("email")||""),phoneE164:String(fd.get("phone")||""),fiscalAddress:String(fd.get("address")||""),municipality:"San Pedro",department:"Valle del Cauca",economicActivities:selectedRegistryActivities.map(a=>({ciiu:a.ciiu,primary:a.primary})),dataPolicyAccepted:fd.get("policy")==="on",dataPolicyVersion:"2026-01"};
-    if(personType==="JURIDICA"&&fd.get("repName"))payload.representative={documentType:"CC",documentNumber:String(fd.get("repDoc")||""),fullName:String(fd.get("repName")||""),email:String(fd.get("repEmail")||"")};
-    if(fd.get("accName"))payload.accountant={documentNumber:String(fd.get("accDoc")||""),fullName:String(fd.get("accName")||""),professionalCard:String(fd.get("accCard")||"")};
-    try{await api(supabase.rpc("register_taxpayer",{p_data:payload}));toast("Registro Tributario guardado y protegido.");await loadProfile();render();}catch(err:any){toast(err.message,"error");}
+    const payload:any={
+      personType,
+      documentType:String(fd.get("documentType")||""),
+      documentNumber:String(fd.get("documentNumber")||""),
+      fullNameOrBusinessName:String(fd.get("name")||""),
+      email:String(fd.get("email")||""),
+      phoneE164:String(fd.get("phone")||""),
+      fiscalAddress:String(fd.get("address")||""),
+      municipality:"San Pedro",
+      department:"Valle del Cauca",
+      economicActivities:selectedRegistryActivities.map(a=>({ciiu:a.ciiu,primary:a.primary})),
+      dataPolicyAccepted:fd.get("policy")==="on",
+      dataPolicyVersion:"2026-01"
+    };
+    if(fd.get("repName")) payload.representative={
+      documentType:"CC",
+      documentNumber:String(fd.get("repDoc")||""),
+      fullName:String(fd.get("repName")||""),
+      email:String(fd.get("repEmail")||"")
+    };
+    if(fd.get("accName")) payload.accountant={
+      documentNumber:String(fd.get("accDoc")||""),
+      fullName:String(fd.get("accName")||""),
+      professionalCard:String(fd.get("accCard")||"")
+    };
+    const submit=form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    if(submit){submit.disabled=true;submit.textContent="Guardando…";}
+    try{
+      await api(supabase.rpc("register_taxpayer",{p_data:payload}));
+      toast("Registro Tributario guardado correctamente.");
+      registryStep=1;
+      await loadProfile();
+      render();
+    }catch(err:any){
+      toast(err.message||"No fue posible guardar el registro.","error");
+      if(submit){submit.disabled=false;submit.textContent="Guardar Registro Tributario";}
+    }
   });
 }
+
+function renderRegistryReview(form:HTMLFormElement){
+  const fd=new FormData(form);
+  const main=selectedRegistryActivities.find(a=>a.primary);
+  const box=document.querySelector("#registryReview");
+  if(!box)return;
+  const person=String(fd.get("personType")||"NATURAL")==="JURIDICA"?"Persona jurídica":"Persona natural";
+  box.innerHTML=`
+    <article class="review-card"><span class="review-icon">${icon("registry")}</span><div><small>Contribuyente</small><strong>${esc(String(fd.get("name")||"Sin nombre"))}</strong><span>${esc(person)} · ${esc(String(fd.get("documentType")||""))}</span></div></article>
+    <article class="review-card"><span class="review-icon">${icon("ica")}</span><div><small>Actividad principal</small><strong>${main?esc(main.ciiu):"—"}</strong><span>${main?esc(main.activity):"Sin actividad principal"}</span></div></article>
+    <article class="review-card"><span class="review-icon">${icon("security")}</span><div><small>Contacto verificado</small><strong>${esc(maskPhone(String(fd.get("phone")||"")))}</strong><span>${esc(String(fd.get("email")||""))}</span></div></article>
+    <article class="review-card"><span class="review-icon">${icon("staff")}</span><div><small>Responsables</small><strong>${fd.get("repName")?esc(String(fd.get("repName"))):"Sin representante adicional"}</strong><span>${fd.get("accName")?"Contador: "+esc(String(fd.get("accName"))):"Sin contador registrado"}</span></div></article>
+  `;
+}
+
 function refreshActivities(){
   const box=document.querySelector("#selectedActivities"); if(!box)return; box.innerHTML=renderSelectedActivities(false);
   box.querySelectorAll<HTMLElement>("[data-remove-act]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.removeAct);selectedRegistryActivities.splice(i,1);if(selectedRegistryActivities.length&&!selectedRegistryActivities.some(x=>x.primary)){const first=selectedRegistryActivities[0];if(first)first.primary=true;}refreshActivities();});
@@ -479,7 +830,10 @@ function refreshActivities(){
 }
 
 function bindIca(){
-  document.querySelector("#addIcaRow")?.addEventListener("click",()=>{document.querySelector("#icaRows")?.insertAdjacentHTML("beforeend",`<div class="form-grid ica-row"><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4"></div><div class="field"><label>Ingreso gravable</label><input class="input" data-income type="number" min="0"></div></div>`);});
+  document.querySelector("#addIcaRow")?.addEventListener("click",()=>{
+    const count=document.querySelectorAll(".ica-row").length+1;
+    document.querySelector("#icaRows")?.insertAdjacentHTML("beforeend",`<article class="calc-row ica-row"><span class="row-number">${count}</span><div class="field"><label>Código CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric"></div><div class="field grow"><label>Ingreso gravable en San Pedro</label><div class="money-input"><span>$</span><input class="input" data-income type="number" min="0"></div></div></article>`);
+  });
   document.querySelector("#calculateIca")?.addEventListener("click",async()=>{
     const activities=[...document.querySelectorAll<HTMLElement>(".ica-row")].map(r=>({ciiu:(r.querySelector<HTMLInputElement>("[data-ciiu]")?.value||"").trim(),taxableIncomeCop:Number(r.querySelector<HTMLInputElement>("[data-income]")?.value||0)})).filter(x=>x.ciiu);
     try{lastIcaCalculation=await api(supabase.rpc("calculate_ica",{p_activities:activities,p_apply_notices:(document.querySelector<HTMLInputElement>("#icaNotices")?.checked||false),p_tax_year:2026}));document.querySelector("#icaResult")!.innerHTML=renderIcaResult(lastIcaCalculation);(document.querySelector<HTMLButtonElement>("#saveIca")!).disabled=false;toast("Liquidación calculada.");}catch(err:any){toast(err.message,"error");}
@@ -490,7 +844,10 @@ function bindIca(){
   });
 }
 function bindReteica(){
-  document.querySelector("#addReteRow")?.addEventListener("click",()=>{document.querySelector("#reteRows")?.insertAdjacentHTML("beforeend",`<div class="form-grid rete-row"><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field full"><label>Base</label><input class="input" data-base type="number" min="0"></div></div>`);});
+  document.querySelector("#addReteRow")?.addEventListener("click",()=>{
+    const count=document.querySelectorAll(".rete-row").length+1;
+    document.querySelector("#reteRows")?.insertAdjacentHTML("beforeend",`<article class="calc-row rete-row"><span class="row-number">${count}</span><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field grow"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" data-base type="number" min="0"></div></div></article>`);
+  });
   document.querySelector("#calculateRete")?.addEventListener("click",async()=>{
     const transactions=[...document.querySelectorAll<HTMLElement>(".rete-row")].map(r=>({ciiu:(r.querySelector<HTMLInputElement>("[data-ciiu]")?.value||"").trim(),concept:(r.querySelector<HTMLSelectElement>("[data-concept]")?.value||"services"),baseCop:Number(r.querySelector<HTMLInputElement>("[data-base]")?.value||0)})).filter(x=>x.ciiu);
     try{lastReteicaCalculation=await api(supabase.rpc("calculate_reteica",{p_transactions:transactions,p_tax_year:2026}));document.querySelector("#reteResult")!.innerHTML=renderReteResult(lastReteicaCalculation);(document.querySelector<HTMLButtonElement>("#saveRete")!).disabled=false;toast("RETEICA calculado.");}catch(err:any){toast(err.message,"error");}
