@@ -913,6 +913,33 @@ export type Database = {
           },
         ]
       }
+      system_integrations: {
+        Row: {
+          code: string
+          display_name: string
+          last_checked_at: string
+          notes: string | null
+          provider: string | null
+          status: string
+        }
+        Insert: {
+          code: string
+          display_name: string
+          last_checked_at?: string
+          notes?: string | null
+          provider?: string | null
+          status: string
+        }
+        Update: {
+          code?: string
+          display_name?: string
+          last_checked_at?: string
+          notes?: string | null
+          provider?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       tax_parameters: {
         Row: {
           created_at: string
