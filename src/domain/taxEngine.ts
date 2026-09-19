@@ -22,6 +22,7 @@ export type IcaCalculation = {
   minimumTaxCop: number;
   icaCop: number;
   noticesAndBoardsCop: number;
+  minimumAdjustmentCop: number;
   totalBeforeCreditsCop: number;
 };
 
@@ -43,7 +44,7 @@ export function calculateIca(params: {
       throw new Error("Los ingresos gravables deben ser mayores o iguales a cero.");
     }
     const rule = params.tariffs.get(input.ciiu);
-    if (!rule) throw new Error(`No existe tarifa validada para CIIU ${input.ciiu}.`);
+    if (!rule) throw new Error("No existe tarifa validada para CIIU " + input.ciiu + ".");
 
     const taxCop = roundToNearestThousand(
       input.taxableIncomeCop * (rule.ratePerThousand / 1000)
@@ -59,22 +60,29 @@ export function calculateIca(params: {
   });
 
   const subtotalIcaCop = lines.reduce((sum, line) => sum + line.taxCop, 0);
+  const noticesAndBoardsCop = params.applyNoticesAndBoards
+    ? roundToNearestThousand(subtotalIcaCop * 0.15)
+    : 0;
+
+  // Art. 111 del Estatuto suministrado establece un mínimo equivalente a 2 UVT
+  // e indica que dicho mínimo incluye el complementario de Avisos y Tableros.
+  // Por ello el mínimo se aplica al total, no se usa como base para volver a cargar 15%.
+  const computedTotalCop = subtotalIcaCop + noticesAndBoardsCop;
   const minimumTaxCop =
     params.uvtValueCop > 0
       ? roundToNearestThousand(params.uvtValueCop * minimumTaxUvt)
       : 0;
-  const icaCop = Math.max(subtotalIcaCop, minimumTaxCop);
-  const noticesAndBoardsCop = params.applyNoticesAndBoards
-    ? roundToNearestThousand(icaCop * 0.15)
-    : 0;
+  const totalBeforeCreditsCop = Math.max(computedTotalCop, minimumTaxCop);
+  const minimumAdjustmentCop = Math.max(0, totalBeforeCreditsCop - computedTotalCop);
 
   return {
     lines,
     subtotalIcaCop,
     minimumTaxCop,
-    icaCop,
+    icaCop: subtotalIcaCop,
     noticesAndBoardsCop,
-    totalBeforeCreditsCop: icaCop + noticesAndBoardsCop
+    minimumAdjustmentCop,
+    totalBeforeCreditsCop
   };
 }
 
@@ -104,7 +112,7 @@ export function calculateReteIca(params: {
     }
 
     const rule = params.tariffs.get(tx.ciiu);
-    if (!rule) throw new Error(`No existe tarifa validada para CIIU ${tx.ciiu}.`);
+    if (!rule) throw new Error("No existe tarifa validada para CIIU " + tx.ciiu + ".");
 
     const threshold = tx.concept === "goods" ? goodsThreshold : servicesThreshold;
     const subjectToWithholding = tx.baseCop >= threshold;
