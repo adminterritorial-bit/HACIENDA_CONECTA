@@ -334,10 +334,18 @@ async function viewRegistry(){
   if(!requireSession()) return "";
   const phoneFactor=await getVerifiedPhoneFactor();
   if(!phoneFactor){
-    return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Primero verifica tu celular</h1><p>El número telefónico será el segundo factor para firma electrónica y autorización de pago.</p></div></div>
-    <section class="card accent"><div class="note warn"><strong>Registro bloqueado hasta verificar el teléfono.</strong><br>Ingresa tu celular, recibe el código SMS y confírmalo. Luego Hacienda Conecta permitirá diligenciar el Registro Tributario.</div><div class="actions mt"><button class="btn" data-route="security">Verificar mi celular</button></div></section>`;
+    return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Completa tu identidad digital</h1><p>Antes de registrar información tributaria debemos verificar el celular que usarás para firma y autorización de pagos.</p></div></div>
+    <section class="identity-gate">
+      <div class="identity-gate-icon">${icon("security")}</div>
+      <div><span class="status warn">Paso obligatorio</span><h2>Verifica tu número celular</h2><p>Recibirás un código SMS para vincular el número a tu cuenta. Después podrás completar el Registro Tributario y usar los servicios transaccionales.</p><div class="actions"><button class="btn" data-route="security">Verificar celular</button><button class="btn ghost" data-route="dashboard">Volver al inicio</button></div></div>
+      <div class="identity-gate-steps"><span class="done">${icon("check")} Cuenta</span><span class="active">2 · Celular</span><span>3 · Registro</span><span>4 · Operar</span></div>
+    </section>`;
   }
-  const {data:reg}=await supabase.from("taxpayer_registrations").select("*").eq("user_id",session!.user.id).maybeSingle();
+
+  const [{data:reg},{data:rels}]=await Promise.all([
+    supabase.from("taxpayer_registrations").select("*").eq("user_id",session!.user.id).maybeSingle(),
+    supabase.from("taxpayer_relationships").select("relation_type,related_name,related_email,professional_card").order("created_at",{ascending:false})
+  ]);
   const {data:acts}=reg?await supabase.from("taxpayer_activities").select("ciiu,is_primary").eq("registration_id",reg.id):{data:null};
   if(acts){
     const codes=(acts as any[]).map(a=>a.ciiu);
@@ -345,34 +353,74 @@ async function viewRegistry(){
     const names=new Map((catalog||[]).map((x:any)=>[x.ciiu,x.activity]));
     selectedRegistryActivities=(acts as any[]).map(a=>({ciiu:a.ciiu,activity:names.get(a.ciiu)||"",primary:a.is_primary}));
   }
-  const readonly=reg && reg.status!=="PENDING";
-  return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Identificación del contribuyente</h1><p>Consolida los datos necesarios para presentar declaraciones y operar trámites de Hacienda. Los documentos de identificación se almacenan como huellas criptográficas, no en texto plano.</p></div><span class="status ${statusClass(reg?.status||"PENDING")}">${esc(reg?.status||"SIN REGISTRO")}</span></div>
-  ${readonly?'<div class="note warn mb">El registro ya fue enviado a validación. Los campos tributarios quedan bloqueados para evitar alteraciones posteriores sin trazabilidad.</div>':""}
-  <form id="registryForm" class="card">
-    <div class="section-title"><h2>Datos generales</h2><span class="status info">RLS protegido</span></div>
-    <div class="form-grid">
-      <div class="field"><label>Tipo de persona</label><select class="select" name="personType" ${readonly?"disabled":""}><option value="NATURAL" ${reg?.person_type==="NATURAL"?"selected":""}>Persona natural</option><option value="JURIDICA" ${reg?.person_type==="JURIDICA"?"selected":""}>Persona jurídica</option></select></div>
-      <div class="field"><label>Tipo de identificación</label><select class="select" name="documentType" ${readonly?"disabled":""}><option>CC</option><option>NIT</option><option>CE</option><option>PASAPORTE</option></select></div>
-      <div class="field"><label>Número de identificación / NIT</label><input class="input" name="documentNumber" required placeholder="Se procesa para generar una huella SHA-256" ${readonly?"disabled":""}></div>
-      <div class="field"><label>Nombre completo / razón social</label><input class="input" name="name" required value="${esc(reg?.business_name||profile?.full_name||session!.user.user_metadata?.full_name||"")}" ${readonly?"disabled":""}></div>
-      <div class="field"><label>Correo</label><input class="input" type="email" name="email" required value="${esc(profile?.email||session!.user.email||"")}" ${readonly?"disabled":""}></div>
-      <div class="field"><label>Teléfono verificado para firma</label><input class="input" name="phone" readonly value="${esc(phoneFactor.phone||profile?.phone_e164||"")}"><span class="hint">Verificado por SMS · se utilizará para firma y autorización de pago.</span></div>
-      <div class="field full"><label>Dirección fiscal</label><input class="input" name="address" required value="${esc(reg?.fiscal_address||"")}" ${readonly?"disabled":""}></div>
+  const representative=(rels||[]).find((x:any)=>x.relation_type==="LEGAL_REPRESENTATIVE");
+  const accountant=(rels||[]).find((x:any)=>x.relation_type==="ACCOUNTANT");
+  const readonly=!!reg && reg.status!=="PENDING";
+  const currentStep=Math.max(1,Math.min(4,registryStep));
+
+  if(readonly){
+    return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Perfil tributario</h1><p>Tu información fue enviada a validación. Se conserva bloqueada para mantener integridad y trazabilidad.</p></div><span class="status ${statusClass(reg.status)}">${esc(humanStatus(reg.status))}</span></div>
+    <div class="profile-summary-grid">
+      <section class="card profile-identity"><div class="profile-avatar">${esc(userInitials())}</div><div><span class="kicker">Contribuyente</span><h2>${esc(reg.business_name)}</h2><p>${esc(reg.person_type==="JURIDICA"?"Persona jurídica":"Persona natural")} · San Pedro, Valle del Cauca</p></div><span class="verified-mark">${icon("check")} Datos registrados</span></section>
+      <section class="card"><div class="section-title"><h2>Contacto tributario</h2><span class="status ok">Celular verificado</span></div><div class="detail-list"><div><span>Correo</span><strong>${esc(profile?.email||session!.user.email||"—")}</strong></div><div><span>Celular</span><strong>${esc(maskPhone(phoneFactor.phone||profile?.phone_e164||""))}</strong></div><div><span>Dirección fiscal</span><strong>${esc(reg.fiscal_address)}</strong></div></div></section>
     </div>
-    <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
-    <div class="section-title"><div><h2>Actividades económicas</h2><span class="hint">Selecciona del catálogo municipal de 324 códigos.</span></div></div>
-    <div id="selectedActivities">${renderSelectedActivities(readonly)}</div>
-    ${readonly?"":`<div class="searchbox mt"><input id="ciiuSearch" class="input" placeholder="Buscar por CIIU o descripción"><button class="btn secondary" type="button" id="ciiuSearchBtn">Buscar</button></div><div id="ciiuResults"></div>`}
-    <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
-    <details><summary><strong>Representante legal y contador</strong> <span class="muted tiny">Opcional / según obligación</span></summary>
-      <div class="grid cols-2 mt">
-        <div class="card"><h3>Representante legal</h3><div class="stack"><input class="input" name="repName" placeholder="Nombre completo" ${readonly?"disabled":""}><input class="input" name="repDoc" placeholder="Documento" ${readonly?"disabled":""}><input class="input" type="email" name="repEmail" placeholder="Correo" ${readonly?"disabled":""}></div></div>
-        <div class="card"><h3>Contador</h3><div class="stack"><input class="input" name="accName" placeholder="Nombre completo" ${readonly?"disabled":""}><input class="input" name="accDoc" placeholder="Documento" ${readonly?"disabled":""}><input class="input" name="accCard" placeholder="Tarjeta profesional" ${readonly?"disabled":""}></div></div>
+    <section class="card mt"><div class="section-title"><div><div class="kicker">Actividades económicas</div><h2>Clasificación CIIU registrada</h2></div><span class="pill">${selectedRegistryActivities.length} actividades</span></div>${renderSelectedActivities(true)}</section>
+    <section class="card mt"><div class="section-title"><div><div class="kicker">Estado</div><h2>¿Qué sigue?</h2></div></div><div class="next-action-grid"><button class="next-action" data-route="ica"><span class="module-icon">${icon("ica")}</span><span><strong>Liquidar ICA</strong><small>Preparar declaración anual.</small></span>${icon("arrow")}</button><button class="next-action" data-route="declarations"><span class="module-icon">${icon("declarations")}</span><span><strong>Mis declaraciones</strong><small>Continuar borradores y firmas.</small></span>${icon("arrow")}</button><button class="next-action" data-route="certificates"><span class="module-icon">${icon("certificates")}</span><span><strong>Certificados</strong><small>Solicitar o verificar documentos.</small></span>${icon("arrow")}</button></div></section>`;
+  }
+
+  return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Crea tu perfil de contribuyente</h1><p>Completa la información en cuatro pasos. Puedes revisar todo antes de enviarlo a Hacienda.</p></div><span class="status info">Borrador seguro</span></div>
+  <form id="registryForm" class="wizard-card">
+    <div class="wizard-header">
+      <button type="button" class="wizard-step ${currentStep===1?"active":currentStep>1?"done":""}" data-reg-step="1"><span>${currentStep>1?icon("check"):"1"}</span><div><strong>Identificación</strong><small>Datos básicos</small></div></button>
+      <span class="wizard-line ${currentStep>1?"done":""}"></span>
+      <button type="button" class="wizard-step ${currentStep===2?"active":currentStep>2?"done":""}" data-reg-step="2"><span>${currentStep>2?icon("check"):"2"}</span><div><strong>Actividad</strong><small>Clasificación CIIU</small></div></button>
+      <span class="wizard-line ${currentStep>2?"done":""}"></span>
+      <button type="button" class="wizard-step ${currentStep===3?"active":currentStep>3?"done":""}" data-reg-step="3"><span>${currentStep>3?icon("check"):"3"}</span><div><strong>Responsables</strong><small>Representante y contador</small></div></button>
+      <span class="wizard-line ${currentStep>3?"done":""}"></span>
+      <button type="button" class="wizard-step ${currentStep===4?"active":""}" data-reg-step="4"><span>4</span><div><strong>Confirmación</strong><small>Revisar y enviar</small></div></button>
+    </div>
+
+    <section class="wizard-panel ${currentStep===1?"active":""}" data-reg-panel="1">
+      <div class="panel-heading"><span class="panel-icon">${icon("registry")}</span><div><h2>Identificación y contacto</h2><p>Información principal del contribuyente y domicilio fiscal.</p></div></div>
+      <div class="form-grid">
+        <div class="field"><label>Tipo de persona</label><select class="select" name="personType" required><option value="NATURAL" ${reg?.person_type==="NATURAL"?"selected":""}>Persona natural</option><option value="JURIDICA" ${reg?.person_type==="JURIDICA"?"selected":""}>Persona jurídica</option></select></div>
+        <div class="field"><label>Tipo de identificación</label><select class="select" name="documentType" required><option>CC</option><option>NIT</option><option>CE</option><option>PASAPORTE</option></select></div>
+        <div class="field"><label>Número de identificación / NIT</label><input class="input" name="documentNumber" required placeholder="Ej. 900123456-7"><span class="hint">La aplicación genera una huella criptográfica para identificación interna.</span></div>
+        <div class="field"><label>Nombre completo / razón social</label><input class="input" name="name" required value="${esc(reg?.business_name||profile?.full_name||session!.user.user_metadata?.full_name||"")}" placeholder="Nombre del contribuyente"></div>
+        <div class="field"><label>Correo electrónico</label><input class="input" type="email" name="email" required value="${esc(profile?.email||session!.user.email||"")}"></div>
+        <div class="field verified-field"><label>Celular verificado</label><div class="verified-input"><input class="input" name="phone" readonly value="${esc(phoneFactor.phone||profile?.phone_e164||"")}"><span>${icon("check")}</span></div><span class="hint">Segundo factor habilitado para firma y autorización de pagos.</span></div>
+        <div class="field full"><label>Dirección fiscal</label><input class="input" name="address" required value="${esc(reg?.fiscal_address||"")}" placeholder="Dirección completa en el municipio"></div>
       </div>
-    </details>
-    ${readonly?"":`<label class="checkbox mt"><input type="checkbox" name="policy" required><span>Autorizo el tratamiento de los datos necesarios para la gestión tributaria, conforme a la política vigente del Municipio y la finalidad del trámite.</span></label><div class="actions mt"><button class="btn" type="submit">Guardar Registro Tributario</button></div>`}
+      <div class="wizard-actions"><span></span><button class="btn" type="button" data-reg-next>Continuar a actividad económica ${icon("arrow")}</button></div>
+    </section>
+
+    <section class="wizard-panel ${currentStep===2?"active":""}" data-reg-panel="2">
+      <div class="panel-heading"><span class="panel-icon">${icon("ica")}</span><div><h2>Actividades económicas</h2><p>Busca y selecciona tus códigos CIIU. Debe existir exactamente una actividad principal.</p></div></div>
+      <div class="ciiu-search-card"><div class="searchbox"><input id="ciiuSearch" class="input" placeholder="Ej. 6201 o desarrollo de software"><button class="btn secondary" type="button" id="ciiuSearchBtn">Buscar CIIU</button></div><div id="ciiuResults"></div></div>
+      <div class="selected-block"><div class="section-title"><div><h3>Actividades seleccionadas</h3><span class="hint">Puedes cambiar la actividad principal antes de enviar.</span></div><span class="pill">${selectedRegistryActivities.length} seleccionadas</span></div><div id="selectedActivities">${renderSelectedActivities(false)}</div></div>
+      <div class="wizard-actions"><button class="btn ghost" type="button" data-reg-prev>Volver</button><button class="btn" type="button" data-reg-next>Continuar a responsables ${icon("arrow")}</button></div>
+    </section>
+
+    <section class="wizard-panel ${currentStep===3?"active":""}" data-reg-panel="3">
+      <div class="panel-heading"><span class="panel-icon">${icon("staff")}</span><div><h2>Responsables tributarios</h2><p>Registra representante legal o contador cuando corresponda a tu obligación.</p></div></div>
+      <div class="role-cards">
+        <article class="role-card"><div class="role-head"><span class="module-icon">${icon("registry")}</span><div><h3>Representante legal</h3><small>Obligatorio para persona jurídica</small></div></div><div class="stack"><div class="field"><label>Nombre completo</label><input class="input" name="repName" value="${esc(representative?.related_name||"")}" placeholder="Nombre del representante"></div><div class="field"><label>Documento</label><input class="input" name="repDoc" placeholder="Se almacenará como huella"></div><div class="field"><label>Correo</label><input class="input" type="email" name="repEmail" value="${esc(representative?.related_email||"")}" placeholder="correo@ejemplo.com"></div></div></article>
+        <article class="role-card"><div class="role-head"><span class="module-icon">${icon("declarations")}</span><div><h3>Contador</h3><small>Cuando exista obligación profesional</small></div></div><div class="stack"><div class="field"><label>Nombre completo</label><input class="input" name="accName" value="${esc(accountant?.related_name||"")}" placeholder="Nombre del contador"></div><div class="field"><label>Documento</label><input class="input" name="accDoc" placeholder="Se almacenará como huella"></div><div class="field"><label>Tarjeta profesional</label><input class="input" name="accCard" value="${esc(accountant?.professional_card||"")}" placeholder="Número de tarjeta"></div></div></article>
+      </div>
+      <div class="note mt"><strong>Importante:</strong> la plataforma conserva la relación y evidencia del responsable. Las reglas de obligatoriedad de firma de contador/revisor se validan por tipo de obligación antes de la presentación definitiva.</div>
+      <div class="wizard-actions"><button class="btn ghost" type="button" data-reg-prev>Volver</button><button class="btn" type="button" data-reg-next>Revisar información ${icon("arrow")}</button></div>
+    </section>
+
+    <section class="wizard-panel ${currentStep===4?"active":""}" data-reg-panel="4">
+      <div class="panel-heading"><span class="panel-icon">${icon("check")}</span><div><h2>Revisa antes de enviar</h2><p>Confirma que la información es correcta. El envío queda registrado con fecha y usuario.</p></div></div>
+      <div id="registryReview" class="review-grid"></div>
+      <label class="consent-card"><input type="checkbox" name="policy" required><span><strong>Autorización y declaración</strong><small>Autorizo el tratamiento de los datos necesarios para la gestión tributaria conforme a la política vigente y declaro que la información suministrada es correcta.</small></span></label>
+      <div class="security-confirm"><span>${icon("security")}</span><div><strong>Tu celular ya está verificado</strong><p>El número asociado se utilizará posteriormente para confirmar firma y pagos mediante códigos de un solo uso.</p></div></div>
+      <div class="wizard-actions"><button class="btn ghost" type="button" data-reg-prev>Volver</button><button class="btn" type="submit">Guardar Registro Tributario</button></div>
+    </section>
   </form>`;
 }
+
 function renderSelectedActivities(readonly=false){
   if(!selectedRegistryActivities.length)return '<div class="empty">Aún no has seleccionado actividades económicas.</div>';
   return `<div class="table-wrap"><table class="table"><thead><tr><th>CIIU</th><th>Actividad</th><th>Tipo</th><th></th></tr></thead><tbody>${selectedRegistryActivities.map((a,i)=>`<tr><td><strong>${esc(a.ciiu)}</strong></td><td>${esc(a.activity)}</td><td>${a.primary?'<span class="status ok">Principal</span>':'Secundaria'}</td><td class="right">${readonly?"":`<button type="button" class="btn ghost small" data-primary="${i}">Hacer principal</button> <button type="button" class="btn danger small" data-remove-act="${i}">Quitar</button>`}</td></tr>`).join("")}</tbody></table></div>`;
