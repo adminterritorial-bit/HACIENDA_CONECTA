@@ -5,15 +5,15 @@
   "type": "module",
   "description": "MVP seguro para trámites tributarios de la Secretaría de Hacienda de San Pedro, Valle del Cauca",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
+    "dev": "tsx watch server.ts",
+    "start": "tsx server.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   },
   "dependencies": {
     "@fastify/helmet": "^13.0.1",
