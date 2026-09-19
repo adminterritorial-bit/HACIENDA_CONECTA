@@ -27,6 +27,25 @@ const date = (v:any) => v ? new Intl.DateTimeFormat("es-CO",{dateStyle:"medium"}
 const statusClass = (s:string) => /APPROVED|PAID|FILED|ISSUED|VERIFIED|ACTIVE|AVAILABLE/i.test(s) ? "ok" : /REJECT|DECLIN|DEFAULT|CANCEL/i.test(s) ? "danger" : /PENDING|DRAFT|REVIEW|SUBMITTED|READY/i.test(s) ? "warn" : "info";
 const humanStatus = (s:any) => String(s||"").replaceAll("_"," ");
 const userInitials = () => (profile?.full_name || session?.user.email || "HC").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase();
+const appBaseUrl = () => {
+  const path = location.pathname.endsWith("/") ? location.pathname : location.pathname.replace(/[^/]*$/,"");
+  return location.origin + path;
+};
+const maskPhone = (phone:string) => {
+  if(!phone) return "—";
+  const clean=phone.replace(/\s+/g,"");
+  return clean.length>6 ? clean.slice(0,3)+"••••"+clean.slice(-4) : "••••";
+};
+async function getVerifiedPhoneFactor(){
+  if(!session) return null;
+  const {data,error}=await supabase.auth.mfa.listFactors();
+  if(error) throw error;
+  return (data.phone||[]).find((f:any)=>f.status==="verified") || null;
+}
+async function needsPhoneOnboarding(){
+  if(!session) return false;
+  try{return !(await getVerifiedPhoneFactor());}catch{return false;}
+}
 
 function toast(message:string,type:"ok"|"error"|"warn"="ok"){
   const n=document.createElement("div"); n.className="toast "+type; n.textContent=message; toastRegion.appendChild(n); setTimeout(()=>n.remove(),4500);
@@ -46,7 +65,13 @@ async function loadProfile(){
 }
 async function bootstrap(){
   const {data}=await supabase.auth.getSession(); session=data.session; await loadProfile();
-  supabase.auth.onAuthStateChange(async (_event,newSession)=>{session=newSession; await loadProfile(); render();});
+  if(session && route==="dashboard" && await needsPhoneOnboarding()){route="security";location.hash="security";}
+  supabase.auth.onAuthStateChange(async (_event,newSession)=>{
+    session=newSession;
+    await loadProfile();
+    if(session && route==="dashboard" && await needsPhoneOnboarding()){route="security";location.hash="security";}
+    render();
+  });
   addEventListener("hashchange",()=>{route=location.hash.replace("#","")||"dashboard";render();});
   render();
 }
@@ -110,6 +135,8 @@ function renderAuth(){
     <section class="auth-panel"><div class="auth-card">
       <div class="kicker">Acceso ciudadano</div><h2>${authMode==="login"?"Ingresar":"Crear cuenta"}</h2>
       <p class="muted">Tu sesión se gestiona mediante Supabase Auth y los datos tributarios se aíslan mediante Row Level Security.</p>
+      <button class="btn secondary" type="button" id="googleLoginBtn" style="width:100%;margin:14px 0 4px">G&nbsp;&nbsp;Continuar con Google</button>
+      <div class="hint" style="text-align:center;margin-bottom:12px">Google identifica tu cuenta. Para firmar y autorizar pagos se valida además tu celular por SMS.</div>
       <div class="auth-tabs"><button id="loginTab" class="${authMode==="login"?"active":""}">Ingresar</button><button id="signupTab" class="${authMode==="signup"?"active":""}">Registrarme</button></div>
       <form id="authForm" class="stack">
         ${authMode==="signup"?'<div class="field"><label>Nombre completo / razón social</label><input class="input" name="name" required autocomplete="name"></div>':""}
@@ -122,6 +149,15 @@ function renderAuth(){
       <button class="btn ghost mt" id="publicBtn">Continuar sin cuenta a servicios públicos</button>
     </div></section>
   </div>`;
+  document.querySelector("#googleLoginBtn")?.addEventListener("click",async()=>{
+    try{
+      const {error}=await supabase.auth.signInWithOAuth({
+        provider:"google",
+        options:{redirectTo:appBaseUrl()}
+      });
+      if(error) throw error;
+    }catch(err:any){toast(err.message||"No fue posible iniciar con Google.","error");}
+  });
   document.querySelector("#loginTab")!.addEventListener("click",()=>{authMode="login";renderAuth();});
   document.querySelector("#signupTab")!.addEventListener("click",()=>{authMode="signup";renderAuth();});
   document.querySelector("#publicBtn")!.addEventListener("click",()=>{route="dashboard";location.hash="dashboard";render();});
@@ -135,7 +171,7 @@ function renderAuth(){
       }else{
         const name=String(fd.get("name")||"").trim(), phone=String(fd.get("phone")||"").trim();
         const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name,phone}}}); if(error)throw error;
-        if(!data.session) toast("Cuenta creada. Revisa tu correo para confirmar el acceso.","warn"); else toast("Cuenta creada.");
+        if(!data.session) toast("Cuenta creada. Revisa tu correo para confirmar el acceso. Al ingresar verificaremos tu celular por SMS.","warn"); else {toast("Cuenta creada. Ahora verifica tu celular por SMS.");location.hash="security";}
       }
     }catch(err:any){toast(err.message||"No fue posible autenticar.","error");}
   });
@@ -201,6 +237,11 @@ function moduleCard(icon:string,title:string,desc:string,to:string,status:string
 
 async function viewRegistry(){
   if(!requireSession()) return "";
+  const phoneFactor=await getVerifiedPhoneFactor();
+  if(!phoneFactor){
+    return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Primero verifica tu celular</h1><p>El número telefónico será el segundo factor para firma electrónica y autorización de pago.</p></div></div>
+    <section class="card accent"><div class="note warn"><strong>Registro bloqueado hasta verificar el teléfono.</strong><br>Ingresa tu celular, recibe el código SMS y confírmalo. Luego Hacienda Conecta permitirá diligenciar el Registro Tributario.</div><div class="actions mt"><button class="btn" data-route="security">Verificar mi celular</button></div></section>`;
+  }
   const {data:reg}=await supabase.from("taxpayer_registrations").select("*").eq("user_id",session!.user.id).maybeSingle();
   const {data:acts}=reg?await supabase.from("taxpayer_activities").select("ciiu,is_primary").eq("registration_id",reg.id):{data:null};
   if(acts){
@@ -220,7 +261,7 @@ async function viewRegistry(){
       <div class="field"><label>Número de identificación / NIT</label><input class="input" name="documentNumber" required placeholder="Se procesa para generar una huella SHA-256" ${readonly?"disabled":""}></div>
       <div class="field"><label>Nombre completo / razón social</label><input class="input" name="name" required value="${esc(reg?.business_name||profile?.full_name||session!.user.user_metadata?.full_name||"")}" ${readonly?"disabled":""}></div>
       <div class="field"><label>Correo</label><input class="input" type="email" name="email" required value="${esc(profile?.email||session!.user.email||"")}" ${readonly?"disabled":""}></div>
-      <div class="field"><label>Teléfono internacional</label><input class="input" name="phone" required placeholder="+573001234567" value="${esc(profile?.phone_e164||session!.user.user_metadata?.phone||"")}" ${readonly?"disabled":""}></div>
+      <div class="field"><label>Teléfono verificado para firma</label><input class="input" name="phone" readonly value="${esc(phoneFactor.phone||profile?.phone_e164||"")}"><span class="hint">Verificado por SMS · se utilizará para firma y autorización de pago.</span></div>
       <div class="field full"><label>Dirección fiscal</label><input class="input" name="address" required value="${esc(reg?.fiscal_address||"")}" ${readonly?"disabled":""}></div>
     </div>
     <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
@@ -296,12 +337,35 @@ async function viewPayments(){
 
 async function viewSecurity(){
   if(!requireSession())return "";
-  const [aal,factors]=await Promise.all([supabase.auth.mfa.getAuthenticatorAssuranceLevel(),supabase.auth.mfa.listFactors()]);
-  const current=aal.data?.currentLevel||"aal1"; const verified=[...(factors.data?.totp||[]),...(factors.data?.phone||[])].filter((f:any)=>f.status==="verified");
-  return `<div class="page-head"><div><div class="kicker">Seguridad de firma</div><h1>Autenticación multifactor</h1><p>Las firmas de declaraciones exigen nivel AAL2. La evidencia queda vinculada al usuario, hash SHA-256 del documento y método de autenticación.</p></div><span class="status ${current==="aal2"?"ok":"warn"}">${current.toUpperCase()}</span></div>
+  const [aal,factors]=await Promise.all([
+    supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+    supabase.auth.mfa.listFactors()
+  ]);
+  const current=aal.data?.currentLevel||"aal1";
+  const phone=(factors.data?.phone||[]).find((f:any)=>f.status==="verified");
+  const pendingPhone=(factors.data?.phone||[]).find((f:any)=>f.status!=="verified");
+  const suggestedPhone=phone?.phone || pendingPhone?.phone || profile?.phone_e164 || session?.user.user_metadata?.phone || "";
+  return `<div class="page-head"><div><div class="kicker">Identidad y firma electrónica</div><h1>Verificación por celular</h1><p>Tu acceso puede hacerse con Google o correo. Las acciones sensibles usan un segundo factor independiente: un código enviado al celular verificado.</p></div><span class="status ${phone?"ok":"warn"}">${phone?"CELULAR VERIFICADO":"CELULAR PENDIENTE"}</span></div>
   <div class="grid cols-2">
-    <section class="card accent"><h2>Estado de tu segundo factor</h2><div class="metric"><div><div class="value">${verified.length}</div><div class="label">Factores verificados</div></div><div class="metric-icon">✓</div></div><div class="actions mt">${verified.length?'<button class="btn" id="mfaChallengeBtn">Elevar sesión a AAL2</button>':'<button class="btn" id="mfaEnrollBtn">Configurar Authenticator</button>'}</div><div id="mfaBox" class="mt"></div></section>
-    <section class="card"><h2>Qué protege la firma</h2><div class="timeline"><div class="timeline-item"><span class="timeline-dot"></span><div><strong>Documento congelado</strong><br><small>Se calcula SHA-256 antes de firmar.</small></div></div><div class="timeline-item"><span class="timeline-dot"></span><div><strong>Segundo factor</strong><br><small>Supabase MFA eleva la sesión a AAL2.</small></div></div><div class="timeline-item"><span class="timeline-dot"></span><div><strong>Evidencia</strong><br><small>Se registra firmante, AAL, AMR, fecha y hash.</small></div></div></div></section>
+    <section class="card accent">
+      <div class="section-title"><div><div class="kicker">Segundo factor obligatorio</div><h2>${phone?"Celular vinculado":"Vincular celular"}</h2></div><span class="status ${current==="aal2"?"ok":"info"}">${current.toUpperCase()}</span></div>
+      ${phone
+        ? `<div class="metric"><div><div class="value" style="font-size:1.25rem">${esc(maskPhone(phone.phone||""))}</div><div class="label">Número protegido para firma y pago</div></div><div class="metric-icon">SMS</div></div>
+           <div class="note mt">Antes de <strong>firmar una declaración</strong> o <strong>crear una solicitud de pago</strong>, Hacienda Conecta enviará un código nuevo a este número. El código no sustituye el acceso con Google: funciona como segundo factor.</div>
+           <div class="actions mt"><button class="btn" id="mfaChallengeBtn">Enviar código SMS de prueba</button></div>`
+        : `<div class="note warn mb">Este paso es obligatorio para completar el Registro Tributario, firmar y autorizar pagos.</div>
+           <div class="field"><label>Número celular</label><input class="input" id="phoneMfaInput" value="${esc(suggestedPhone)}" placeholder="+573001234567" autocomplete="tel"><span class="hint">Formato internacional Colombia: +57 seguido del número, sin espacios.</span></div>
+           <div class="actions mt"><button class="btn" id="phoneEnrollBtn">Enviar código SMS</button></div>`}
+      <div id="mfaBox" class="mt"></div>
+    </section>
+    <section class="card"><h2>Cómo queda la seguridad</h2>
+      <div class="timeline">
+        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>1. Ingreso</strong><br><small>Google o correo/contraseña identifican la cuenta.</small></div></div>
+        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>2. Celular verificado</strong><br><small>El número queda enrolado como factor MFA de teléfono.</small></div></div>
+        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>3. Firma</strong><br><small>Se envía un SMS nuevo, se valida AAL2 y se firma el hash SHA-256 del documento.</small></div></div>
+        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>4. Pago</strong><br><small>Antes de generar la referencia de recaudo se exige otra validación SMS reciente.</small></div></div>
+      </div>
+    </section>
   </div>`;
 }
 
@@ -440,38 +504,108 @@ function bindDeclarations(){
   document.querySelectorAll<HTMLElement>("[data-pdf]").forEach(b=>b.onclick=()=>downloadDeclarationPdf(b.dataset.pdf!));
 }
 function bindPayments(){document.querySelectorAll<HTMLElement>("[data-pay]").forEach(b=>b.onclick=()=>requestPayment(b.dataset.pay!));}
-async function requestPayment(id:string){try{await api(supabase.rpc("request_payment",{p_declaration_id:id}));toast("Referencia de pago generada. Queda pendiente conectar la pasarela real.");location.hash="payments";render();}catch(e:any){toast(e.message,"error");}}
+async function requestPayment(id:string){
+  try{
+    await withFreshPhoneMfa("Autorizar solicitud de pago",async()=>{
+      const paymentId=await api<string>(supabase.rpc("request_payment",{p_declaration_id:id}));
+      toast("Identidad confirmada. Referencia de pago generada.");
+      location.hash="payments";
+      render();
+    });
+  }catch(e:any){toast(e.message||"No fue posible iniciar el pago.","error");}
+}
 async function signDeclaration(id:string){
   try{
-    const aal=await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if(aal.data?.currentLevel!=="aal2"){toast("Debes elevar la sesión a AAL2 antes de firmar.","warn");location.hash="security";return;}
-    const {data:d,error}=await supabase.from("declarations").select("*").eq("id",id).single(); if(error)throw error;
-    const canonical=JSON.stringify({id:d.id,tax_type:d.tax_type,tax_year:d.tax_year,period:d.period,payload:d.payload,calculation:d.calculation,balance_due_cop:d.balance_due_cop});
-    const hash=await sha256(canonical);
-    const status=await api(supabase.rpc("sign_declaration",{p_declaration_id:id,p_document_sha256:hash,p_auth_method:"SUPABASE_MFA_AAL2"}));
-    toast("Declaración firmada. Estado: "+humanStatus(status));render();
-  }catch(e:any){toast(e.message,"error");}
+    await withFreshPhoneMfa("Firmar declaración",async()=>{
+      const {data:d,error}=await supabase.from("declarations").select("*").eq("id",id).single(); if(error)throw error;
+      const canonical=JSON.stringify({id:d.id,tax_type:d.tax_type,tax_year:d.tax_year,period:d.period,payload:d.payload,calculation:d.calculation,balance_due_cop:d.balance_due_cop});
+      const hash=await sha256(canonical);
+      const status=await api(supabase.rpc("sign_declaration",{p_declaration_id:id,p_document_sha256:hash,p_auth_method:"PHONE_SMS_MFA_AAL2"}));
+      toast("Código validado y declaración firmada. Estado: "+humanStatus(status));
+      render();
+    });
+  }catch(e:any){toast(e.message||"No fue posible firmar.","error");}
 }
 async function sha256(text:string){const bytes=new TextEncoder().encode(text);const hash=await crypto.subtle.digest("SHA-256",bytes);return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("");}
 
 function bindSecurity(){
-  document.querySelector("#mfaEnrollBtn")?.addEventListener("click",async()=>{
-    const box=document.querySelector("#mfaBox")!; box.innerHTML=spinner("Generando factor");
+  document.querySelector("#phoneEnrollBtn")?.addEventListener("click",async()=>{
+    const phone=(document.querySelector<HTMLInputElement>("#phoneMfaInput")?.value||"").replace(/\s+/g,"").trim();
+    if(!/^\+57\d{10}$/.test(phone)){toast("Usa el formato +57 seguido de 10 dígitos.","warn");return;}
+    const box=document.querySelector("#mfaBox")!;
+    box.innerHTML=spinner("Enviando código SMS");
     try{
-      const {data,error}=await supabase.auth.mfa.enroll({factorType:"totp",friendlyName:"Hacienda Conecta"}); if(error)throw error;
-      box.innerHTML=`<div class="stack"><div class="note">Escanea el código con tu aplicación autenticadora y escribe el código de 6 dígitos.</div><div style="background:#fff;padding:12px;border-radius:12px;width:max-content;max-width:100%"><img src="${esc(data.totp.qr_code)}" alt="Código QR MFA" style="max-width:230px;width:100%"></div><div class="codebox">Clave manual: ${esc(data.totp.secret)}</div><div class="searchbox"><input class="input" id="mfaCode" inputmode="numeric" maxlength="6" placeholder="000000"><button class="btn" id="mfaVerifyEnroll">Verificar</button></div></div>`;
-      document.querySelector("#mfaVerifyEnroll")?.addEventListener("click",()=>verifyMfa(data.id));
-    }catch(e:any){box.innerHTML=`<div class="note danger">${esc(e.message)}</div>`;}
+      const factor=await supabase.auth.mfa.enroll({factorType:"phone",phone,friendlyName:"Celular Hacienda Conecta"});
+      if(factor.error) throw factor.error;
+      const challenge=await supabase.auth.mfa.challenge({factorId:factor.data.id});
+      if(challenge.error) throw challenge.error;
+      renderPhoneCodeBox(box,factor.data.id,challenge.data.id,phone,async()=>{
+        toast("Celular verificado. Ya puedes completar el Registro Tributario.");
+        await supabase.auth.refreshSession();
+        await loadProfile();
+        location.hash="registry";
+      });
+    }catch(e:any){
+      box.innerHTML=`<div class="note danger"><strong>No fue posible enviar el SMS.</strong><br>${esc(e.message||e)}</div>`;
+    }
   });
+
   document.querySelector("#mfaChallengeBtn")?.addEventListener("click",async()=>{
-    const factors=await supabase.auth.mfa.listFactors(); const factor=[...(factors.data?.totp||[]),...(factors.data?.phone||[])].find((f:any)=>f.status==="verified"); if(!factor){toast("No existe un factor verificado.","warn");return;}
-    const box=document.querySelector("#mfaBox")!; box.innerHTML=`<div class="searchbox"><input class="input" id="mfaCode" inputmode="numeric" maxlength="6" placeholder="Código MFA"><button class="btn" id="mfaVerifyExisting">Verificar</button></div>`;
-    document.querySelector("#mfaVerifyExisting")?.addEventListener("click",()=>verifyMfa(factor.id));
+    try{
+      const factor=await getVerifiedPhoneFactor();
+      if(!factor){toast("No existe un celular verificado.","warn");return;}
+      const challenge=await supabase.auth.mfa.challenge({factorId:factor.id});
+      if(challenge.error) throw challenge.error;
+      const box=document.querySelector("#mfaBox")!;
+      renderPhoneCodeBox(box,factor.id,challenge.data.id,factor.phone||"",async()=>{
+        await supabase.auth.refreshSession();
+        toast("Código correcto. Sesión reforzada AAL2.");
+        render();
+      });
+    }catch(e:any){toast(e.message||"No fue posible enviar el código.","error");}
   });
 }
-async function verifyMfa(factorId:string){
-  const code=(document.querySelector<HTMLInputElement>("#mfaCode")?.value||"").trim(); if(code.length!==6){toast("Ingresa un código de 6 dígitos.","warn");return;}
-  try{const {data:challenge,error}=await supabase.auth.mfa.challenge({factorId});if(error)throw error;const {error:verifyError}=await supabase.auth.mfa.verify({factorId,challengeId:challenge.id,code});if(verifyError)throw verifyError;await supabase.auth.refreshSession();toast("Segundo factor verificado. Sesión AAL2 activa.");render();}catch(e:any){toast(e.message,"error");}
+
+function renderPhoneCodeBox(box:Element,factorId:string,challengeId:string,phone:string,onSuccess:()=>Promise<void>|void){
+  box.innerHTML=`<div class="stack"><div class="note"><strong>Código enviado a ${esc(maskPhone(phone))}</strong><br>Escribe el código recibido por SMS para verificar este dispositivo.</div><div class="searchbox"><input class="input" id="mfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Código SMS"><button class="btn" id="mfaVerifyPhone">Verificar</button></div></div>`;
+  document.querySelector("#mfaVerifyPhone")?.addEventListener("click",async()=>{
+    const code=(document.querySelector<HTMLInputElement>("#mfaCode")?.value||"").trim();
+    if(!/^\d{6,8}$/.test(code)){toast("Ingresa el código recibido por SMS.","warn");return;}
+    try{
+      const verify=await supabase.auth.mfa.verify({factorId,challengeId,code});
+      if(verify.error) throw verify.error;
+      await supabase.auth.refreshSession();
+      await onSuccess();
+    }catch(e:any){toast(e.message||"Código inválido o vencido.","error");}
+  });
+}
+
+async function withFreshPhoneMfa(actionLabel:string,onVerified:()=>Promise<void>){
+  const factor=await getVerifiedPhoneFactor();
+  if(!factor){
+    toast("Primero debes verificar tu celular.","warn");
+    location.hash="security";
+    return;
+  }
+  const challenge=await supabase.auth.mfa.challenge({factorId:factor.id});
+  if(challenge.error) throw challenge.error;
+  const overlay=document.createElement("div");
+  overlay.className="modal-backdrop";
+  overlay.innerHTML=`<div class="modal"><div class="kicker">Confirmación de identidad</div><h2>${esc(actionLabel)}</h2><p class="muted">Enviamos un código SMS a ${esc(maskPhone(factor.phone||""))}. Esta validación es independiente del ingreso con Google.</p><div class="field"><label>Código SMS</label><input class="input" id="sensitiveMfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" autofocus></div><div class="actions mt"><button class="btn" id="confirmSensitiveMfa">Confirmar</button><button class="btn ghost" id="cancelSensitiveMfa">Cancelar</button></div></div>`;
+  document.body.appendChild(overlay);
+  const close=()=>overlay.remove();
+  overlay.querySelector("#cancelSensitiveMfa")?.addEventListener("click",close);
+  overlay.querySelector("#confirmSensitiveMfa")?.addEventListener("click",async()=>{
+    const code=(overlay.querySelector<HTMLInputElement>("#sensitiveMfaCode")?.value||"").trim();
+    if(!/^\d{6,8}$/.test(code)){toast("Ingresa el código SMS.","warn");return;}
+    try{
+      const verified=await supabase.auth.mfa.verify({factorId:factor.id,challengeId:challenge.data.id,code});
+      if(verified.error) throw verified.error;
+      await supabase.auth.refreshSession();
+      close();
+      await onVerified();
+    }catch(e:any){toast(e.message||"Código inválido o vencido.","error");}
+  });
 }
 
 function bindCertificates(){
