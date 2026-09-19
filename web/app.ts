@@ -201,8 +201,13 @@ function moduleCard(icon:string,title:string,desc:string,to:string,status:string
 async function viewRegistry(){
   if(!requireSession()) return "";
   const {data:reg}=await supabase.from("taxpayer_registrations").select("*").eq("user_id",session!.user.id).maybeSingle();
-  const {data:acts}=reg?await supabase.from("taxpayer_activities").select("ciiu,is_primary,ica_tariffs(activity)").eq("registration_id",reg.id):{data:null};
-  if(acts) selectedRegistryActivities=(acts as any[]).map(a=>({ciiu:a.ciiu,activity:a.ica_tariffs?.activity||"",primary:a.is_primary}));
+  const {data:acts}=reg?await supabase.from("taxpayer_activities").select("ciiu,is_primary").eq("registration_id",reg.id):{data:null};
+  if(acts){
+    const codes=(acts as any[]).map(a=>a.ciiu);
+    const {data:catalog}=codes.length?await supabase.from("ica_tariffs").select("ciiu,activity").in("ciiu",codes):{data:[] as any[]};
+    const names=new Map((catalog||[]).map((x:any)=>[x.ciiu,x.activity]));
+    selectedRegistryActivities=(acts as any[]).map(a=>({ciiu:a.ciiu,activity:names.get(a.ciiu)||"",primary:a.is_primary}));
+  }
   const readonly=reg && reg.status!=="PENDING";
   return `<div class="page-head"><div><div class="kicker">Registro tributario</div><h1>Identificación del contribuyente</h1><p>Consolida los datos necesarios para presentar declaraciones y operar trámites de Hacienda. Los documentos de identificación se almacenan como huellas criptográficas, no en texto plano.</p></div><span class="status ${statusClass(reg?.status||"PENDING")}">${esc(reg?.status||"SIN REGISTRO")}</span></div>
   ${readonly?'<div class="note warn mb">El registro ya fue enviado a validación. Los campos tributarios quedan bloqueados para evitar alteraciones posteriores sin trazabilidad.</div>':""}
