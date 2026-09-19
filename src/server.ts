@@ -1,7 +1,6 @@
 import Fastify from "fastify";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
-import fastifyStatic from "@fastify/static";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -67,9 +66,14 @@ await app.register(rateLimit, {
   ban: 3,
   keyGenerator: (request) => request.ip
 });
-await app.register(fastifyStatic, {
-  root: join(process.cwd(), "public"),
-  prefix: "/"
+app.get("/", async (_request, reply) => {
+  const html = await readFile(join(process.cwd(), "public", "index.html"), "utf8");
+  reply.type("text/html; charset=utf-8").send(html);
+});
+
+app.get("/app.js", async (_request, reply) => {
+  const script = await readFile(join(process.cwd(), "public", "app.js"), "utf8");
+  reply.type("application/javascript; charset=utf-8").send(script);
 });
 
 const tariffFile = JSON.parse(
