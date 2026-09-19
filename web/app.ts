@@ -427,29 +427,60 @@ function renderSelectedActivities(readonly=false){
 }
 
 async function viewIca(){
-  return `<div class="page-head"><div><div class="kicker">Industria y Comercio</div><h1>Liquidación ICA 2026</h1><p>Calcula por actividad económica, aplica la tarifa por mil, el complementario de Avisos y Tableros y el mínimo tributario parametrizado. El resultado proviene de funciones de base de datos, no de fórmulas incrustadas en la pantalla.</p></div><span class="status ok">Motor activo</span></div>
-  <div class="split">
-    <section class="card">
-      <div class="section-title"><h2>Datos de liquidación</h2><span class="pill">UVT $52.374</span></div>
-      <div id="icaRows" class="stack">
-        <div class="form-grid ica-row"><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" value="1011"></div><div class="field"><label>Ingreso gravable en San Pedro</label><input class="input" data-income type="number" min="0" value="100000000"></div></div>
+  return `<div class="page-head"><div><div class="kicker">Industria y Comercio</div><h1>Liquidación ICA 2026</h1><p>Construye la liquidación por actividades económicas. Hacienda Conecta consulta la tarifa CIIU, aplica mínimo tributario y calcula Avisos y Tableros cuando corresponda.</p></div><div class="head-badges"><span class="status ok">${icon("check")} Motor activo</span><span class="pill">UVT $52.374</span></div></div>
+  <div class="calculator-layout">
+    <section class="calculator-card">
+      <div class="calculator-head"><div><span class="kicker">Paso 1</span><h2>Ingresos gravables por actividad</h2><p>Agrega todas las actividades realizadas en jurisdicción de San Pedro.</p></div><span class="calc-badge">Vigencia 2026</span></div>
+      <div id="icaRows" class="calc-rows">
+        <article class="calc-row ica-row"><span class="row-number">1</span><div class="field"><label>Código CIIU</label><input class="input" data-ciiu maxlength="4" value="1011" inputmode="numeric"><span class="hint">Código de 4 dígitos.</span></div><div class="field grow"><label>Ingreso gravable en San Pedro</label><div class="money-input"><span>$</span><input class="input" data-income type="number" min="0" value="100000000"></div></div></article>
       </div>
-      <div class="actions mt"><button class="btn secondary" type="button" id="addIcaRow">+ Agregar actividad</button></div>
-      <label class="checkbox mt"><input id="icaNotices" type="checkbox"><span>Liquidar complementario de Avisos y Tableros cuando corresponda.</span></label>
-      <div class="actions mt"><button class="btn" id="calculateIca">Calcular liquidación</button><button class="btn ghost" id="saveIca" disabled>Guardar declaración</button></div>
+      <button class="add-row-btn" type="button" id="addIcaRow">+ Agregar otra actividad</button>
+      <div class="calc-option"><label class="switch"><input id="icaNotices" type="checkbox"><span class="switch-ui"></span></label><div><strong>Avisos y Tableros</strong><small>Actívalo cuando el contribuyente tenga obligación del complementario.</small></div></div>
+      <div class="calc-actions"><button class="btn" id="calculateIca">Calcular liquidación</button><button class="btn secondary" id="saveIca" disabled>Guardar como declaración</button></div>
     </section>
-    <aside class="card accent"><div class="kicker">Resultado</div><h2>Resumen ICA</h2><div id="icaResult">${lastIcaCalculation?renderIcaResult(lastIcaCalculation):'<div class="empty">Realiza el cálculo para ver el detalle.</div>'}</div></aside>
+    <aside class="result-card">
+      <div class="result-card-head"><span class="result-icon">${icon("ica")}</span><div><span class="kicker">Resultado</span><h2>Resumen de liquidación</h2></div></div>
+      <div id="icaResult">${lastIcaCalculation?renderIcaResult(lastIcaCalculation):'<div class="result-empty"><span>Σ</span><strong>Sin cálculo todavía</strong><p>Completa tus actividades y presiona “Calcular liquidación”.</p></div>'}</div>
+      <div class="legal-mini"><span>${icon("legal")}</span><div><strong>Motor de reglas versionado</strong><small>Si el CIIU no tiene una tarifa validada, el cálculo se bloquea.</small></div></div>
+    </aside>
   </div>
-  <section class="card mt"><div class="note">La tarifa se obtiene del catálogo CIIU municipal cargado en Supabase. Si una actividad no existe o no está validada, el motor rechaza el cálculo en lugar de asumir una tarifa.</div></section>`;
+  <div class="info-strip mt"><div><span class="info-strip-icon">${icon("check")}</span><p><strong>Sin doble cobro del mínimo.</strong> El mínimo ICA se aplica al total cuando corresponde, evitando volver a cargar Avisos y Tableros sobre ese mínimo.</p></div><div><span class="info-strip-icon">${icon("legal")}</span><p><strong>Trazabilidad.</strong> Cada cálculo conserva vigencia, parámetros y valores usados para su posterior auditoría.</p></div></div>`;
 }
-function renderIcaResult(r:any){return `<div class="stack"><div class="metric"><div><div class="label">ICA por actividades</div><div class="value">${money(r.subtotalIcaCop)}</div></div></div><div class="kpi-strip"><span class="kpi-chip"><strong>${money(r.minimumTaxCop)}</strong>Mínimo 2 UVT</span><span class="kpi-chip"><strong>${money(r.noticesAndBoardsCop)}</strong>Avisos y Tableros</span><span class="kpi-chip"><strong>${money(r.minimumAdjustmentCop)}</strong>Ajuste a mínimo</span></div><hr style="border:0;border-top:1px solid var(--line)"><div class="metric"><div><div class="label">Total antes de anticipos/retenciones</div><div class="value">${money(r.totalBeforeCreditsCop)}</div></div><span class="status ok">Calculado</span></div><div class="tiny muted">UVT aplicada: ${money(r.uvtValueCop)} · Vigencia ${r.taxYear}</div></div>`;}
+function renderIcaResult(r:any){
+  return `<div class="result-total"><small>Total antes de retenciones / anticipos</small><strong>${money(r.totalBeforeCreditsCop)}</strong><span class="status ok">Calculado</span></div>
+  <div class="result-breakdown">
+    <div><span>ICA por actividades</span><strong>${money(r.subtotalIcaCop)}</strong></div>
+    <div><span>Avisos y Tableros</span><strong>${money(r.noticesAndBoardsCop)}</strong></div>
+    <div><span>Mínimo 2 UVT</span><strong>${money(r.minimumTaxCop)}</strong></div>
+    <div><span>Ajuste al mínimo</span><strong>${money(r.minimumAdjustmentCop)}</strong></div>
+  </div>
+  <div class="result-meta"><span>UVT aplicada <b>${money(r.uvtValueCop)}</b></span><span>Vigencia <b>${r.taxYear}</b></span></div>
+  ${r.lines?.length?`<div class="mini-lines">${r.lines.map((x:any)=>`<div><span><b>${esc(x.ciiu)}</b> ${esc(x.activity||"Actividad")}</span><strong>${money(x.taxCop)}</strong></div>`).join("")}</div>`:""}`;
+}
 
 async function viewReteica(){
-  return `<div class="page-head"><div><div class="kicker">Retención de ICA</div><h1>Calculadora RETEICA</h1><p>Determina si una operación supera la base mínima y calcula la retención con la tarifa de la actividad. La periodicidad de presentación 2026 permanece bloqueada hasta validación jurídica formal.</p></div><span class="status warn">Periodicidad en validación</span></div>
-  <div class="split"><section class="card"><div id="reteRows" class="stack"><div class="form-grid rete-row"><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" value="1011"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field full"><label>Base de la operación</label><input class="input" data-base type="number" min="0" value="500000"></div></div></div><div class="actions mt"><button class="btn secondary" id="addReteRow">+ Agregar operación</button><button class="btn" id="calculateRete">Calcular RETEICA</button><button class="btn ghost" id="saveRete" disabled>Guardar declaración</button></div></section><aside class="card accent"><div class="kicker">Resultado</div><h2>Retención</h2><div id="reteResult">${lastReteicaCalculation?renderReteResult(lastReteicaCalculation):'<div class="empty">Agrega las operaciones y calcula.</div>'}</div></aside></div>
-  <div class="note warn mt"><strong>Control normativo:</strong> el sistema calcula la retención, pero no muestra una fecha de vencimiento ni define mensual/bimestral hasta que Hacienda valide el acto vigente.</div>`;
+  return `<div class="page-head"><div><div class="kicker">Retención de ICA</div><h1>Calculadora RETEICA</h1><p>Registra operaciones sujetas a retención. El motor compara la base con el umbral en UVT y aplica la tarifa CIIU correspondiente.</p></div><div class="head-badges"><span class="status ok">${icon("check")} Cálculo disponible</span><span class="status warn">Periodicidad por validar</span></div></div>
+  <div class="calculator-layout">
+    <section class="calculator-card">
+      <div class="calculator-head"><div><span class="kicker">Operaciones</span><h2>Base y concepto de retención</h2><p>Agrega compras o servicios realizados con cada actividad económica.</p></div><span class="calc-badge">UVT $52.374</span></div>
+      <div id="reteRows" class="calc-rows">
+        <article class="calc-row rete-row"><span class="row-number">1</span><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" value="1011" inputmode="numeric"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field grow"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" data-base type="number" min="0" value="500000"></div></div></article>
+      </div>
+      <button class="add-row-btn" type="button" id="addReteRow">+ Agregar otra operación</button>
+      <div class="calc-actions"><button class="btn" id="calculateRete">Calcular RETEICA</button><button class="btn secondary" id="saveRete" disabled>Guardar borrador</button></div>
+      <div class="normative-lock"><span>${icon("security")}</span><div><strong>Control normativo activo</strong><p>La app calcula la retención, pero no inventa la periodicidad de presentación 2026 mientras exista la diferencia mensual/bimestral en las fuentes revisadas.</p></div></div>
+    </section>
+    <aside class="result-card">
+      <div class="result-card-head"><span class="result-icon">${icon("reteica")}</span><div><span class="kicker">Resultado</span><h2>Retención calculada</h2></div></div>
+      <div id="reteResult">${lastReteicaCalculation?renderReteResult(lastReteicaCalculation):'<div class="result-empty"><span>⇄</span><strong>Sin operaciones calculadas</strong><p>Agrega una base y el concepto para determinar si supera el umbral.</p></div>'}</div>
+    </aside>
+  </div>`;
 }
-function renderReteResult(r:any){return `<div class="metric"><div><div class="label">Total RETEICA</div><div class="value">${money(r.totalWithheldCop)}</div></div><span class="status ok">Calculado</span></div><div class="table-wrap mt"><table class="table"><thead><tr><th>CIIU</th><th>Base</th><th>Umbral</th><th>Tarifa</th><th>Retención</th></tr></thead><tbody>${(r.lines||[]).map((x:any)=>`<tr><td>${esc(x.ciiu)}</td><td>${money(x.baseCop)}</td><td>${money(x.thresholdCop)}</td><td>${x.ratePerThousand}‰</td><td class="money">${money(x.withheldCop)}</td></tr>`).join("")}</tbody></table></div>`;}
+function renderReteResult(r:any){
+  return `<div class="result-total"><small>Total RETEICA</small><strong>${money(r.totalWithheldCop)}</strong><span class="status ok">Calculado</span></div>
+  <div class="result-meta"><span>UVT aplicada <b>${money(r.uvtValueCop)}</b></span><span>Vigencia <b>${r.taxYear}</b></span></div>
+  <div class="mini-lines">${(r.lines||[]).map((x:any)=>`<div class="rete-line"><span><b>${esc(x.ciiu)}</b> · ${esc(x.concept==="goods"?"Compras":"Servicios")}<small>Base ${money(x.baseCop)} · Umbral ${money(x.thresholdCop)} · ${x.ratePerThousand}‰</small></span><strong>${money(x.withheldCop)}</strong></div>`).join("")}</div>`;
+}
 
 async function viewDeclarations(){
   if(!requireSession())return "";
@@ -471,42 +502,52 @@ async function viewPayments(){
     supabase.from("payments").select("*,declarations(tax_type,tax_year,period)").order("created_at",{ascending:false}),
     supabase.from("declarations").select("id,tax_type,tax_year,period,balance_due_cop,status").eq("status","PAYMENT_PENDING")
   ]);
-  return `<div class="page-head"><div><div class="kicker">Recaudo</div><h1>Pagos y conciliación</h1><p>Los pagos definitivos solo avanzarán después de confirmación server-to-server de la pasarela y conciliación. El navegador nunca marca un impuesto como pagado por sí solo.</p></div></div>
-  <div class="note warn mb"><strong>Integración comercial pendiente:</strong> todavía no hay credenciales de una pasarela PSE/tarjetas asociadas al Municipio. Puedes generar la solicitud y referencia; el cobro real permanecerá bloqueado hasta conectar el proveedor.</div>
-  ${decls?.length?`<section class="card mb"><h2>Declaraciones pendientes de pago</h2><div class="actions">${decls.map((d:any)=>`<button class="btn" data-pay="${d.id}">${d.tax_type} ${d.period} · ${money(d.balance_due_cop)}</button>`).join("")}</div></section>`:""}
-  <section class="card"><h2>Solicitudes de pago</h2>${reqs?.length?tableRows(reqs.map((p:any)=>[`<strong>${esc(p.reference)}</strong>`,esc(p.declarations?.tax_type||""),money(p.amount_cop),`<span class="status ${statusClass(p.status)}">${humanStatus(p.status)}</span>`,date(p.created_at)]),["Referencia","Tributo","Valor","Estado","Fecha"]):'<div class="empty">Aún no hay solicitudes de pago.</div>'}</section>
-  ${paid?.length?`<section class="card mt"><h2>Pagos confirmados</h2>${tableRows(paid.map((p:any)=>[esc(p.reference),money(p.amount_cop),`<span class="status ok">${p.status}</span>`,date(p.verified_at)]),["Referencia","Valor","Estado","Verificado"])}</section>`:""}`;
+  return `<div class="page-head"><div><div class="kicker">Recaudo</div><h1>Pagos y conciliación</h1><p>La plataforma separa autorización del ciudadano, creación de referencia y confirmación bancaria. Un retorno del navegador nunca cambia por sí solo una obligación a “pagada”.</p></div><span class="status info">Control server-to-server</span></div>
+  <section class="payment-flow mb">
+    <div class="payment-flow-step done"><span>${icon("declarations")}</span><div><strong>Declaración</strong><small>Liquidación guardada</small></div></div>
+    <span class="flow-line"></span>
+    <div class="payment-flow-step active"><span>${icon("security")}</span><div><strong>Autorización SMS</strong><small>Segundo factor reciente</small></div></div>
+    <span class="flow-line"></span>
+    <div class="payment-flow-step"><span>${icon("payments")}</span><div><strong>Pasarela</strong><small>PSE / tarjetas</small></div></div>
+    <span class="flow-line"></span>
+    <div class="payment-flow-step"><span>${icon("check")}</span><div><strong>Confirmación</strong><small>Webhook + conciliación</small></div></div>
+  </section>
+  <div class="integration-banner mb"><span class="integration-banner-icon">${icon("payments")}</span><div><strong>El flujo de recaudo está preparado; faltan credenciales bancarias.</strong><p>Hacienda Conecta ya genera referencias y exige SMS antes del pago. La transacción monetaria real se habilita cuando el Municipio conecte la pasarela y entregue sus credenciales/webhook.</p></div><span class="status warn">Conexión externa</span></div>
+  ${decls?.length?`<section class="card mb"><div class="section-title"><div><div class="kicker">Acción requerida</div><h2>Declaraciones listas para pagar</h2></div></div><div class="payable-grid">${decls.map((d:any)=>`<article class="payable-card"><span class="module-icon">${icon("payments")}</span><div><small>${esc(d.tax_type)} · ${esc(d.period)}</small><strong>${money(d.balance_due_cop)}</strong><span>Vigencia ${d.tax_year}</span></div><button class="btn small" data-pay="${d.id}">Autorizar pago</button></article>`).join("")}</div></section>`:""}
+  <div class="grid cols-2">
+    <section class="card"><div class="section-title"><div><div class="kicker">Referencias</div><h2>Solicitudes de pago</h2></div><span class="pill">${reqs?.length||0}</span></div>${reqs?.length?tableRows(reqs.map((p:any)=>[`<strong>${esc(p.reference)}</strong>`,esc(p.declarations?.tax_type||""),money(p.amount_cop),`<span class="status ${statusClass(p.status)}">${humanStatus(p.status)}</span>`,date(p.created_at)]),["Referencia","Tributo","Valor","Estado","Fecha"]):'<div class="empty">Aún no has generado referencias de pago.</div>'}</section>
+    <section class="card"><div class="section-title"><div><div class="kicker">Conciliación</div><h2>Pagos confirmados</h2></div><span class="pill">${paid?.length||0}</span></div>${paid?.length?tableRows(paid.map((p:any)=>[esc(p.reference),money(p.amount_cop),`<span class="status ok">${p.status}</span>`,date(p.verified_at)]),["Referencia","Valor","Estado","Verificado"]):'<div class="empty">Todavía no existen pagos confirmados por la pasarela.</div>'}</section>
+  </div>`;
 }
 
 async function viewSecurity(){
   if(!requireSession())return "";
-  const [aal,factors]=await Promise.all([
-    supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
-    supabase.auth.mfa.listFactors()
-  ]);
+  const [aal,factors]=await Promise.all([supabase.auth.mfa.getAuthenticatorAssuranceLevel(),supabase.auth.mfa.listFactors()]);
   const current=aal.data?.currentLevel||"aal1";
   const phone=((factors.data?.phone||[]) as any[]).find((f:any)=>f.status==="verified");
   const pendingPhone=((factors.data?.phone||[]) as any[]).find((f:any)=>f.status!=="verified");
   const suggestedPhone=phone?.phone || pendingPhone?.phone || profile?.phone_e164 || session?.user.user_metadata?.phone || "";
-  return `<div class="page-head"><div><div class="kicker">Identidad y firma electrónica</div><h1>Verificación por celular</h1><p>Tu acceso puede hacerse con Google o correo. Las acciones sensibles usan un segundo factor independiente: un código enviado al celular verificado.</p></div><span class="status ${phone?"ok":"warn"}">${phone?"CELULAR VERIFICADO":"CELULAR PENDIENTE"}</span></div>
-  <div class="grid cols-2">
-    <section class="card accent">
-      <div class="section-title"><div><div class="kicker">Segundo factor obligatorio</div><h2>${phone?"Celular vinculado":"Vincular celular"}</h2></div><span class="status ${current==="aal2"?"ok":"info"}">${current.toUpperCase()}</span></div>
+  const provider=session?.user.app_metadata?.provider||"email";
+  return `<div class="page-head"><div><div class="kicker">Identidad digital</div><h1>Seguridad, celular y firma</h1><p>El acceso y la autorización de operaciones sensibles se separan. Puedes entrar con Google o correo; firma y pagos requieren una validación adicional del celular.</p></div><div class="head-badges"><span class="status ${phone?"ok":"warn"}">${phone?icon("check")+" Celular verificado":"Celular pendiente"}</span><span class="pill">Sesión ${current.toUpperCase()}</span></div></div>
+  <div class="security-overview mb">
+    <article><span class="security-step-icon">${icon("registry")}</span><div><small>Primer factor</small><strong>${provider==="google"?"Google":"Correo / contraseña"}</strong><span>${esc(session?.user.email||"Cuenta autenticada")}</span></div><span class="status ok">Activo</span></article>
+    <article><span class="security-step-icon">${icon("security")}</span><div><small>Segundo factor</small><strong>${phone?"SMS al celular":"Pendiente de vincular"}</strong><span>${phone?esc(maskPhone(phone.phone||"")):"Necesario para operar"}</span></div><span class="status ${phone?"ok":"warn"}">${phone?"Verificado":"Pendiente"}</span></article>
+    <article><span class="security-step-icon">${icon("certificates")}</span><div><small>Firma documental</small><strong>SHA-256 + AAL2</strong><span>Evidencia vinculada al documento</span></div><span class="status info">Preparado</span></article>
+  </div>
+  <div class="security-layout">
+    <section class="card security-action-card">
+      <div class="section-title"><div><div class="kicker">Segundo factor</div><h2>${phone?"Celular protegido":"Vincula tu celular"}</h2></div><span class="security-phone-icon">SMS</span></div>
       ${phone
-        ? `<div class="metric"><div><div class="value" style="font-size:1.25rem">${esc(maskPhone(phone.phone||""))}</div><div class="label">Número protegido para firma y pago</div></div><div class="metric-icon">SMS</div></div>
-           <div class="note mt">Antes de <strong>firmar una declaración</strong> o <strong>crear una solicitud de pago</strong>, Hacienda Conecta enviará un código nuevo a este número. El código no sustituye el acceso con Google: funciona como segundo factor.</div>
-           <div class="actions mt"><button class="btn" id="mfaChallengeBtn">Enviar código SMS de prueba</button></div>`
-        : `<div class="note warn mb">Este paso es obligatorio para completar el Registro Tributario, firmar y autorizar pagos.</div>
-           <div class="field"><label>Número celular</label><input class="input" id="phoneMfaInput" value="${esc(suggestedPhone)}" placeholder="+573001234567" autocomplete="tel"><span class="hint">Formato internacional Colombia: +57 seguido del número, sin espacios.</span></div>
-           <div class="actions mt"><button class="btn" id="phoneEnrollBtn">Enviar código SMS</button></div>`}
+        ? `<div class="verified-phone"><span>${icon("check")}</span><div><small>Número verificado</small><strong>${esc(maskPhone(phone.phone||""))}</strong></div></div><p class="security-copy">Antes de firmar o generar una referencia de pago te enviaremos un código nuevo. El código dura pocos minutos y eleva la sesión a AAL2.</p><button class="btn" id="mfaChallengeBtn">Enviar código de prueba</button>`
+        : `<div class="note warn mb"><strong>Necesario para continuar.</strong> El Registro Tributario, la firma y el pago quedan bloqueados mientras no exista un teléfono verificado.</div><div class="field"><label>Número celular</label><input class="input" id="phoneMfaInput" value="${esc(suggestedPhone)}" placeholder="+573001234567" autocomplete="tel"><span class="hint">Formato Colombia: +57 seguido de 10 dígitos, sin espacios.</span></div><button class="btn mt" id="phoneEnrollBtn">Enviar código SMS</button>`}
       <div id="mfaBox" class="mt"></div>
     </section>
-    <section class="card"><h2>Cómo queda la seguridad</h2>
-      <div class="timeline">
-        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>1. Ingreso</strong><br><small>Google o correo/contraseña identifican la cuenta.</small></div></div>
-        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>2. Celular verificado</strong><br><small>El número queda enrolado como factor MFA de teléfono.</small></div></div>
-        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>3. Firma</strong><br><small>Se envía un SMS nuevo, se valida AAL2 y se firma el hash SHA-256 del documento.</small></div></div>
-        <div class="timeline-item"><span class="timeline-dot"></span><div><strong>4. Pago</strong><br><small>Antes de generar la referencia de recaudo se exige otra validación SMS reciente.</small></div></div>
+    <section class="card"><div class="section-title"><div><div class="kicker">Cómo te protegemos</div><h2>Flujo de autorización</h2></div></div>
+      <div class="security-timeline">
+        <div><span class="timeline-index">1</span><div><strong>Acceso a la cuenta</strong><p>Google o correo identifican al usuario y crean la sesión inicial.</p></div></div>
+        <div><span class="timeline-index">2</span><div><strong>Celular verificado</strong><p>El número queda enrolado como factor MFA asociado a la cuenta.</p></div></div>
+        <div><span class="timeline-index">3</span><div><strong>Documento congelado</strong><p>Antes de firmar se calcula la huella SHA-256 de la declaración.</p></div></div>
+        <div><span class="timeline-index">4</span><div><strong>SMS de un solo uso</strong><p>Un código reciente eleva la sesión a AAL2 y autoriza la operación concreta.</p></div></div>
       </div>
     </section>
   </div>`;
@@ -562,17 +603,27 @@ async function viewLegal(){
   <section class="card mt"><h2>Fuentes jurídicas registradas</h2>${tableRows((sources||[]).map((x:any)=>[`${esc(x.norm_type)} ${esc(x.norm_number||"")} de ${x.norm_year||""}`,esc(x.title),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`,x.source_url?`<a href="${esc(x.source_url)}" target="_blank" rel="noopener">Fuente oficial</a>`:"Fuente suministrada"]),["Norma","Objeto","Estado","Fuente"])}</section>`;
 }
 async function viewStaff(){
-  if(!profile||profile.role==="citizen")return '<div class="note danger">Esta sección requiere rol de funcionario de Hacienda.</div>';
-  const [{data:regs},{data:decls},{data:agreements},{data:refunds}]=await Promise.all([
+  if(!profile||profile.role==="citizen")return '<div class="note danger">Esta sección requiere rol autorizado de la Secretaría de Hacienda.</div>';
+  const [{data:regs},{data:decls},{data:agreements},{data:refunds},{data:integrations}]=await Promise.all([
     supabase.from("taxpayer_registrations").select("id,business_name,person_type,status,created_at").order("created_at",{ascending:false}).limit(50),
     supabase.from("declarations").select("id,tax_type,tax_year,period,status,balance_due_cop,created_at").order("created_at",{ascending:false}).limit(50),
     supabase.from("payment_agreements").select("*").order("created_at",{ascending:false}).limit(30),
-    supabase.from("refund_requests").select("*").order("created_at",{ascending:false}).limit(30)
+    supabase.from("refund_requests").select("*").order("created_at",{ascending:false}).limit(30),
+    supabase.from("system_integrations").select("*").order("code")
   ]);
-  return `<div class="page-head"><div><div class="kicker">Consola interna</div><h1>Gestión de Hacienda</h1><p>Vista operativa de consulta con segregación de funciones. Las acciones de aprobación se habilitarán por rol y flujo administrativo.</p></div><span class="status info">${esc(profile.role)}</span></div>
-  <div class="grid cols-4 mb">${metric("◎",regs?.length||0,"Registros recientes")}${metric("▤",decls?.length||0,"Declaraciones")}${metric("▦",agreements?.length||0,"Acuerdos")}${metric("↶",refunds?.length||0,"Devoluciones")}</div>
-  <section class="card"><h2>Declaraciones recientes</h2>${tableRows((decls||[]).map((d:any)=>[esc(d.tax_type),`${d.tax_year} · ${esc(d.period)}`,money(d.balance_due_cop),`<span class="status ${statusClass(d.status)}">${humanStatus(d.status)}</span>`,date(d.created_at)]),["Tipo","Período","Saldo","Estado","Fecha"])}</section>`;
+  return `<div class="page-head"><div><div class="kicker">Consola interna</div><h1>Gestión operativa de Hacienda</h1><p>Bandejas de consulta con segregación por rol, trazabilidad y acceso a estados del contribuyente.</p></div><span class="status info">${esc(humanStatus(profile.role))}</span></div>
+  <div class="metric-grid mb">
+    ${metric("registry",regs?.length||0,"Registros recientes","Últimos perfiles consultables")}
+    ${metric("declarations",decls?.length||0,"Declaraciones","Actividad reciente")}
+    ${metric("agreements",agreements?.length||0,"Acuerdos","Solicitudes en base")}
+    ${metric("refunds",refunds?.length||0,"Devoluciones","Expedientes registrados")}
+  </div>
+  <section class="card mb"><div class="section-title"><div><div class="kicker">Infraestructura</div><h2>Estado de integraciones</h2><p class="section-desc">Visibilidad operativa de servicios que dependen de proveedores externos.</p></div></div>
+    <div class="integration-grid">${(integrations||[]).map((x:any)=>`<article class="integration-card"><span class="integration-dot ${x.status==="ACTIVE"?"active":"pending"}"></span><div><strong>${esc(x.display_name)}</strong><small>${esc(x.provider||"Servicio")}</small><p>${esc(x.notes||"")}</p></div><span class="status ${x.status==="ACTIVE"?"ok":"warn"}">${esc(humanStatus(x.status))}</span></article>`).join("")}</div>
+  </section>
+  <section class="card"><div class="section-title"><div><div class="kicker">Operación</div><h2>Declaraciones recientes</h2></div></div>${tableRows((decls||[]).map((d:any)=>[esc(d.tax_type),`${d.tax_year} · ${esc(d.period)}`,money(d.balance_due_cop),`<span class="status ${statusClass(d.status)}">${humanStatus(d.status)}</span>`,date(d.created_at)]),["Tipo","Período","Saldo","Estado","Fecha"])}</section>`;
 }
+
 function tableRows(rows:string[][],headers:string[]){
   return `<div class="table-wrap"><table class="table"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
