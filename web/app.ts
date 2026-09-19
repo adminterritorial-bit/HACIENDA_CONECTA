@@ -410,7 +410,7 @@ function bindRegistry(){
 }
 function refreshActivities(){
   const box=document.querySelector("#selectedActivities"); if(!box)return; box.innerHTML=renderSelectedActivities(false);
-  box.querySelectorAll<HTMLElement>("[data-remove-act]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.removeAct);selectedRegistryActivities.splice(i,1);if(selectedRegistryActivities.length&&!selectedRegistryActivities.some(x=>x.primary))selectedRegistryActivities[0].primary=true;refreshActivities();});
+  box.querySelectorAll<HTMLElement>("[data-remove-act]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.removeAct);selectedRegistryActivities.splice(i,1);if(selectedRegistryActivities.length&&!selectedRegistryActivities.some(x=>x.primary)){const first=selectedRegistryActivities[0];if(first)first.primary=true;}refreshActivities();});
   box.querySelectorAll<HTMLElement>("[data-primary]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.primary);selectedRegistryActivities=selectedRegistryActivities.map((a,j)=>({...a,primary:i===j}));refreshActivities();});
 }
 
