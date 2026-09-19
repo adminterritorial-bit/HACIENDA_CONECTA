@@ -778,7 +778,10 @@ function refreshActivities(){
 }
 
 function bindIca(){
-  document.querySelector("#addIcaRow")?.addEventListener("click",()=>{document.querySelector("#icaRows")?.insertAdjacentHTML("beforeend",`<div class="form-grid ica-row"><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4"></div><div class="field"><label>Ingreso gravable</label><input class="input" data-income type="number" min="0"></div></div>`);});
+  document.querySelector("#addIcaRow")?.addEventListener("click",()=>{
+    const count=document.querySelectorAll(".ica-row").length+1;
+    document.querySelector("#icaRows")?.insertAdjacentHTML("beforeend",`<article class="calc-row ica-row"><span class="row-number">${count}</span><div class="field"><label>Código CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric"></div><div class="field grow"><label>Ingreso gravable en San Pedro</label><div class="money-input"><span>$</span><input class="input" data-income type="number" min="0"></div></div></article>`);
+  });
   document.querySelector("#calculateIca")?.addEventListener("click",async()=>{
     const activities=[...document.querySelectorAll<HTMLElement>(".ica-row")].map(r=>({ciiu:(r.querySelector<HTMLInputElement>("[data-ciiu]")?.value||"").trim(),taxableIncomeCop:Number(r.querySelector<HTMLInputElement>("[data-income]")?.value||0)})).filter(x=>x.ciiu);
     try{lastIcaCalculation=await api(supabase.rpc("calculate_ica",{p_activities:activities,p_apply_notices:(document.querySelector<HTMLInputElement>("#icaNotices")?.checked||false),p_tax_year:2026}));document.querySelector("#icaResult")!.innerHTML=renderIcaResult(lastIcaCalculation);(document.querySelector<HTMLButtonElement>("#saveIca")!).disabled=false;toast("Liquidación calculada.");}catch(err:any){toast(err.message,"error");}
@@ -789,7 +792,10 @@ function bindIca(){
   });
 }
 function bindReteica(){
-  document.querySelector("#addReteRow")?.addEventListener("click",()=>{document.querySelector("#reteRows")?.insertAdjacentHTML("beforeend",`<div class="form-grid rete-row"><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field full"><label>Base</label><input class="input" data-base type="number" min="0"></div></div>`);});
+  document.querySelector("#addReteRow")?.addEventListener("click",()=>{
+    const count=document.querySelectorAll(".rete-row").length+1;
+    document.querySelector("#reteRows")?.insertAdjacentHTML("beforeend",`<article class="calc-row rete-row"><span class="row-number">${count}</span><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field grow"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" data-base type="number" min="0"></div></div></article>`);
+  });
   document.querySelector("#calculateRete")?.addEventListener("click",async()=>{
     const transactions=[...document.querySelectorAll<HTMLElement>(".rete-row")].map(r=>({ciiu:(r.querySelector<HTMLInputElement>("[data-ciiu]")?.value||"").trim(),concept:(r.querySelector<HTMLSelectElement>("[data-concept]")?.value||"services"),baseCop:Number(r.querySelector<HTMLInputElement>("[data-base]")?.value||0)})).filter(x=>x.ciiu);
     try{lastReteicaCalculation=await api(supabase.rpc("calculate_reteica",{p_transactions:transactions,p_tax_year:2026}));document.querySelector("#reteResult")!.innerHTML=renderReteResult(lastReteicaCalculation);(document.querySelector<HTMLButtonElement>("#saveRete")!).disabled=false;toast("RETEICA calculado.");}catch(err:any){toast(err.message,"error");}
