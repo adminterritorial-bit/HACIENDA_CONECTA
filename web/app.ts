@@ -592,29 +592,134 @@ function bindView(which:string){
 }
 
 function bindRegistry(){
+  const form=document.querySelector<HTMLFormElement>("#registryForm");
+  if(!form) return;
+
+  const updateWizard=(step:number)=>{
+    registryStep=Math.max(1,Math.min(4,step));
+    form.querySelectorAll<HTMLElement>("[data-reg-panel]").forEach(panel=>panel.classList.toggle("active",Number(panel.dataset.regPanel)===registryStep));
+    form.querySelectorAll<HTMLElement>("[data-reg-step]").forEach(btn=>{
+      const n=Number(btn.dataset.regStep);
+      btn.classList.toggle("active",n===registryStep);
+      btn.classList.toggle("done",n<registryStep);
+      const badge=btn.querySelector(":scope > span");
+      if(badge) badge.innerHTML=n<registryStep?icon("check"):String(n);
+    });
+    form.querySelectorAll<HTMLElement>(".wizard-line").forEach((line,i)=>line.classList.toggle("done",i<registryStep-1));
+    if(registryStep===4) renderRegistryReview(form);
+    form.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+
+  const validateStep=(step:number)=>{
+    const panel=form.querySelector<HTMLElement>(`[data-reg-panel="${step}"]`);
+    if(!panel) return true;
+    const controls=[...panel.querySelectorAll<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>("input,select,textarea")].filter(x=>!x.disabled);
+    for(const control of controls){
+      if(!control.checkValidity()){control.reportValidity();return false;}
+    }
+    if(step===2){
+      if(!selectedRegistryActivities.length){toast("Selecciona al menos una actividad económica.","warn");return false;}
+      if(selectedRegistryActivities.filter(a=>a.primary).length!==1){toast("Debe existir exactamente una actividad económica principal.","warn");return false;}
+    }
+    if(step===3){
+      const personType=(form.elements.namedItem("personType") as HTMLSelectElement)?.value;
+      const repName=(form.elements.namedItem("repName") as HTMLInputElement)?.value.trim();
+      const repDoc=(form.elements.namedItem("repDoc") as HTMLInputElement)?.value.trim();
+      const repEmail=(form.elements.namedItem("repEmail") as HTMLInputElement)?.value.trim();
+      if(personType==="JURIDICA" && (!repName||!repDoc||!repEmail)){
+        toast("Para persona jurídica completa representante legal, documento y correo.","warn");
+        return false;
+      }
+    }
+    return true;
+  };
+
+  form.querySelectorAll<HTMLElement>("[data-reg-step]").forEach(btn=>btn.addEventListener("click",()=>{
+    const target=Number(btn.dataset.regStep);
+    if(target<=registryStep || validateStep(registryStep)) updateWizard(target);
+  }));
+  form.querySelectorAll<HTMLElement>("[data-reg-next]").forEach(btn=>btn.addEventListener("click",()=>{if(validateStep(registryStep))updateWizard(registryStep+1);}));
+  form.querySelectorAll<HTMLElement>("[data-reg-prev]").forEach(btn=>btn.addEventListener("click",()=>updateWizard(registryStep-1)));
+
   const search=async()=>{
-    const q=(document.querySelector<HTMLInputElement>("#ciiuSearch")?.value||"").trim(); if(q.length<2)return;
+    const q=(document.querySelector<HTMLInputElement>("#ciiuSearch")?.value||"").trim();
+    if(q.length<2){toast("Escribe al menos 2 caracteres para buscar.","warn");return;}
     const {data,error}=await supabase.from("ica_tariffs").select("ciiu,activity,rate_per_thousand").or(`ciiu.eq.${q},activity.ilike.%${q}%`).limit(20);
     if(error){toast(error.message,"error");return;}
-    const box=document.querySelector("#ciiuResults")!; box.innerHTML=`<div class="ciiu-results">${(data||[]).map((x:any)=>`<div class="ciiu-item" data-ciiu-add="${x.ciiu}" data-activity="${esc(x.activity)}"><strong>${x.ciiu}</strong>${esc(x.activity)} · ${x.rate_per_thousand}‰</div>`).join("")||'<div class="empty">Sin resultados</div>'}</div>`;
+    const box=document.querySelector("#ciiuResults")!;
+    box.innerHTML=`<div class="ciiu-results">${(data||[]).map((x:any)=>`<button type="button" class="ciiu-item" data-ciiu-add="${x.ciiu}" data-activity="${esc(x.activity)}"><span class="ciiu-code">${x.ciiu}</span><span class="ciiu-copy"><strong>${esc(x.activity)}</strong><small>Tarifa ${x.rate_per_thousand}‰</small></span><span class="ciiu-add">+</span></button>`).join("")||'<div class="empty">No encontramos actividades con ese criterio.</div>'}</div>`;
     box.querySelectorAll<HTMLElement>("[data-ciiu-add]").forEach(el=>el.onclick=()=>{
-      if(!selectedRegistryActivities.some(a=>a.ciiu===el.dataset.ciiu)){selectedRegistryActivities.push({ciiu:el.dataset.ciiu!,activity:el.dataset.activity||"",primary:selectedRegistryActivities.length===0});}
-      refreshActivities(); box.innerHTML="";
+      if(!selectedRegistryActivities.some(a=>a.ciiu===el.dataset.ciiu)){
+        selectedRegistryActivities.push({ciiu:el.dataset.ciiu!,activity:el.dataset.activity||"",primary:selectedRegistryActivities.length===0});
+        refreshActivities();
+        toast("Actividad agregada.");
+      }else toast("La actividad ya está seleccionada.","warn");
     });
   };
   document.querySelector("#ciiuSearchBtn")?.addEventListener("click",search);
   document.querySelector<HTMLInputElement>("#ciiuSearch")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();search();}});
   refreshActivities();
-  document.querySelector("#registryForm")?.addEventListener("submit",async(e)=>{
-    e.preventDefault(); if(!selectedRegistryActivities.length){toast("Selecciona al menos una actividad económica.","warn");return;}
-    const fd=new FormData(e.currentTarget as HTMLFormElement);
+  updateWizard(registryStep);
+
+  form.addEventListener("submit",async(e)=>{
+    e.preventDefault();
+    if(!validateStep(1)||!validateStep(2)||!validateStep(3)||!validateStep(4)){return;}
+    const fd=new FormData(form);
     const personType=String(fd.get("personType")||"NATURAL");
-    const payload:any={personType,documentType:String(fd.get("documentType")||""),documentNumber:String(fd.get("documentNumber")||""),fullNameOrBusinessName:String(fd.get("name")||""),email:String(fd.get("email")||""),phoneE164:String(fd.get("phone")||""),fiscalAddress:String(fd.get("address")||""),municipality:"San Pedro",department:"Valle del Cauca",economicActivities:selectedRegistryActivities.map(a=>({ciiu:a.ciiu,primary:a.primary})),dataPolicyAccepted:fd.get("policy")==="on",dataPolicyVersion:"2026-01"};
-    if(personType==="JURIDICA"&&fd.get("repName"))payload.representative={documentType:"CC",documentNumber:String(fd.get("repDoc")||""),fullName:String(fd.get("repName")||""),email:String(fd.get("repEmail")||"")};
-    if(fd.get("accName"))payload.accountant={documentNumber:String(fd.get("accDoc")||""),fullName:String(fd.get("accName")||""),professionalCard:String(fd.get("accCard")||"")};
-    try{await api(supabase.rpc("register_taxpayer",{p_data:payload}));toast("Registro Tributario guardado y protegido.");await loadProfile();render();}catch(err:any){toast(err.message,"error");}
+    const payload:any={
+      personType,
+      documentType:String(fd.get("documentType")||""),
+      documentNumber:String(fd.get("documentNumber")||""),
+      fullNameOrBusinessName:String(fd.get("name")||""),
+      email:String(fd.get("email")||""),
+      phoneE164:String(fd.get("phone")||""),
+      fiscalAddress:String(fd.get("address")||""),
+      municipality:"San Pedro",
+      department:"Valle del Cauca",
+      economicActivities:selectedRegistryActivities.map(a=>({ciiu:a.ciiu,primary:a.primary})),
+      dataPolicyAccepted:fd.get("policy")==="on",
+      dataPolicyVersion:"2026-01"
+    };
+    if(fd.get("repName")) payload.representative={
+      documentType:"CC",
+      documentNumber:String(fd.get("repDoc")||""),
+      fullName:String(fd.get("repName")||""),
+      email:String(fd.get("repEmail")||"")
+    };
+    if(fd.get("accName")) payload.accountant={
+      documentNumber:String(fd.get("accDoc")||""),
+      fullName:String(fd.get("accName")||""),
+      professionalCard:String(fd.get("accCard")||"")
+    };
+    const submit=form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    if(submit){submit.disabled=true;submit.textContent="Guardando…";}
+    try{
+      await api(supabase.rpc("register_taxpayer",{p_data:payload}));
+      toast("Registro Tributario guardado correctamente.");
+      registryStep=1;
+      await loadProfile();
+      render();
+    }catch(err:any){
+      toast(err.message||"No fue posible guardar el registro.","error");
+      if(submit){submit.disabled=false;submit.textContent="Guardar Registro Tributario";}
+    }
   });
 }
+
+function renderRegistryReview(form:HTMLFormElement){
+  const fd=new FormData(form);
+  const main=selectedRegistryActivities.find(a=>a.primary);
+  const box=document.querySelector("#registryReview");
+  if(!box)return;
+  const person=String(fd.get("personType")||"NATURAL")==="JURIDICA"?"Persona jurídica":"Persona natural";
+  box.innerHTML=`
+    <article class="review-card"><span class="review-icon">${icon("registry")}</span><div><small>Contribuyente</small><strong>${esc(String(fd.get("name")||"Sin nombre"))}</strong><span>${esc(person)} · ${esc(String(fd.get("documentType")||""))}</span></div></article>
+    <article class="review-card"><span class="review-icon">${icon("ica")}</span><div><small>Actividad principal</small><strong>${main?esc(main.ciiu):"—"}</strong><span>${main?esc(main.activity):"Sin actividad principal"}</span></div></article>
+    <article class="review-card"><span class="review-icon">${icon("security")}</span><div><small>Contacto verificado</small><strong>${esc(maskPhone(String(fd.get("phone")||"")))}</strong><span>${esc(String(fd.get("email")||""))}</span></div></article>
+    <article class="review-card"><span class="review-icon">${icon("staff")}</span><div><small>Responsables</small><strong>${fd.get("repName")?esc(String(fd.get("repName"))):"Sin representante adicional"}</strong><span>${fd.get("accName")?"Contador: "+esc(String(fd.get("accName"))):"Sin contador registrado"}</span></div></article>
+  `;
+}
+
 function refreshActivities(){
   const box=document.querySelector("#selectedActivities"); if(!box)return; box.innerHTML=renderSelectedActivities(false);
   box.querySelectorAll<HTMLElement>("[data-remove-act]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.removeAct);selectedRegistryActivities.splice(i,1);if(selectedRegistryActivities.length&&!selectedRegistryActivities.some(x=>x.primary)){const first=selectedRegistryActivities[0];if(first)first.primary=true;}refreshActivities();});
