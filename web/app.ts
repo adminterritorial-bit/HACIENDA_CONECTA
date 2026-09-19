@@ -1,5 +1,6 @@
 import { createClient, type Session, type User } from "@supabase/supabase-js";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import QRCode from "qrcode";
 
 const SUPABASE_URL = "https://dvdpgllezrmttrknbcjq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_u8aF30AdRo_flW3qb-Z8sg_evTHk9Ry";
@@ -313,7 +314,7 @@ async function viewCertificates(){
     supabase.from("declarations").select("id,tax_type,tax_year,period,status").in("status",["FILED","CERTIFICATE_AVAILABLE","PAID"])
   ]);
   return `<div class="page-head"><div><div class="kicker">Documentos</div><h1>Certificados y constancias</h1><p>Solicita documentos, consulta su estado y verifica documentos emitidos mediante serial y huella.</p></div></div>
-  <div class="grid cols-2"><section class="card"><h2>Nueva solicitud</h2><form id="certRequestForm" class="stack"><select class="select" name="type"><option value="DECLARACION_PRESENTADA">Constancia de declaración presentada</option><option value="PAZ_Y_SALVO">Paz y salvo tributario</option><option value="CERTIFICADO_RETENCION">Certificado de retención</option></select><select class="select" name="declarationId"><option value="">Sin declaración asociada</option>${(decls||[]).map((d:any)=>`<option value="${d.id}">${d.tax_type} ${d.tax_year} · ${esc(d.period)}</option>`).join("")}</select><button class="btn">Radicar solicitud</button></form></section>${publicVerify}</div>
+  <div class="grid cols-2"><section class="card"><h2>Nueva solicitud</h2><form id="certRequestForm" class="stack"><select class="select" name="type"><option value="DECLARACION_PRESENTADA">Constancia de declaración presentada</option><option value="PAZ_Y_SALVO">Paz y salvo tributario</option><option value="CERTIFICADO_RETENCION">Certificado de retención</option></select><select class="select" name="declarationId"><option value="">Sin declaración asociada</option>${(decls||[]).map((d:any)=>`<option value="${d.id}">${d.tax_type} ${d.tax_year} · ${esc(d.period)}</option>`).join("")}</select><button class="btn">Radicar solicitud</button></form>${(decls||[]).filter((d:any)=>["FILED","CERTIFICATE_AVAILABLE"].includes(d.status)).length?`<hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><h3>Emisión automática habilitada</h3><p class="muted tiny">Las declaraciones ya radicadas pueden generar una constancia verificable de presentación.</p><div class="actions">${(decls||[]).filter((d:any)=>["FILED","CERTIFICATE_AVAILABLE"].includes(d.status)).map((d:any)=>`<button class="btn secondary small" data-issue-cert="${d.id}">${d.tax_type} ${d.tax_year} · ${esc(d.period)}</button>`).join("")}</div>`:""}</section>${publicVerify}</div>
   <section class="card mt"><h2>Mis solicitudes</h2>${requests?.length?tableRows(requests.map((r:any)=>[esc(r.certificate_type),`<span class="status ${statusClass(r.status)}">${humanStatus(r.status)}</span>`,date(r.submitted_at)]),["Tipo","Estado","Fecha"]):'<div class="empty">No hay solicitudes.</div>'}</section>
   ${certs?.length?`<section class="card mt"><h2>Certificados emitidos</h2>${tableRows(certs.map((c:any)=>[esc(c.serial),esc(c.type),date(c.issued_at),c.revoked_at?'<span class="status danger">Revocado</span>':'<span class="status ok">Vigente</span>']),["Serial","Tipo","Emisión","Estado"])}</section>`:""}`;
 }
@@ -475,11 +476,35 @@ async function verifyMfa(factorId:string){
 
 function bindCertificates(){
   document.querySelector("#certRequestForm")?.addEventListener("submit",async(e)=>{e.preventDefault();if(!session)return;const fd=new FormData(e.currentTarget as HTMLFormElement);try{const {error}=await supabase.from("certificate_requests").insert({user_id:session.user.id,declaration_id:String(fd.get("declarationId")||"")||null,certificate_type:String(fd.get("type")),status:"SUBMITTED"});if(error)throw error;toast("Solicitud de certificado radicada.");render();}catch(err:any){toast(err.message,"error");}});
-  document.querySelector("#verifyCertForm")?.addEventListener("submit",async(e)=>{e.preventDefault();const fd=new FormData(e.currentTarget as HTMLFormElement);const token=String(fd.get("token")||"").trim();const box=document.querySelector("#verifyCertResult")!;try{const data=await api<any[]>(supabase.rpc("verify_certificate",{p_token:token}));box.innerHTML=data?.length?`<div class="note"><strong>Certificado válido</strong><br>Serial: ${esc(data[0].serial)} · Tipo: ${esc(data[0].type)} · Emitido: ${date(data[0].issued_at)} ${data[0].revoked?'<br><span class="status danger">REVOCADO</span>':'<br><span class="status ok">VIGENTE</span>'}</div>`:'<div class="note danger">No se encontró un certificado válido con ese token.</div>';}catch(err:any){box.innerHTML=`<div class="note danger">${esc(err.message)}</div>`;}});
+  const verify=async(token:string)=>{const box=document.querySelector("#verifyCertResult")!;try{const data=await api<any[]>(supabase.rpc("verify_certificate",{p_token:token}));box.innerHTML=data?.length?`<div class="note"><strong>Certificado válido</strong><br>Serial: ${esc(data[0].serial)} · Tipo: ${esc(data[0].type)} · Emitido: ${date(data[0].issued_at)} ${data[0].revoked?'<br><span class="status danger">REVOCADO</span>':'<br><span class="status ok">VIGENTE</span>'}</div>`:'<div class="note danger">No se encontró un certificado válido con ese token.</div>';}catch(err:any){box.innerHTML=`<div class="note danger">${esc(err.message)}</div>`;}};
+  document.querySelector("#verifyCertForm")?.addEventListener("submit",async(e)=>{e.preventDefault();const fd=new FormData(e.currentTarget as HTMLFormElement);await verify(String(fd.get("token")||"").trim());});
+  const queryToken=new URLSearchParams(location.search).get("certificate"); if(queryToken) verify(queryToken);
+  document.querySelectorAll<HTMLElement>("[data-issue-cert]").forEach(b=>b.onclick=async()=>{try{const cert=await api<any>(supabase.rpc("issue_filing_certificate",{p_declaration_id:b.dataset.issueCert}));toast("Constancia emitida con serial "+cert.serial);await downloadCertificatePdf(cert);history.replaceState({},document.title,location.pathname+"#certificates");render();}catch(err:any){toast(err.message,"error");}});
 }
 function bindPredial(){document.querySelectorAll<HTMLElement>("[data-paz]").forEach(b=>b.onclick=async()=>{if(!session)return;try{const {error}=await supabase.from("paz_y_salvo_requests").insert({user_id:session.user.id,property_account_id:b.dataset.paz,request_type:"PREDIAL",status:"SUBMITTED"});if(error)throw error;toast("Solicitud de paz y salvo radicada.");render();}catch(e:any){toast(e.message,"error");}});}
 function bindAgreements(){document.querySelector("#agreementForm")?.addEventListener("submit",async(e)=>{e.preventDefault();if(!session)return;const fd=new FormData(e.currentTarget as HTMLFormElement);const {error}=await supabase.from("payment_agreements").insert({user_id:session.user.id,debt_type:String(fd.get("debt")),principal_cop:Number(fd.get("principal")),interest_cop:0,requested_installments:Number(fd.get("installments")),status:"SUBMITTED"});if(error)toast(error.message,"error");else{toast("Solicitud radicada.");render();}});}
 function bindRefunds(){document.querySelector("#refundForm")?.addEventListener("submit",async(e)=>{e.preventDefault();if(!session)return;const fd=new FormData(e.currentTarget as HTMLFormElement);const {error}=await supabase.from("refund_requests").insert({user_id:session.user.id,tax_type:String(fd.get("tax")),tax_year:Number(fd.get("year")),amount_cop:Number(fd.get("amount")),reason:String(fd.get("reason")),status:"SUBMITTED",submitted_at:new Date().toISOString()});if(error)toast(error.message,"error");else{toast("Solicitud radicada.");render();}});}
+
+async function downloadCertificatePdf(cert:any){
+  const pdf=await PDFDocument.create(); const page=pdf.addPage([595,842]);
+  const font=await pdf.embedFont(StandardFonts.Helvetica), bold=await pdf.embedFont(StandardFonts.HelveticaBold);
+  page.drawRectangle({x:0,y:754,width:595,height:88,color:rgb(.03,.22,.42)});
+  page.drawText("MUNICIPIO DE SAN PEDRO",{x:40,y:806,size:17,font:bold,color:rgb(1,1,1)});
+  page.drawText("Secretaría de Hacienda · Hacienda Conecta",{x:40,y:782,size:10,font,color:rgb(.82,.91,.98)});
+  page.drawText("CONSTANCIA DE PRESENTACIÓN",{x:40,y:710,size:18,font:bold,color:rgb(.03,.31,.57)});
+  page.drawText("Documento electrónico verificable",{x:40,y:688,size:10,font,color:rgb(.35,.43,.52)});
+  const rows=[["Serial",cert.serial],["Tipo",cert.type],["Fecha de emisión",new Date(cert.issuedAt).toLocaleString("es-CO")],["Hash documental",cert.documentSha256]];
+  let y=645; for(const [label,value] of rows){page.drawText(label,{x:40,y,size:9,font:bold,color:rgb(.2,.3,.4)});page.drawText(String(value),{x:175,y,size:9,font,color:rgb(.08,.14,.22),maxWidth:370});y-=32;}
+  const verifyUrl=location.origin+"/?certificate="+encodeURIComponent(cert.verificationToken)+"#certificates";
+  const qrData=await QRCode.toDataURL(verifyUrl,{margin:1,width:220,errorCorrectionLevel:"M"});
+  const qrBytes=Uint8Array.from(atob(qrData.split(",")[1]),c=>c.charCodeAt(0)); const qr=await pdf.embedPng(qrBytes);
+  page.drawImage(qr,{x:40,y:285,width:145,height:145});
+  page.drawText("Verificación pública",{x:210,y:398,size:11,font:bold});page.drawText("Escanea el QR o ingresa el token en Hacienda Conecta.",{x:210,y:378,size:9,font});
+  page.drawText("Token",{x:210,y:350,size:8,font:bold});page.drawText(String(cert.verificationToken),{x:210,y:333,size:7,font,maxWidth:330});
+  page.drawText("Esta constancia acredita la emisión electrónica registrada en Hacienda Conecta.",{x:40,y:90,size:8,font,color:rgb(.35,.42,.5)});
+  page.drawText("Su estado puede verificarse en línea y puede ser revocada mediante trazabilidad administrativa.",{x:40,y:75,size:8,font,color:rgb(.35,.42,.5)});
+  const bytes=await pdf.save(); const blob=new Blob([bytes as any],{type:"application/pdf"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Constancia_"+String(cert.serial)+".pdf";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
 
 async function downloadDeclarationPdf(id:string){
   try{
