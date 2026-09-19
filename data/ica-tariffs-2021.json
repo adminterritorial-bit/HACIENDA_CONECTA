@@ -1,0 +1,1954 @@
+{
+  "metadata": {
+    "municipality": "San Pedro, Valle del Cauca",
+    "legalBasis": "Acuerdo Municipal 013 de 2021, artículo 110",
+    "status": "BASE_EXTRAIDA_PARA_VALIDACION",
+    "note": "Catálogo extraído del PDF aportado. La activación en producción exige contrastar las modificaciones posteriores (incluidos Acuerdos 002 y 009 de 2022) y el calendario de la vigencia."
+  },
+  "tariffs": [
+    {
+      "ciiu": "1011",
+      "activity": "Procesamiento y conservación de carne y productos cárnicos.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1012",
+      "activity": "Procesamiento y conservación de pescados, crustáceos y moluscos.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1020",
+      "activity": "Procesamiento y conservación de frutas, legumbres, hortalizas y tubérculos.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1030",
+      "activity": "Elaboración de aceites y grasas de origen vegetal y animal.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1040",
+      "activity": "Elaboración de productos lácteos.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1051",
+      "activity": "Elaboración de productos de molinería.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1052",
+      "activity": "Elaboración de almidones y productos derivados del almidón.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1061",
+      "activity": "Trilla de café.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1062",
+      "activity": "Descafeinado, tostión y molienda del café.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1063",
+      "activity": "Otros derivados del café.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1071",
+      "activity": "Elaboración y refinación de azúcar.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1072",
+      "activity": "Elaboración de panela.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1081",
+      "activity": "Elaboración de productos de panadería.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1082",
+      "activity": "Elaboración de cacao, chocolate y productos de confitería.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1084",
+      "activity": "Elaboración de comidas y platos preparados.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1089",
+      "activity": "Elaboración de otros productos alimenticios n.c.p.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1090",
+      "activity": "Elaboración de alimentos preparados para animales.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1101",
+      "activity": "Destilación, rectificación y mezcla de bebidas alcohólicas.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1102",
+      "activity": "Elaboración de bebidas fermentadas no destiladas.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1103",
+      "activity": "Producción de malta, elaboración de cervezas y otras bebidas malteadas.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1200",
+      "activity": "Elaboración de productos de tabaco.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1311",
+      "activity": "Preparación e hilatura de fibras textiles.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1312",
+      "activity": "Tejeduría de productos textiles.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1313",
+      "activity": "Acabado de productos textiles.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1391",
+      "activity": "Fabricación de tejidos de punto y ganchillo.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1392",
+      "activity": "Confección de artículos con materiales textiles, excepto prendas de vestir.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1393",
+      "activity": "Fabricación de tapetes y alfombras para pisos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1399",
+      "activity": "Fabricación de otros artículos textiles n.c.p.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1410",
+      "activity": "Confección de prendas de vestir, excepto prendas de piel.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1420",
+      "activity": "Fabricación de artículos de piel.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1511",
+      "activity": "Curtido y recurtido de cueros; recurtido y teñido de pieles.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1521",
+      "activity": "Fabricación de calzado de cuero y piel, con cualquier tipo de suela.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1522",
+      "activity": "Fabricación de otros tipos de calzado, excepto calzado de cuero y piel.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1523",
+      "activity": "Fabricación de partes del calzado.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1610",
+      "activity": "Aserrado, acepillado e impregnación de la madera.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1640",
+      "activity": "Fabricación de recipientes de madera.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1701",
+      "activity": "Fabricación de pulpas (pastas) celulósicas; papel y cartón.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1709",
+      "activity": "Fabricación de otros artículos de papel y cartón.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1811",
+      "activity": "Actividades de impresión.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1812",
+      "activity": "Actividades de servicios relacionados con la impresión.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1820",
+      "activity": "Producción de copias a partir de grabaciones originales.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1910",
+      "activity": "Fabricación de productos de hornos de coque.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1921",
+      "activity": "Fabricación de productos de la refinación del petróleo.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "1922",
+      "activity": "Actividad de mezcla de combustibles.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2011",
+      "activity": "Fabricación de sustancias y productos químicos básicos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2012",
+      "activity": "Fabricación de abonos y compuestos inorgánicos nitrogenados.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2013",
+      "activity": "Fabricación de plásticos en formas primarias.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2014",
+      "activity": "Fabricación de caucho sintético en formas primarias.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2021",
+      "activity": "Fabricación de plaguicidas y otros productos químicos de uso agropecuario.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2029",
+      "activity": "Fabricación de otros productos químicos n.c.p.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2030",
+      "activity": "Fabricación de fibras sintéticas y artificiales.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2211",
+      "activity": "Fabricación de llantas y neumáticos de caucho",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2212",
+      "activity": "Reencauche de llantas usadas",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2219",
+      "activity": "Fabricación de formas básicas de caucho y otros productos de caucho n.c.p.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2221",
+      "activity": "Fabricación de formas básicas de plástico.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2229",
+      "activity": "Fabricación de artículos de plástico n.c.p.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2310",
+      "activity": "Fabricación de vidrio y productos de vidrio.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2391",
+      "activity": "Fabricación de productos refractarios.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2392",
+      "activity": "Fabricación de materiales de arcilla para la construcción.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2393",
+      "activity": "Fabricación de otros productos de cerámica y porcelana.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2394",
+      "activity": "Fabricación de cemento, cal y yeso.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2395",
+      "activity": "Fabricación de artículos de hormigón, cemento y yeso.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2396",
+      "activity": "Corte, tallado y acabado de la piedra.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2399",
+      "activity": "Fabricación de otros productos minerales no metálicos n.c.p.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2410",
+      "activity": "Industrias básicas de hierro y de acero.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2421",
+      "activity": "Industrias básicas de metales preciosos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2429",
+      "activity": "Industrias básicas de otros metales no ferrosos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2431",
+      "activity": "Fundición de hierro y de acero.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2432",
+      "activity": "Fundición de metales no ferrosos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2511",
+      "activity": "Fabricación de productos metálicos para uso estructural.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2520",
+      "activity": "Fabricación de armas y municiones.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2591",
+      "activity": "Forja, prensado, estampado y laminado de metal; pulvimetalurgia.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2592",
+      "activity": "Tratamiento y revestimiento de metales; mecanizado.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2599",
+      "activity": "Fabricación de otros productos elaborados de metal n.c.p.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2610",
+      "activity": "Fabricación de componentes y tableros electrónicos.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2620",
+      "activity": "Fabricación de computadoras y de equipo periférico.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2630",
+      "activity": "Fabricación de equipos de comunicación.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2640",
+      "activity": "Fabricación de aparatos electrónicos de consumo.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2651",
+      "activity": "Fabricación de equipo de medición, prueba, navegación y control.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2652",
+      "activity": "Fabricación de relojes.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2670",
+      "activity": "Fabricación de instrumentos ópticos y equipo fotográfico.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2680",
+      "activity": "Fabricación de medios magnéticos y ópticos para almacenamiento de datos.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2711",
+      "activity": "Fabricación de motores, generadores y transformadores eléctricos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2712",
+      "activity": "Fabricación de aparatos de distribución y control de la energía eléctrica.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2720",
+      "activity": "Fabricación de pilas, baterías y acumuladores eléctricos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2731",
+      "activity": "Fabricación de hilos y cables eléctricos y de fibra óptica.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2732",
+      "activity": "Fabricación de dispositivos de cableado.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2740",
+      "activity": "Fabricación de equipos eléctricos de iluminación.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2750",
+      "activity": "Fabricación de aparatos de uso doméstico.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2790",
+      "activity": "Fabricación de otros tipos de equipo eléctrico n.c.p.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2812",
+      "activity": "Fabricación de equipos de potencia hidráulica y neumática.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2813",
+      "activity": "Fabricación de otras bombas, compresores, grifos y válvulas.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2815",
+      "activity": "Fabricación de hornos, hogares y quemadores industriales.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2816",
+      "activity": "Fabricación de equipo de elevación y manipulación.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2818",
+      "activity": "Fabricación de herramientas manuales con motor.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2819",
+      "activity": "Fabricación de otros tipos de maquinaria y equipo de uso general n.c.p.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2821",
+      "activity": "Fabricación de maquinaria agropecuaria y forestal.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2822",
+      "activity": "Fabricación de máquinas formadoras de metal y de máquinas herramienta.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2823",
+      "activity": "Fabricación de maquinaria para la metalurgia.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2829",
+      "activity": "Fabricación de otros tipos de maquinaria y equipo de uso especial n.c.p.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "2910",
+      "activity": "Fabricación de vehículos automotores y sus motores.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3011",
+      "activity": "Construcción de barcos y de estructuras flotantes.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3012",
+      "activity": "Construcción de embarcaciones de recreo y deporte.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3020",
+      "activity": "Fabricación de locomotoras y de material rodante para ferrocarriles.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3030",
+      "activity": "Fabricación de aeronaves, naves espaciales y de maquinaria conexa.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3040",
+      "activity": "Fabricación de vehículos militares de combate.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3091",
+      "activity": "Fabricación de motocicletas.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3099",
+      "activity": "Fabricación de otros tipos de equipo de transporte n.c.p.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3110",
+      "activity": "Fabricación de muebles.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3120",
+      "activity": "Fabricación de colchones y somieres.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3210",
+      "activity": "Fabricación de joyas, bisutería y artículos conexos.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3220",
+      "activity": "Fabricación de instrumentos musicales.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3230",
+      "activity": "Fabricación de artículos y equipo para la práctica del deporte.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3240",
+      "activity": "Fabricación de juegos, juguetes y rompecabezas.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3290",
+      "activity": "Otras industrias manufactureras n.c.p.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3312",
+      "activity": "Mantenimiento y reparación especializado de maquinaria y equipo.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3313",
+      "activity": "Mantenimiento y reparación especializado de equipo electrónico y óptico.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3314",
+      "activity": "Mantenimiento y reparación especializado de equipo eléctrico.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3320",
+      "activity": "Instalación especializada de maquinaria y equipo industrial.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3511",
+      "activity": "Generación de energía eléctrica.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3512",
+      "activity": "Transmisión de energía eléctrica.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3513",
+      "activity": "Distribución de energía eléctrica.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3514",
+      "activity": "Comercialización de energía eléctrica.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3520",
+      "activity": "Producción de gas; distribución de combustibles gaseosos por tuberías.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3530",
+      "activity": "Suministro de vapor y aire acondicionado.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3600",
+      "activity": "Captación, tratamiento y distribución de agua.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3700",
+      "activity": "Evacuación y tratamiento de aguas residuales.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3811",
+      "activity": "Recolección de desechos no peligrosos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3812",
+      "activity": "Recolección de desechos peligrosos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3821",
+      "activity": "Tratamiento y disposición de desechos no peligrosos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3822",
+      "activity": "Tratamiento y disposición de desechos peligrosos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "3830",
+      "activity": "Recuperación de materiales.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4111",
+      "activity": "Construcción de edificios residenciales.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4112",
+      "activity": "Construcción de edificios no residenciales.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4220",
+      "activity": "Construcción de proyectos de servicio público.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4290",
+      "activity": "Construcción de otras obras de ingeniería civil.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4311",
+      "activity": "Demolición.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4312",
+      "activity": "Preparación del terreno.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4321",
+      "activity": "Instalaciones eléctricas.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4322",
+      "activity": "Instalaciones de fontanería, calefacción y aire acondicionado.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4329",
+      "activity": "Otras instalaciones especializadas.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4330",
+      "activity": "Terminación y acabado de edificios y obras de ingeniería civil.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4511",
+      "activity": "Comercio de vehículos automotores nuevos.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4512",
+      "activity": "Comercio de vehículos automotores usados.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4520",
+      "activity": "Mantenimiento y reparación de vehículos automotores.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4541",
+      "activity": "Comercio de motocicletas y de sus partes, piezas y accesorios.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4542",
+      "activity": "Mantenimiento y reparación de motocicletas y de sus partes y piezas.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4610",
+      "activity": "Comercio al por mayor a cambio de una retribución o por contrata.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4620",
+      "activity": "Comercio al por mayor de materias primas agropecuarias; animales vivos.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4631",
+      "activity": "Comercio al por mayor de productos alimenticios.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4632",
+      "activity": "Comercio al por mayor de bebidas y tabaco.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4642",
+      "activity": "Comercio al por mayor de prendas de vestir.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4643",
+      "activity": "Comercio al por mayor de calzado.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4644",
+      "activity": "Comercio al por mayor de aparatos y equipo de uso doméstico.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4649",
+      "activity": "Comercio al por mayor de otros utensilios domésticos n.c.p.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4653",
+      "activity": "Comercio al por mayor de maquinaria y equipo agropecuarios.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4659",
+      "activity": "Comercio al por mayor de otros tipos de maquinaria y equipo n.c.p.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4662",
+      "activity": "Comercio al por mayor de metales y productos metalíferos.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4665",
+      "activity": "Comercio al por mayor de desperdicios, desechos y chatarra.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4669",
+      "activity": "Comercio al por mayor de otros productos n.c.p.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4690",
+      "activity": "Comercio al por mayor no especializado.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4731",
+      "activity": "Comercio al por menor de combustible para automotores.",
+      "ratePerThousand": 9,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4755",
+      "activity": "Comercio al por menor de artículos y utensilios de uso doméstico.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4775",
+      "activity": "Comercio al por menor de artículos de segunda mano.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4789",
+      "activity": "Comercio al por menor de otros productos en puestos de venta móviles.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4791",
+      "activity": "Comercio al por menor realizado a través de internet.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4792",
+      "activity": "Comercio al por menor realizado a través de casas de venta o por correo.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4911",
+      "activity": "Transporte férreo de pasajeros.",
+      "ratePerThousand": 9,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4912",
+      "activity": "Transporte férreo de carga.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4921",
+      "activity": "Transporte de pasajeros.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4922",
+      "activity": "Transporte mixto.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4923",
+      "activity": "Transporte de carga por carretera.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "4930",
+      "activity": "Transporte por tuberías.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5011",
+      "activity": "Transporte de pasajeros marítimo y de cabotaje.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5012",
+      "activity": "Transporte de carga marítimo y de cabotaje.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5021",
+      "activity": "Transporte fluvial de pasajeros.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5022",
+      "activity": "Transporte fluvial de carga.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5111",
+      "activity": "Transporte aéreo nacional de pasajeros.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5112",
+      "activity": "Transporte aéreo internacional de pasajeros.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5121",
+      "activity": "Transporte aéreo nacional de carga.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5122",
+      "activity": "Transporte aéreo internacional de carga.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5210",
+      "activity": "Almacenamiento y depósito.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5224",
+      "activity": "Manipulación de carga.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5229",
+      "activity": "Otras actividades complementarias al transporte.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5310",
+      "activity": "Actividades postales nacionales.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5320",
+      "activity": "Actividades de mensajería.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5511",
+      "activity": "Alojamiento en hoteles.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5512",
+      "activity": "Alojamiento en apartahoteles.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5513",
+      "activity": "Alojamiento en centros vacacionales.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5514",
+      "activity": "Alojamiento rural.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5519",
+      "activity": "Otros tipos de alojamientos para visitantes.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5520",
+      "activity": "Actividades de zonas de camping y parques para vehículos recreacionales.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5530",
+      "activity": "Servicio por horas",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5590",
+      "activity": "Otros tipos de alojamiento n.c.p.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5611",
+      "activity": "Expendio a la mesa de comidas preparadas.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5612",
+      "activity": "Expendio por autoservicio de comidas preparadas.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5613",
+      "activity": "Expendio de comidas preparadas en cafeterías.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5619",
+      "activity": "Otros tipos de expendio de comidas preparadas n.c.p.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5621",
+      "activity": "Catering para eventos.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5629",
+      "activity": "Actividades de otros servicios de comidas.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5811",
+      "activity": "Edición de libros.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5812",
+      "activity": "Edición de directorios y listas de correo.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5813",
+      "activity": "Edición de periódicos, revistas y otras publicaciones periódicas.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5819",
+      "activity": "Otros trabajos de edición.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5820",
+      "activity": "Edición de programas de informática (software).",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5914",
+      "activity": "Actividades de exhibición de películas cinematográficas y videos.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "5920",
+      "activity": "Actividades de grabación de sonido y edición de música.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6020",
+      "activity": "Actividades de programación y transmisión de televisión.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6110",
+      "activity": "Actividades de telecomunicaciones alámbricas.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6120",
+      "activity": "Actividades de telecomunicaciones inalámbricas.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6130",
+      "activity": "Actividades de telecomunicación satelital.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6190",
+      "activity": "Otras actividades de telecomunicaciones.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6311",
+      "activity": "Procesamiento de datos, alojamiento (hosting) y actividades relacionadas.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6312",
+      "activity": "Portales web.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6391",
+      "activity": "Actividades de agencias de noticias.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6399",
+      "activity": "Otras actividades de servicio de información n.c.p.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6411",
+      "activity": "Banco Central.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6412",
+      "activity": "Bancos comerciales.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6421",
+      "activity": "Actividades de las corporaciones financieras.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6422",
+      "activity": "Actividades de las compañías de financiamiento.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6423",
+      "activity": "Banca de segundo piso.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6424",
+      "activity": "Actividades de las cooperativas financieras.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6431",
+      "activity": "Fideicomisos, fondos y entidades financieras similares.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6432",
+      "activity": "Fondos de cesantías.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6491",
+      "activity": "Leasing financiero (arrendamiento financiero).",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6493",
+      "activity": "Actividades de compra de cartera o factoring.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6494",
+      "activity": "Otras actividades de distribución de fondos.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6495",
+      "activity": "Instituciones especiales oficiales.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6511",
+      "activity": "Seguros generales.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6512",
+      "activity": "Seguros de vida.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6513",
+      "activity": "Reaseguros.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6514",
+      "activity": "Capitalización.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6521",
+      "activity": "Servicios de seguros sociales de salud.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6522",
+      "activity": "Servicios de seguros sociales de riesgos profesionales.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6531",
+      "activity": "Régimen de prima media con prestación definida (RPM).",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6532",
+      "activity": "Régimen de ahorro individual (RAI).",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6611",
+      "activity": "Administración de mercados financieros.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6612",
+      "activity": "Corretaje de valores y de contratos de productos básicos.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6613",
+      "activity": "Otras actividades relacionadas con el mercado de valores.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6614",
+      "activity": "Actividades de las casas de cambio.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6615",
+      "activity": "Actividades de los profesionales de compra y venta de divisas.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6619",
+      "activity": "Otras actividades auxiliares de las actividades de servicios financieros n.c.p.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6621",
+      "activity": "Actividades de agentes y corredores de seguros",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6629",
+      "activity": "Evaluación de riesgos y daños, y otras actividades de servicios auxiliares",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6630",
+      "activity": "Actividades de administración de fondos.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6810",
+      "activity": "Actividades inmobiliarias realizadas con bienes propios o arrendados.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "6910",
+      "activity": "Actividades jurídicas.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7010",
+      "activity": "Actividades de administración empresarial.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7020",
+      "activity": "Actividades de consultaría de gestión.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7120",
+      "activity": "Ensayos y análisis técnicos.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7310",
+      "activity": "Publicidad.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7320",
+      "activity": "Estudios de mercado y realización de encuestas de opinión pública.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7410",
+      "activity": "Actividades especializadas de diseño.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7420",
+      "activity": "Actividades de fotografía.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7490",
+      "activity": "Otras actividades profesionales, científicas y técnicas n.c.p.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7500",
+      "activity": "Actividades veterinarias.",
+      "ratePerThousand": 5,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7710",
+      "activity": "Alquiler y arrendamiento de vehículos automotores.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7721",
+      "activity": "Alquiler y arrendamiento de equipo recreativo y deportivo.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7722",
+      "activity": "Alquiler de videos y discos.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7810",
+      "activity": "Actividades de agencias de empleo.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7820",
+      "activity": "Actividades de agencias de empleo temporal.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7830",
+      "activity": "Otras actividades de suministro de recurso humano.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7911",
+      "activity": "Actividades de las agencias de viaje.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7912",
+      "activity": "Actividades de operadores turísticos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "7990",
+      "activity": "Otros servicios de reserva y actividades relacionadas.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8010",
+      "activity": "Actividades de seguridad privada.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8020",
+      "activity": "Actividades de servicios de sistemas de seguridad.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8030",
+      "activity": "Actividades de detectives e investigadores privados.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8110",
+      "activity": "Actividades combinadas de apoyo a instalaciones.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8121",
+      "activity": "Limpieza general interior de edificios.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8129",
+      "activity": "Otras actividades de limpieza de edificios e instalaciones industriales.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8130",
+      "activity": "Actividades de paisajismo y servicios de mantenimiento conexos.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8211",
+      "activity": "Actividades combinadas de servicios administrativos de oficina.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8220",
+      "activity": "Actividades de centros de llamadas (Call center).",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8230",
+      "activity": "Organización de convenciones y eventos comerciales.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8291",
+      "activity": "Actividades de agencias de cobranza y oficinas de calificación crediticia.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8292",
+      "activity": "Actividades de envase y empaque.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8299",
+      "activity": "Otras actividades de servicio de apoyo a las empresas n.c.p.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8411",
+      "activity": "Actividades legislativas de la administración pública.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8412",
+      "activity": "Actividades ejecutivas de la administración pública.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8414",
+      "activity": "Actividades reguladoras y facilitadoras de la actividad económica.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8415",
+      "activity": "Actividades de los otros órganos de control.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8421",
+      "activity": "Relaciones exteriores.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8422",
+      "activity": "Actividades de defensa.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8423",
+      "activity": "Orden público y actividades de seguridad.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8424",
+      "activity": "Administración de justicia.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8511",
+      "activity": "Educación de la primera infancia.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8512",
+      "activity": "Educación preescolar.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8513",
+      "activity": "Educación básica primaria.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8521",
+      "activity": "Educación básica secundaria.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8522",
+      "activity": "Educación media académica.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8523",
+      "activity": "Educación media técnica y de formación laboral.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8530",
+      "activity": "Establecimientos que combinan diferentes niveles de educación.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8541",
+      "activity": "Educación técnica profesional.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8542",
+      "activity": "Educación tecnológica.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8543",
+      "activity": "Educación de instituciones universitarias o de escuelas tecnológicas.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8544",
+      "activity": "Educación de universidades.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8551",
+      "activity": "Formación académica no formal.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8552",
+      "activity": "Enseñanza deportiva y recreativa.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8553",
+      "activity": "Enseñanza cultural.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8559",
+      "activity": "Otros tipos de educación n.c.p.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8560",
+      "activity": "Actividades de apoyo a la educación.",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8610",
+      "activity": "Actividades de hospitales y clínicas, con internación.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8621",
+      "activity": "Actividades de la práctica médica, sin internación.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8622",
+      "activity": "Actividades de la práctica odontológica.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8691",
+      "activity": "Actividades de apoyo diagnóstico.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8692",
+      "activity": "Actividades de apoyo terapéutico.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8699",
+      "activity": "Otras actividades de atención de la salud humana.",
+      "ratePerThousand": 8,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8710",
+      "activity": "Actividades de atención residencial medicalizada de tipo general.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8790",
+      "activity": "Otras actividades de atención en instituciones con alojamiento",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "8890",
+      "activity": "Otras actividades de asistencia social sin alojamiento.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9001",
+      "activity": "Creación literaria.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9002",
+      "activity": "Creación musical.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9003",
+      "activity": "Creación teatral.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9004",
+      "activity": "Creación audiovisual.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9005",
+      "activity": "Artes plásticas y visuales.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9006",
+      "activity": "Actividades teatrales.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9007",
+      "activity": "Actividades de espectáculos musicales en vivo.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9009",
+      "activity": "Otras actividades de espectáculos en vivo.",
+      "ratePerThousand": 10,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9101",
+      "activity": "Actividades de bibliotecas y archivos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9103",
+      "activity": "Actividades de jardines botánicos, zoológicos y reservas naturales.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9200",
+      "activity": "Actividades de rifas",
+      "ratePerThousand": 6,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9311",
+      "activity": "Gestión de instalaciones deportivas.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    },
+    {
+      "ciiu": "9312",
+      "activity": "Actividades de clubes deportivos.",
+      "ratePerThousand": 7,
+      "source": "Acuerdo Municipal 013 de 2021, art. 110 / extracto CODIGOS Y TARIFAS SEGUN ACTIVIDAD DE COMERCIO.pdf"
+    }
+  ]
+}
