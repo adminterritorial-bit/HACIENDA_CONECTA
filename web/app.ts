@@ -497,7 +497,7 @@ async function downloadCertificatePdf(cert:any){
   let y=645; for(const [label,value] of rows){page.drawText(label,{x:40,y,size:9,font:bold,color:rgb(.2,.3,.4)});page.drawText(String(value),{x:175,y,size:9,font,color:rgb(.08,.14,.22),maxWidth:370});y-=32;}
   const verifyUrl=location.origin+"/?certificate="+encodeURIComponent(cert.verificationToken)+"#certificates";
   const qrData=await QRCode.toDataURL(verifyUrl,{margin:1,width:220,errorCorrectionLevel:"M"});
-  const qrBytes=Uint8Array.from(atob(qrData.split(",")[1]),c=>c.charCodeAt(0)); const qr=await pdf.embedPng(qrBytes);
+  const qrBase64=qrData.split(",")[1] ?? ""; if(!qrBase64) throw new Error("No fue posible generar el código QR.");\n  const qrBytes=Uint8Array.from(atob(qrBase64),c=>c.charCodeAt(0)); const qr=await pdf.embedPng(qrBytes);
   page.drawImage(qr,{x:40,y:285,width:145,height:145});
   page.drawText("Verificación pública",{x:210,y:398,size:11,font:bold});page.drawText("Escanea el QR o ingresa el token en Hacienda Conecta.",{x:210,y:378,size:9,font});
   page.drawText("Token",{x:210,y:350,size:8,font:bold});page.drawText(String(cert.verificationToken),{x:210,y:333,size:7,font,maxWidth:330});
