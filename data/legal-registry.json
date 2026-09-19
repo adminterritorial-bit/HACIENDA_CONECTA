@@ -1,0 +1,157 @@
+{
+  "metadata": {
+    "municipality": "San Pedro, Valle del Cauca",
+    "consolidatedThrough": "2026-09-19",
+    "status": "WORKING_CONSOLIDATION",
+    "rule": "Only entries with implementationStatus=ACTIVE_VALIDATED may drive automatic calculations."
+  },
+  "municipal": [
+    {
+      "id": "SANPEDRO-ACUERDO-013-2021",
+      "type": "Acuerdo Municipal",
+      "number": "013",
+      "year": 2021,
+      "title": "Estatuto Tributario Municipal de San Pedro, Valle del Cauca",
+      "role": "BASE_STATUTE",
+      "source": "User-supplied official PDF",
+      "sourceUrl": null,
+      "implementationStatus": "ACTIVE_VALIDATED_BASE",
+      "notes": "Base statute supplied for this project; later amendments must prevail where applicable."
+    },
+    {
+      "id": "SANPEDRO-ACUERDO-002-2022",
+      "type": "Acuerdo Municipal",
+      "number": "002",
+      "year": 2022,
+      "title": "Modificación al Estatuto Tributario Municipal",
+      "role": "AMENDMENT",
+      "source": "Concejo Municipal de San Pedro - official publication located",
+      "sourceUrl": "https://www.concejosanpedrovalle.gov.co/wp-content/uploads/2024/03/ACUERDO-MUNICIPAL-002-2022-MODIFICACION-ESTATUTO-TRIBUTARIO.pdf",
+      "implementationStatus": "SOURCE_LOCATED_PENDING_ARTICLE_EXTRACTION",
+      "notes": "Do not automatically alter tax rules until the operative articles are extracted and cross-checked."
+    },
+    {
+      "id": "SANPEDRO-ACUERDO-009-2022",
+      "type": "Acuerdo Municipal",
+      "number": "009",
+      "year": 2022,
+      "title": "Modificación al Estatuto Tributario Municipal",
+      "role": "AMENDMENT",
+      "source": "Concejo Municipal de San Pedro - official publication located",
+      "sourceUrl": "https://www.concejosanpedrovalle.gov.co/wp-content/uploads/2024/03/ACUERDO-MUNICIPAL-009-2022-MODIFICACION-ESTATUTO-TRIBUTARIO.pdf",
+      "implementationStatus": "SOURCE_LOCATED_PENDING_ARTICLE_EXTRACTION",
+      "notes": "Do not automatically alter tax rules until the operative articles are extracted and cross-checked."
+    },
+    {
+      "id": "SANPEDRO-ACUERDO-005-2024",
+      "type": "Acuerdo Municipal",
+      "number": "005",
+      "year": 2024,
+      "date": "2024-07-30",
+      "title": "Alivios tributarios transitorios",
+      "role": "TEMPORARY_RELIEF",
+      "source": "Concejo Municipal de San Pedro - official PDF",
+      "sourceUrl": "https://www.concejosanpedrovalle.gov.co/wp-content/uploads/2024/08/ACUERDO-MUNICIPAL-005-2024-ALIVIOS-TRIBUTARIOS.pdf",
+      "implementationStatus": "EXPIRED_HISTORICAL_RULE",
+      "rules": [
+        {
+          "tax": "PREDIAL",
+          "benefit": "100% discount on default interest",
+          "start": "2024-08-15",
+          "end": "2024-09-15"
+        },
+        {
+          "tax": "PREDIAL",
+          "benefit": "90% discount on default interest",
+          "start": "2024-09-16",
+          "end": "2024-10-15"
+        },
+        {
+          "tax": "ICA_AVISOS",
+          "benefit": "100% discount on default interest and enforceable penalties",
+          "start": "2024-08-15",
+          "end": "2024-09-15"
+        },
+        {
+          "tax": "ICA_AVISOS",
+          "benefit": "90% discount on default interest and enforceable penalties",
+          "start": "2024-09-16",
+          "end": "2024-10-15"
+        }
+      ],
+      "notes": "Historical only. Applied to qualifying obligations through 2023 and excluded environmental and firefighter surcharges."
+    }
+  ],
+  "national": [
+    {
+      "id": "DIAN-RES-000238-2025",
+      "type": "Resolución DIAN",
+      "number": "000238",
+      "year": 2025,
+      "date": "2025-12-15",
+      "title": "UVT applicable for 2026",
+      "implementationStatus": "ACTIVE_VALIDATED",
+      "value": {
+        "uvtCop": 52374,
+        "year": 2026
+      },
+      "sourceUrl": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0238_2025.htm"
+    },
+    {
+      "id": "LEY-527-1999",
+      "type": "Ley",
+      "number": "527",
+      "year": 1999,
+      "topic": "Electronic messages, electronic/digital signatures",
+      "implementationStatus": "LEGAL_BASELINE"
+    },
+    {
+      "id": "LEY-1581-2012",
+      "type": "Ley",
+      "number": "1581",
+      "year": 2012,
+      "topic": "Personal data protection",
+      "implementationStatus": "LEGAL_BASELINE"
+    },
+    {
+      "id": "LEY-2052-2020",
+      "type": "Ley",
+      "number": "2052",
+      "year": 2020,
+      "topic": "Rationalization and digitalization of procedures",
+      "implementationStatus": "LEGAL_BASELINE"
+    },
+    {
+      "id": "DECRETO-620-2020",
+      "type": "Decreto",
+      "number": "620",
+      "year": 2020,
+      "topic": "Digital Citizen Services",
+      "implementationStatus": "LEGAL_BASELINE"
+    },
+    {
+      "id": "DECRETO-767-2022",
+      "type": "Decreto",
+      "number": "767",
+      "year": 2022,
+      "topic": "Digital Government Policy",
+      "implementationStatus": "LEGAL_BASELINE"
+    },
+    {
+      "id": "RES-MINTIC-1519-2020",
+      "type": "Resolución MinTIC",
+      "number": "1519",
+      "year": 2020,
+      "topic": "Accessibility and electronic headquarters requirements",
+      "implementationStatus": "LEGAL_BASELINE"
+    },
+    {
+      "id": "RES-MINTIC-2277-2025",
+      "type": "Resolución MinTIC",
+      "number": "2277",
+      "year": 2025,
+      "topic": "Updated MSPI Annex 1",
+      "implementationStatus": "LEGAL_BASELINE"
+    }
+  ]
+}
