@@ -218,9 +218,10 @@ if (config.NODE_ENV !== "production") {
 app.setErrorHandler((error, _request, reply) => {
   const status = error instanceof z.ZodError ? 400 : 422;
   app.log.warn({ err: error }, "request rejected");
+  const detail = error instanceof Error ? error.message : "Error no identificado";
   reply.code(status).send({
     error: "Solicitud inválida",
-    detail: config.NODE_ENV === "production" ? undefined : error.message
+    detail: config.NODE_ENV === "production" ? undefined : detail
   });
 });
 
