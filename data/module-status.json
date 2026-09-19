@@ -1,0 +1,153 @@
+{
+  "metadata": {
+    "updatedAt": "2026-09-19",
+    "program": "Hacienda Conecta"
+  },
+  "modules": [
+    {
+      "id": "tax-registry",
+      "name": "Registro Tributario",
+      "phase": 1,
+      "status": "IN_PROGRESS",
+      "capabilities": [
+        "taxpayer profile",
+        "representatives",
+        "accountant/revisor relationships",
+        "establishments",
+        "registration history"
+      ]
+    },
+    {
+      "id": "ica",
+      "name": "ICA + Avisos y Tableros",
+      "phase": 1,
+      "status": "MVP_ENGINE",
+      "capabilities": [
+        "CIIU tariff engine",
+        "minimum tax",
+        "notices and boards",
+        "versioned rules"
+      ]
+    },
+    {
+      "id": "reteica",
+      "name": "RETEICA",
+      "phase": 1,
+      "status": "MVP_ENGINE_WITH_LEGAL_BLOCKER",
+      "capabilities": [
+        "thresholds in UVT",
+        "withholding calculation",
+        "certificates"
+      ],
+      "blocker": "Periodicidad mensual/bimestral must be formally resolved."
+    },
+    {
+      "id": "payments",
+      "name": "Pagos y conciliación",
+      "phase": 1,
+      "status": "ADAPTER_READY_PROVIDER_PENDING",
+      "capabilities": [
+        "payment intents",
+        "server-to-server verification boundary",
+        "idempotent references"
+      ]
+    },
+    {
+      "id": "signature",
+      "name": "Firma y autenticación reforzada",
+      "phase": 1,
+      "status": "MVP_SECURITY_FLOW",
+      "capabilities": [
+        "document hash",
+        "OTP challenge",
+        "one-time verification",
+        "evidence"
+      ]
+    },
+    {
+      "id": "certificates",
+      "name": "Certificados verificables",
+      "phase": 1,
+      "status": "IN_PROGRESS",
+      "capabilities": [
+        "serial",
+        "verification token",
+        "document hash",
+        "revocation model"
+      ]
+    },
+    {
+      "id": "predial",
+      "name": "Predial",
+      "phase": 2,
+      "status": "PLANNED",
+      "capabilities": [
+        "official billing",
+        "surcharges",
+        "discount calendar",
+        "property account"
+      ]
+    },
+    {
+      "id": "paz-y-salvo",
+      "name": "Paz y Salvo",
+      "phase": 2,
+      "status": "PLANNED",
+      "capabilities": [
+        "debt validation",
+        "payment reconciliation",
+        "verifiable issuance"
+      ]
+    },
+    {
+      "id": "payment-agreements",
+      "name": "Acuerdos de Pago",
+      "phase": 2,
+      "status": "PLANNED",
+      "capabilities": [
+        "request",
+        "simulation",
+        "approval workflow",
+        "installment schedule"
+      ]
+    },
+    {
+      "id": "refunds",
+      "name": "Devoluciones y Compensaciones",
+      "phase": 2,
+      "status": "PLANNED",
+      "capabilities": [
+        "request",
+        "evidence",
+        "segregated review",
+        "administrative act"
+      ]
+    },
+    {
+      "id": "audit",
+      "name": "Fiscalización",
+      "phase": 2,
+      "status": "PLANNED",
+      "capabilities": [
+        "cases",
+        "requirements",
+        "official assessments",
+        "evidence",
+        "notifications"
+      ]
+    },
+    {
+      "id": "other-revenues",
+      "name": "Demás Rentas",
+      "phase": 3,
+      "status": "CATALOGUED",
+      "capabilities": [
+        "taxes",
+        "rates",
+        "contributions",
+        "stamps",
+        "other municipal revenue"
+      ]
+    }
+  ]
+}
