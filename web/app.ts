@@ -502,6 +502,14 @@ async function viewDeclarations(){
     ${rows.length?`<div class="declaration-list">${rows.map((d:any)=>`<article class="declaration-item"><div class="declaration-type"><span class="module-icon">${icon(d.tax_type==="RETEICA"?"reteica":"ica")}</span><div><strong>${esc(d.tax_type)}</strong><small>${d.tax_year} · ${esc(d.period)}</small></div></div><div class="declaration-state"><span class="status ${statusClass(d.status)}">${esc(humanStatus(d.status))}</span><small>Creada ${date(d.created_at)}</small></div><div class="declaration-amount"><small>Saldo</small><strong>${money(d.balance_due_cop)}</strong></div><div class="declaration-action">${declarationActions(d)}</div></article>`).join("")}</div>`:'<div class="empty-state"><span class="empty-state-icon">${icon("declarations")}</span><h3>Aún no tienes declaraciones</h3><p>Empieza una liquidación ICA o RETEICA para crear tu primer borrador.</p><div class="actions"><button class="btn" data-route="ica">Crear ICA</button><button class="btn secondary" data-route="reteica">Crear RETEICA</button></div></div>'}
   </section>`;
 }
+
+function declarationActions(d:any){
+  if(d.status==="DRAFT"||d.status==="IDENTITY_VERIFIED") return `<button class="btn small" data-prepare="${d.id}">Preparar firma</button>`;
+  if(d.status==="READY_TO_SIGN") return `<button class="btn small" data-sign="${d.id}">Firmar con SMS</button>`;
+  if(d.status==="PAYMENT_PENDING") return `<button class="btn small" data-pay="${d.id}">Autorizar pago</button>`;
+  return `<button class="btn ghost small" data-pdf="${d.id}">Descargar PDF</button>`;
+}
+
 async function viewPayments(){
   if(!requireSession())return "";
   const [{data:reqs},{data:paid},{data:decls}]=await Promise.all([
