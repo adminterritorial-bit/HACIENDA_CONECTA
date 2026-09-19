@@ -495,7 +495,7 @@ async function downloadCertificatePdf(cert:any){
   page.drawText("Documento electrónico verificable",{x:40,y:688,size:10,font,color:rgb(.35,.43,.52)});
   const rows=[["Serial",cert.serial],["Tipo",cert.type],["Fecha de emisión",new Date(cert.issuedAt).toLocaleString("es-CO")],["Hash documental",cert.documentSha256]];
   let y=645; for(const [label,value] of rows){page.drawText(label,{x:40,y,size:9,font:bold,color:rgb(.2,.3,.4)});page.drawText(String(value),{x:175,y,size:9,font,color:rgb(.08,.14,.22),maxWidth:370});y-=32;}
-  const verifyUrl=location.origin+"/?certificate="+encodeURIComponent(cert.verificationToken)+"#certificates";
+  const basePath=location.pathname.endsWith("/")?location.pathname:location.pathname.replace(/[^/]*$/,"");\n  const verifyUrl=location.origin+basePath+"?certificate="+encodeURIComponent(cert.verificationToken)+"#certificates";
   const qrData=await QRCode.toDataURL(verifyUrl,{margin:1,width:220,errorCorrectionLevel:"M"});
   const qrBase64=qrData.split(",")[1] ?? ""; if(!qrBase64) throw new Error("No fue posible generar el código QR.");
   const qrBytes=Uint8Array.from(atob(qrBase64),c=>c.charCodeAt(0)); const qr=await pdf.embedPng(qrBytes);
