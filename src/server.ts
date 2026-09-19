@@ -22,6 +22,7 @@ import {
   verifySignatureChallenge
 } from "./security/signature.js";
 import { MockPaymentGateway } from "./adapters/payment.js";
+import { validateTaxRegistry } from "./domain/taxRegistry.js";
 
 const app = Fastify({
   logger: {
@@ -81,6 +82,12 @@ const tariffFile = JSON.parse(
 ) as { tariffs: IcaTariff[]; metadata: Record<string, unknown> };
 
 const tariffs = new Map(tariffFile.tariffs.map((x) => [x.ciiu, x]));
+const legalRegistry = JSON.parse(
+  await readFile(join(process.cwd(), "data", "legal-registry.json"), "utf8")
+) as Record<string, unknown>;
+const moduleStatus = JSON.parse(
+  await readFile(join(process.cwd(), "data", "module-status.json"), "utf8")
+) as Record<string, unknown>;
 const payments = new MockPaymentGateway();
 const workflowState = new Map<string, DeclarationState>();
 
@@ -94,9 +101,18 @@ app.addHook("onRequest", async (request, reply) => {
 app.get("/health", async () => ({
   ok: true,
   service: "hacienda-conecta",
+  stage: config.APP_STAGE,
   taxYear: config.TAX_YEAR,
+  uvtValueCop: config.UVT_VALUE_COP,
   tariffRulesLoaded: tariffs.size
 }));
+
+app.get("/api/v1/legal-registry", async () => legalRegistry);
+app.get("/api/v1/modules", async () => moduleStatus);
+
+app.post("/api/v1/registry/validate", async (request) => {
+  return validateTaxRegistry(request.body);
+});
 
 app.get("/api/v1/catalog/ica/:ciiu", async (request, reply) => {
   const params = z.object({ ciiu: z.string().regex(/^\d{4}$/) }).parse(request.params);
@@ -171,7 +187,7 @@ app.post("/api/v1/signature/challenge", {
   });
 
   // En producción el OTP se envía exclusivamente por el proveedor SMS y jamás se devuelve por API.
-  return config.NODE_ENV === "production"
+  return config.APP_STAGE !== "development"
     ? { challengeId: challenge.id, documentHash, expiresAt: challenge.expiresAt }
     : {
         challengeId: challenge.id,
@@ -212,7 +228,7 @@ app.get("/api/v1/payments/:paymentId", async (request) => {
   return payments.verify(params);
 });
 
-if (config.NODE_ENV !== "production") {
+if (config.APP_STAGE === "development") {
   app.post("/api/v1/dev/payments/:paymentId/approve", async (request) => {
     const params = z.object({ paymentId: z.string().uuid() }).parse(request.params);
     return payments.approveForDevelopment(params.paymentId);
