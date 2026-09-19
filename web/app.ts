@@ -36,11 +36,11 @@ const maskPhone = (phone:string) => {
   const clean=phone.replace(/\s+/g,"");
   return clean.length>6 ? clean.slice(0,3)+"••••"+clean.slice(-4) : "••••";
 };
-async function getVerifiedPhoneFactor(){
+async function getVerifiedPhoneFactor():Promise<any|null>{
   if(!session) return null;
   const {data,error}=await supabase.auth.mfa.listFactors();
   if(error) throw error;
-  return (data.phone||[]).find((f:any)=>f.status==="verified") || null;
+  return ((data.phone||[]) as any[]).find((f:any)=>f.status==="verified") || null;
 }
 async function needsPhoneOnboarding(){
   if(!session) return false;
@@ -342,8 +342,8 @@ async function viewSecurity(){
     supabase.auth.mfa.listFactors()
   ]);
   const current=aal.data?.currentLevel||"aal1";
-  const phone=(factors.data?.phone||[]).find((f:any)=>f.status==="verified");
-  const pendingPhone=(factors.data?.phone||[]).find((f:any)=>f.status!=="verified");
+  const phone=((factors.data?.phone||[]) as any[]).find((f:any)=>f.status==="verified");
+  const pendingPhone=((factors.data?.phone||[]) as any[]).find((f:any)=>f.status!=="verified");
   const suggestedPhone=phone?.phone || pendingPhone?.phone || profile?.phone_e164 || session?.user.user_metadata?.phone || "";
   return `<div class="page-head"><div><div class="kicker">Identidad y firma electrónica</div><h1>Verificación por celular</h1><p>Tu acceso puede hacerse con Google o correo. Las acciones sensibles usan un segundo factor independiente: un código enviado al celular verificado.</p></div><span class="status ${phone?"ok":"warn"}">${phone?"CELULAR VERIFICADO":"CELULAR PENDIENTE"}</span></div>
   <div class="grid cols-2">
