@@ -4,9 +4,7 @@ import QRCode from "qrcode";
 
 const SUPABASE_URL = "https://jppykxqsxayzypzdbnqd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_CH1hn5LpS3zWPdDWqiM4jg_F7OuK7Ry";
-const HACIENDA_CANONICAL_URL = "https://hacienda-conecta.vercel.app/";
-const GOOGLE_WEB_CLIENT_ID = "103022555921-i7cqb3o8tc4lbtf7n9endse1d423ck4m.apps.googleusercontent.com";
-const APP_BUILD = "2026.09.21.7";
+const APP_BUILD = "2026.09.21.8";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
@@ -112,82 +110,34 @@ const statusClass = (s:string) => /APPROVED|PAID|FILED|ISSUED|VERIFIED|ACTIVE|AV
 const humanStatus = (s:any) => String(s||"").replaceAll("_"," ");
 const userInitials = () => (profile?.full_name || session?.user.email || "HC").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase();
 const appBaseUrl = () => {
-  if (location.hostname === "adminterritorial-bit.github.io") {
-    return "https://adminterritorial-bit.github.io/HACIENDA_CONECTA/";
-  }
-  return HACIENDA_CANONICAL_URL;
+  const isGitHubPages=location.hostname.endsWith(".github.io");
+  const basePath=isGitHubPages ? "/HACIENDA_CONECTA/" : (location.pathname.endsWith("/")?location.pathname:location.pathname.replace(/[^/]*$/,""));
+  return new URL(basePath || "/",location.origin).toString();
 };
 
-let googleIdentityLoader: Promise<void> | null = null;
-function ensureGoogleIdentity():Promise<void>{
-  const w=window as any;
-  if(w.google?.accounts?.id) return Promise.resolve();
-  if(googleIdentityLoader) return googleIdentityLoader;
-
-  googleIdentityLoader=new Promise((resolve,reject)=>{
-    const existing=document.querySelector<HTMLScriptElement>('script[data-hc-google-identity="1"]');
-    const done=()=>{
-      if((window as any).google?.accounts?.id) resolve();
-      else reject(new Error("Google Identity Services no quedó disponible."));
-    };
-    if(existing){
-      if((window as any).google?.accounts?.id){resolve();return;}
-      existing.addEventListener("load",done,{once:true});
-      existing.addEventListener("error",()=>reject(new Error("No fue posible cargar Google Identity Services.")),{once:true});
-      return;
-    }
-    const script=document.createElement("script");
-    script.src="https://accounts.google.com/gsi/client";
-    script.async=true;
-    script.defer=true;
-    script.dataset.hcGoogleIdentity="1";
-    script.addEventListener("load",done,{once:true});
-    script.addEventListener("error",()=>reject(new Error("No fue posible cargar Google Identity Services.")),{once:true});
-    document.head.appendChild(script);
-  });
-  return googleIdentityLoader;
-}
-
-async function mountGoogleIdentityButton(){
-  const host=document.querySelector<HTMLElement>("#googleIdentityButton");
-  if(!host) return;
+async function loginWithGoogle(){
+  const button=document.querySelector<HTMLButtonElement>("#googleOAuthBtn");
+  const original=button?.innerHTML||"";
+  if(button){button.disabled=true;button.innerHTML='<span class="google-g">G</span><span>Conectando con Google…</span>';}
   try{
-    await ensureGoogleIdentity();
-    if(!document.body.contains(host)) return;
-    const google=(window as any).google;
-    google.accounts.id.initialize({
-      client_id: GOOGLE_WEB_CLIENT_ID,
-      auto_select: false,
-      cancel_on_tap_outside: true,
-      callback: async (response:any)=>{
-        const credential=String(response?.credential||"");
-        if(!credential){toast("Google no entregó una credencial válida.","error");return;}
-        try{
-          const {error}=await supabase.auth.signInWithIdToken({
-            provider:"google",
-            token:credential
-          });
-          if(error) throw error;
-          toast("Ingreso con Google exitoso.");
-        }catch(err:any){
-          toast(err?.message||"No fue posible validar la cuenta de Google en Hacienda Conecta.","error");
-        }
+    sessionStorage.setItem("hc:auth-origin",appBaseUrl());
+    const {data,error}=await supabase.auth.signInWithOAuth({
+      provider:"google",
+      options:{
+        redirectTo:appBaseUrl(),
+        skipBrowserRedirect:true,
+        queryParams:{prompt:"select_account"}
       }
     });
-    google.accounts.id.renderButton(host,{
-      type:"standard",
-      theme:"outline",
-      size:"large",
-      text:"continue_with",
-      shape:"rectangular",
-      logo_alignment:"left",
-      width:360
-    });
+    if(error) throw error;
+    if(!data.url) throw new Error("Google no devolvió una URL de autenticación.");
+    location.assign(data.url);
   }catch(err:any){
-    host.innerHTML='<button class="google-btn" type="button" disabled><span class="google-g">G</span><span>Google no disponible</span></button>';
-    toast(err?.message||"No fue posible preparar el acceso con Google.","error");
+    if(button){button.disabled=false;button.innerHTML=original;}
+    toast(err?.message||"No fue posible iniciar sesión con Google.","error");
   }
 }
+
 const maskPhone = (phone:string) => {
   if(!phone) return "—";
   const clean=phone.replace(/\s+/g,"");
@@ -249,13 +199,24 @@ async function loadPublicReference(){
   }
 }
 async function bootstrap(){
-  const {data}=await supabase.auth.getSession(); session=data.session;
-  await Promise.all([loadProfile(),loadPublicReference()]);
-  if(session && route==="dashboard" && await needsPhoneOnboarding()){route="security";location.hash="security";}
+  const {data,error}=await supabase.auth.getSession();
+  if(error) throw error;
+  session=data.session;
+  if(session){
+    await Promise.all([loadProfile(),loadPublicReference()]);
+    if(route==="dashboard" && await needsPhoneOnboarding()){route="security";location.hash="security";}
+  }else{
+    profile=null;
+  }
   supabase.auth.onAuthStateChange(async (_event,newSession)=>{
     session=newSession;
-    await loadProfile();
-    if(session && route==="dashboard" && await needsPhoneOnboarding()){route="security";location.hash="security";}
+    if(session){
+      await Promise.all([loadProfile(),loadPublicReference()]);
+      if(route==="dashboard" && await needsPhoneOnboarding()){route="security";location.hash="security";}
+    }else{
+      profile=null;
+      route="dashboard";
+    }
     render();
   });
   addEventListener("hashchange",()=>{route=location.hash.replace("#","")||"dashboard";void render().then(()=>requestAnimationFrame(()=>document.querySelector<HTMLElement>("#main-content")?.focus({preventScroll:true})));});
@@ -306,6 +267,7 @@ function shell(content:string){
         <div class="side-stats"><span><b>${copCompact(publicReference.uvtCop)}</b>UVT</span><span><b>${publicReference.ciiuCount}</b>CIIU</span></div>
       </div>
     </aside>
+    <button class="mobile-nav-backdrop" id="mobileNavBackdrop" type="button" aria-label="Cerrar menú"></button>
     <section class="content">
       <div class="gov-strip"><span>Municipio de San Pedro · Secretaría de Hacienda</span><span class="gov-strip-right">Portal oficial de servicios tributarios</span></div>
       <header class="topbar">
@@ -339,11 +301,17 @@ function shell(content:string){
 }
 
 function bindShell(){
-  document.querySelectorAll<HTMLElement>("[data-route]").forEach(b=>b.onclick=()=>{document.querySelector("#sidebar")?.classList.remove("open");location.hash=b.dataset.route!;});
+  document.querySelectorAll<HTMLElement>("[data-route]").forEach(b=>b.onclick=()=>{document.querySelector("#sidebar")?.classList.remove("open");document.body.classList.remove("nav-open");location.hash=b.dataset.route!;});
   document.querySelector("#menuBtn")?.addEventListener("click",(e)=>{
     const sidebar=document.querySelector("#sidebar");
     const open=sidebar?.classList.toggle("open")||false;
+    document.body.classList.toggle("nav-open",open);
     (e.currentTarget as HTMLButtonElement).setAttribute("aria-expanded",String(open));
+  });
+  document.querySelector("#mobileNavBackdrop")?.addEventListener("click",()=>{
+    document.querySelector("#sidebar")?.classList.remove("open");
+    document.body.classList.remove("nav-open");
+    document.querySelector("#menuBtn")?.setAttribute("aria-expanded","false");
   });
   document.querySelector("#fontDownBtn")?.addEventListener("click",()=>{changeFontScale(-1);});
   document.querySelector("#fontUpBtn")?.addEventListener("click",()=>{changeFontScale(1);});
@@ -544,13 +512,13 @@ function renderAuth(){
         <article><span class="feature-icon">${icon("ica")}</span><div><strong>Cálculos automáticos</strong><small>ICA y RETEICA con parámetros 2026.</small></div></article>
         <article><span class="feature-icon">${icon("certificates")}</span><div><strong>Documentos verificables</strong><small>Certificados con serial, hash y QR.</small></div></article>
       </div>
-      <div class="auth-trust"><span>UVT ${publicReference.taxYear} · ${copCompact(publicReference.uvtCop)}</span><span>${publicReference.ciiuCount} actividades ICA</span><span>RLS + MFA</span></div>
+      <div class="auth-trust"><span>Acceso autenticado</span><span>Datos protegidos por RLS</span><span>Firma reforzada con MFA</span></div>
       <div class="auth-orb orb-a"></div><div class="auth-orb orb-b"></div>
     </section>
     <section class="auth-panel">
       <div class="auth-card">
         <div class="auth-card-head"><div class="kicker">Acceso seguro</div><h2>${authMode==="login"?"Bienvenido de nuevo":"Crea tu cuenta"}</h2><p>${authMode==="login"?"Ingresa para continuar con tus obligaciones y trámites.":"Crea tu acceso; después verificaremos tu celular para operaciones sensibles."}</p></div>
-        <div id="googleIdentityButton" class="google-identity-host" aria-label="Continuar con Google"></div>
+        <button class="google-btn google-oauth-btn" id="googleOAuthBtn" type="button"><span class="google-g">G</span><span>Continuar con Google</span></button>
         <div class="auth-divider"><span>o usa tu correo</span></div>
         <div class="auth-tabs"><button id="loginTab" class="${authMode==="login"?"active":""}">Ingresar</button><button id="signupTab" class="${authMode==="signup"?"active":""}">Crear cuenta</button></div>
         <form id="authForm" class="stack">
@@ -561,15 +529,14 @@ function renderAuth(){
           <button class="btn primary-wide" type="submit">${authMode==="login"?"Ingresar a Hacienda Conecta":"Crear cuenta segura"}</button>
         </form>
         <div class="auth-security-note"><span>${icon("security")}</span><p>Google o correo validan tu cuenta. El celular funciona como segundo factor para firma y autorización de pagos.</p></div>
-        <button class="text-button" id="publicBtn">Consultar servicios públicos sin iniciar sesión</button>
+        <div class="auth-required-note"><strong>Acceso obligatorio</strong><span>Debes registrarte o iniciar sesión antes de consultar, calcular, radicar, firmar, pagar o descargar información.</span></div>
       </div>
       <p class="auth-foot">Tus datos tributarios se protegen mediante Row Level Security y controles de acceso por rol. <span class="build-tag">Build ${APP_BUILD}</span></p>
     </section>
   </div>`;
-  void mountGoogleIdentityButton();
+  document.querySelector("#googleOAuthBtn")?.addEventListener("click",()=>void loginWithGoogle());
   document.querySelector("#loginTab")!.addEventListener("click",()=>{authMode="login";renderAuth();});
   document.querySelector("#signupTab")!.addEventListener("click",()=>{authMode="signup";renderAuth();});
-  document.querySelector("#publicBtn")!.addEventListener("click",()=>{route="dashboard";location.hash="dashboard";render();});
   document.querySelector("#authForm")!.addEventListener("submit",async(e)=>{
     e.preventDefault(); const fd=new FormData(e.currentTarget as HTMLFormElement);
     const email=String(fd.get("email")||"").trim(), password=String(fd.get("password")||"");
@@ -596,7 +563,7 @@ function renderAuth(){
 }
 
 async function render(){
-  if(!session && ["registry","declarations","payments","security","predial","agreements","refunds","audit","staff"].includes(route)){renderAuth();return;}
+  if(!session){renderAuth();return;}
   app.innerHTML=shell(spinner("Cargando módulo"));
   bindShell();
   try{
@@ -1053,7 +1020,7 @@ function tableRows(rows:string[][],headers:string[]){
 }
 
 function bindView(which:string){
-  document.querySelectorAll<HTMLElement>("[data-route]").forEach(b=>b.onclick=()=>{document.querySelector("#sidebar")?.classList.remove("open");location.hash=b.dataset.route!;});
+  document.querySelectorAll<HTMLElement>("[data-route]").forEach(b=>b.onclick=()=>{document.querySelector("#sidebar")?.classList.remove("open");document.body.classList.remove("nav-open");location.hash=b.dataset.route!;});
   if(which==="registry") bindRegistry();
   if(which==="ica") bindIca();
   if(which==="reteica") bindReteica();
