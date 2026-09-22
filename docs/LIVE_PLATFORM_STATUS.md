@@ -1,6 +1,6 @@
 # Estado de plataforma — Hacienda Conecta
 
-Corte técnico: 19 de septiembre de 2026.
+Corte técnico: 21 de septiembre de 2026.
 
 ## Despliegue visible
 
@@ -15,7 +15,7 @@ La interfaz actual corresponde al rediseño institucional V3: navegación munici
 
 ## Supabase
 
-Proyecto activo: `dvdpgllezrmttrknbcjq`.
+Proyecto activo: `jppykxqsxayzypzdbnqd`.
 
 Migraciones aplicadas en el entorno conectado:
 
@@ -28,7 +28,7 @@ Migraciones aplicadas en el entorno conectado:
 7. `007_invoker_hardening_and_indexes`
 8. `008_rls_policy_consolidation_state_machine`
 9. `009_phone_mfa_required_for_registry_sign_and_payment`
-10. `010_integration_readiness_registry`
+10. `010_integration_readiness_registry`\n11. `011_hacienda_operational_hardening_20260921`\n12. `012_hacienda_audited_citizen_requests_20260921`\n13. `013_hacienda_least_privilege_cleanup_20260921`
 
 Estado verificado:
 
@@ -41,7 +41,7 @@ Estado verificado:
 - Cálculos ICA y RETEICA operativos en RPC PostgreSQL.
 - Registro Tributario bloqueado hasta disponer de factor MFA de teléfono verificado.
 - Firma y solicitud de pago exigen sesión AAL2 y validación OTP reciente.
-- Edge Function `verify-certificate` activa para validación pública de certificados.
+- Edge Function `hc-verify-certificate` activa para validación pública de certificados.
 - Máquina de estados de declaraciones protegida mediante trigger.
 - Estado de integraciones externas registrado en `public.system_integrations`.
 
@@ -69,10 +69,10 @@ El código del aplicativo ya usa `signInWithOAuth({ provider: "google" })`, pero
 
 - Client ID.
 - Client Secret.
-- Callback de Supabase: `https://dvdpgllezrmttrknbcjq.supabase.co/auth/v1/callback`.
+- Callback de Supabase: `https://jppykxqsxayzypzdbnqd.supabase.co/auth/v1/callback`.
 - URL del aplicativo: `https://adminterritorial-bit.github.io/HACIENDA_CONECTA/`.
 
-Estas credenciales no deben guardarse en GitHub ni suministrarse por chat.
+El Client Secret debe almacenarse únicamente en la configuración segura del proveedor de Supabase/Google y rotarse si se expone. Nunca debe versionarse ni llegar al navegador.
 
 ### SMS / Phone MFA
 
