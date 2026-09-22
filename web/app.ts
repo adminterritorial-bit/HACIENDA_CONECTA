@@ -6,7 +6,7 @@ const SUPABASE_URL = "https://jppykxqsxayzypzdbnqd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_CH1hn5LpS3zWPdDWqiM4jg_F7OuK7Ry";
 const HACIENDA_CANONICAL_URL = "https://hacienda-conecta.vercel.app/";
 const GOOGLE_WEB_CLIENT_ID = "103022555921-i7cqb3o8tc4lbtf7n9endse1d423ck4m.apps.googleusercontent.com";
-const APP_BUILD = "2026.09.21.6";
+const APP_BUILD = "2026.09.21.7";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
@@ -89,7 +89,11 @@ const icon = (name:string) => {
     legal:'<path d="M4 5h16M7 5v15M17 5v15M7 9h10M7 15h10"/>',
     staff:'<path d="M4 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="10" cy="7" r="3"/><path d="M17 8h4M19 6v4"/>',
     arrow:'<path d="m9 18 6-6-6-6"/>',
-    check:'<path d="m5 12 4 4L19 6"/>'
+    check:'<path d="m5 12 4 4L19 6"/>',
+    search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+    help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.8 2.8 0 1 1 4.8 1.9c-.9.8-1.8 1.2-1.8 2.6"/><path d="M12 17h.01"/>',
+    sparkle:'<path d="m12 3 1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2z"/><path d="m18 14 .7 2.3L21 17l-2.3.7L18 20l-.7-2.3L15 17l2.3-.7z"/>',
+    close:'<path d="m6 6 12 12M18 6 6 18"/>'
   };
   return `<svg class="ui-icon" ${common}>${paths[name]||paths.dashboard}</svg>`;
 };
@@ -315,11 +319,20 @@ function shell(content:string){
             <button class="a11y-button" id="fontUpBtn" type="button" aria-label="Aumentar tamaño de texto" title="Aumentar tamaño de texto">A+</button>
             <button class="a11y-button contrast" id="contrastBtn" type="button" aria-pressed="${a11yPrefs.highContrast}" aria-label="Alternar alto contraste" title="Alternar alto contraste">◐<span class="a11y-label">Contraste</span></button>
           </div>
+          <button class="top-action-button" id="quickActionsBtn" type="button" aria-label="Abrir acciones rápidas">${icon("search")}<span>Acciones</span></button>
+          <button class="top-action-button" id="guideBtn" type="button" aria-label="Abrir ayuda guiada">${icon("help")}<span>Ayuda</span></button>
           <span class="secure-pill"><span class="secure-dot"></span>Conexión segura</span>
           ${session?`<div class="user-chip"><span class="avatar">${esc(userInitials())}</span><div class="user-copy"><strong>${esc(profile?.full_name||session.user.email||"Usuario")}</strong><small>${esc(profile?.role==="citizen"?"Contribuyente":profile?.role||"Usuario")}</small></div></div><button class="btn ghost small" id="logoutBtn">Salir</button>`:`<button class="btn small" data-action="login">Ingresar</button>`}
         </div>
       </header>
       <main class="main" id="main-content" tabindex="-1">${content}</main>
+      <nav class="mobile-dock" aria-label="Accesos rápidos móviles">
+        <button data-route="dashboard" class="${route==="dashboard"?"active":""}"><span>${icon("dashboard")}</span><small>Inicio</small></button>
+        <button data-route="ica" class="${route==="ica"?"active":""}"><span>${icon("ica")}</span><small>ICA</small></button>
+        <button id="mobileQuickBtn" class="mobile-dock-main" type="button"><span>${icon("sparkle")}</span><small>Acciones</small></button>
+        <button data-route="payments" class="${route==="payments"?"active":""}"><span>${icon("payments")}</span><small>Pagos</small></button>
+        <button data-route="certificates" class="${route==="certificates"?"active":""}"><span>${icon("certificates")}</span><small>Docs</small></button>
+      </nav>
     </section>
   </div>`;
 }
@@ -340,6 +353,9 @@ function bindShell(){
   });
   document.querySelector("#logoutBtn")?.addEventListener("click",async()=>{await supabase.auth.signOut();location.hash="dashboard";});
   document.querySelectorAll<HTMLElement>('[data-action="login"]').forEach(b=>b.onclick=()=>renderAuth());
+  document.querySelector("#quickActionsBtn")?.addEventListener("click",openQuickActions);
+  document.querySelector("#mobileQuickBtn")?.addEventListener("click",openQuickActions);
+  document.querySelector("#guideBtn")?.addEventListener("click",openContextGuide);
 }
 
 function renderAuth(){
