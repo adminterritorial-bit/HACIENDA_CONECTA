@@ -39,4 +39,13 @@ if (config.APP_STAGE === "production") {
   if (config.UVT_VALUE_COP <= 0) {
     throw new Error("UVT_VALUE_COP debe configurarse para la vigencia antes de iniciar en producción.");
   }
+
+  if (config.AUDIT_HMAC_KEY === "development-only-change-me" || config.AUDIT_HMAC_KEY.length < 32) {
+    throw new Error("AUDIT_HMAC_KEY debe ser un secreto robusto de al menos 32 caracteres en producción.");
+  }
+
+  const baseUrl = new URL(config.APP_BASE_URL);
+  if (baseUrl.protocol !== "https:") {
+    throw new Error("APP_BASE_URL debe usar HTTPS en producción.");
+  }
 }
