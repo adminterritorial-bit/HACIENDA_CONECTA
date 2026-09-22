@@ -1754,3 +1754,32 @@ button,a{user-select:none;-webkit-user-select:none}
 @supports(-webkit-touch-callout:none){
   .auth-page,.auth-panel,.sidebar{min-height:-webkit-fill-available}
 }
+
+.google-identity-host{
+  width:100%;
+  min-height:52px;
+  margin-top:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.google-identity-host>div,
+.google-identity-host iframe{
+  max-width:100%!important;
+}
+.google-loading{
+  width:100%;
+  min-height:50px;
+  border:1px solid #d7e2ea;
+  border-radius:13px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f8fbfd;
+  color:#62788b;
+  font-size:.7rem;
+  font-weight:750;
+}
+@media(max-width:420px){
+  .google-identity-host>div{width:100%!important}
+}
