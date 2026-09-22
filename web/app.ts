@@ -6,7 +6,7 @@ const SUPABASE_URL = "https://jppykxqsxayzypzdbnqd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_CH1hn5LpS3zWPdDWqiM4jg_F7OuK7Ry";
 const HACIENDA_CANONICAL_URL = "https://hacienda-conecta.vercel.app/";
 const GOOGLE_WEB_CLIENT_ID = "103022555921-i7cqb3o8tc4lbtf7n9endse1d423ck4m.apps.googleusercontent.com";
-const APP_BUILD = "2026.09.21.6";
+const APP_BUILD = "2026.09.21.7";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
@@ -89,7 +89,11 @@ const icon = (name:string) => {
     legal:'<path d="M4 5h16M7 5v15M17 5v15M7 9h10M7 15h10"/>',
     staff:'<path d="M4 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="10" cy="7" r="3"/><path d="M17 8h4M19 6v4"/>',
     arrow:'<path d="m9 18 6-6-6-6"/>',
-    check:'<path d="m5 12 4 4L19 6"/>'
+    check:'<path d="m5 12 4 4L19 6"/>',
+    search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+    help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.8 2.8 0 1 1 4.8 1.9c-.9.8-1.8 1.2-1.8 2.6"/><path d="M12 17h.01"/>',
+    sparkle:'<path d="m12 3 1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2z"/><path d="m18 14 .7 2.3L21 17l-2.3.7L18 20l-.7-2.3L15 17l2.3-.7z"/>',
+    close:'<path d="m6 6 12 12M18 6 6 18"/>'
   };
   return `<svg class="ui-icon" ${common}>${paths[name]||paths.dashboard}</svg>`;
 };
@@ -315,11 +319,21 @@ function shell(content:string){
             <button class="a11y-button" id="fontUpBtn" type="button" aria-label="Aumentar tamaño de texto" title="Aumentar tamaño de texto">A+</button>
             <button class="a11y-button contrast" id="contrastBtn" type="button" aria-pressed="${a11yPrefs.highContrast}" aria-label="Alternar alto contraste" title="Alternar alto contraste">◐<span class="a11y-label">Contraste</span></button>
           </div>
+          <button class="top-action-button" id="quickActionsBtn" type="button" aria-label="Abrir acciones rápidas">${icon("search")}<span>Acciones</span></button>
+          <button class="top-action-button" id="guideBtn" type="button" aria-label="Abrir ayuda guiada">${icon("help")}<span>Ayuda</span></button>
           <span class="secure-pill"><span class="secure-dot"></span>Conexión segura</span>
           ${session?`<div class="user-chip"><span class="avatar">${esc(userInitials())}</span><div class="user-copy"><strong>${esc(profile?.full_name||session.user.email||"Usuario")}</strong><small>${esc(profile?.role==="citizen"?"Contribuyente":profile?.role||"Usuario")}</small></div></div><button class="btn ghost small" id="logoutBtn">Salir</button>`:`<button class="btn small" data-action="login">Ingresar</button>`}
         </div>
       </header>
       <main class="main" id="main-content" tabindex="-1">${content}</main>
+      <button class="floating-guide" id="floatingGuideBtn" type="button" aria-label="Abrir ayuda guiada">${icon("help")}<span>Ayuda</span></button>
+      <nav class="mobile-dock" aria-label="Accesos rápidos móviles">
+        <button data-route="dashboard" class="${route==="dashboard"?"active":""}"><span>${icon("dashboard")}</span><small>Inicio</small></button>
+        <button data-route="ica" class="${route==="ica"?"active":""}"><span>${icon("ica")}</span><small>ICA</small></button>
+        <button id="mobileQuickBtn" class="mobile-dock-main" type="button"><span>${icon("sparkle")}</span><small>Acciones</small></button>
+        <button data-route="payments" class="${route==="payments"?"active":""}"><span>${icon("payments")}</span><small>Pagos</small></button>
+        <button data-route="certificates" class="${route==="certificates"?"active":""}"><span>${icon("certificates")}</span><small>Docs</small></button>
+      </nav>
     </section>
   </div>`;
 }
@@ -340,6 +354,180 @@ function bindShell(){
   });
   document.querySelector("#logoutBtn")?.addEventListener("click",async()=>{await supabase.auth.signOut();location.hash="dashboard";});
   document.querySelectorAll<HTMLElement>('[data-action="login"]').forEach(b=>b.onclick=()=>renderAuth());
+  document.querySelector("#quickActionsBtn")?.addEventListener("click",openQuickActions);
+  document.querySelector("#mobileQuickBtn")?.addEventListener("click",openQuickActions);
+  document.querySelector("#guideBtn")?.addEventListener("click",openContextGuide);
+  document.querySelector("#floatingGuideBtn")?.addEventListener("click",openContextGuide);
+}
+
+
+type QuickService = { route:string; iconName:string; title:string; desc:string; keywords:string };
+const quickServices:QuickService[]=[
+  {route:"registry",iconName:"registry",title:"Registro Tributario",desc:"Crea o consulta tu información tributaria.",keywords:"registro rit contribuyente nit ciiu"},
+  {route:"ica",iconName:"ica",title:"Declarar ICA",desc:"Liquida ICA y Avisos y Tableros.",keywords:"ica industria comercio avisos declaración"},
+  {route:"reteica",iconName:"reteica",title:"Calcular RETEICA",desc:"Calcula retenciones por operación.",keywords:"reteica retención compras servicios"},
+  {route:"payments",iconName:"payments",title:"Pagos",desc:"Consulta referencias y pagos confirmados.",keywords:"pago pse referencia recaudo"},
+  {route:"certificates",iconName:"certificates",title:"Certificados",desc:"Solicita o verifica documentos tributarios.",keywords:"certificado paz salvo constancia qr"},
+  {route:"predial",iconName:"predial",title:"Predial y paz y salvo",desc:"Gestiona servicios asociados al predial.",keywords:"predial inmueble paz salvo"},
+  {route:"agreements",iconName:"agreements",title:"Acuerdos de pago",desc:"Radica una solicitud de facilidad de pago.",keywords:"acuerdo cuotas deuda"},
+  {route:"refunds",iconName:"refunds",title:"Devoluciones",desc:"Solicita devolución o compensación.",keywords:"devolución saldo favor compensación"},
+  {route:"legal",iconName:"legal",title:"Normativa tributaria",desc:"Consulta fuentes y reglas versionadas.",keywords:"normativa estatuto ley decreto resolución"}
+];
+
+const routeGuides:Record<string,{title:string;intro:string;steps:string[]}>={
+  dashboard:{title:"Tu centro tributario",intro:"Empieza por la acción que necesitas. Hacienda Conecta te muestra solo los pasos necesarios para completar cada trámite.",steps:["Verifica tus datos y celular antes de firmar o pagar.","Usa Acciones rápidas para ir directo al trámite.","Las tarjetas muestran estados, pendientes y documentos disponibles."]},
+  registry:{title:"Registro Tributario guiado",intro:"Completa el perfil en pasos cortos. Puedes regresar antes de enviar la información.",steps:["Identifica al contribuyente.","Selecciona actividades CIIU y marca una principal.","Registra responsables cuando corresponda.","Revisa todo antes de enviar."]},
+  ica:{title:"Declaración ICA paso a paso",intro:"Agrega cada actividad económica y su ingreso gravable en San Pedro; el motor aplica únicamente reglas activas y versionadas.",steps:["Escribe el CIIU de 4 dígitos.","Ingresa el valor gravable de la actividad.","Activa Avisos y Tableros solo si corresponde.","Calcula y revisa el resumen antes de guardar."]},
+  reteica:{title:"RETEICA guiado",intro:"Registra una operación por fila y Hacienda Conecta evalúa base, umbral y tarifa.",steps:["Indica CIIU y concepto.","Registra la base de la operación.","Calcula la retención.","Guarda el borrador cuando el resultado sea correcto."]},
+  payments:{title:"Pagos seguros",intro:"El pago se separa de la declaración y exige una autorización reforzada antes de crear la referencia.",steps:["Selecciona una obligación lista para pagar.","Confirma identidad mediante SMS.","Genera la referencia.","Espera confirmación server-to-server de la pasarela."]},
+  security:{title:"Identidad y firma",intro:"Google o correo permiten entrar. Las operaciones sensibles requieren además el celular verificado.",steps:["Vincula un celular propio.","Valida el código SMS.","La sesión sube a AAL2 para firmar o pagar.","Cada firma se vincula al hash del documento."]},
+  certificates:{title:"Documentos verificables",intro:"Puedes solicitar, emitir y validar documentos mediante serial, token y QR.",steps:["Selecciona el tipo de documento.","Radica o emite cuando esté disponible.","Descarga el PDF.","Verifica posteriormente con token o QR."]}
+};
+
+function closeExperienceModal(){
+  document.querySelector(".experience-backdrop")?.remove();
+}
+function makeExperienceModal(title:string,intro:string,body:string,wide=false){
+  closeExperienceModal();
+  const overlay=document.createElement("div");
+  overlay.className="experience-backdrop";
+  const modal=document.createElement("section");
+  modal.className="experience-modal"+(wide?" wide":"");
+  modal.setAttribute("role","dialog");
+  modal.setAttribute("aria-modal","true");
+  modal.innerHTML=
+    '<button class="experience-close" type="button" aria-label="Cerrar">'+icon("close")+'</button>'+
+    '<div class="experience-heading"><span class="experience-badge">'+icon("sparkle")+' Asistente Hacienda</span><h2>'+esc(title)+'</h2><p>'+esc(intro)+'</p></div>'+
+    body;
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  modal.querySelector(".experience-close")?.addEventListener("click",closeExperienceModal);
+  overlay.addEventListener("click",(e)=>{if(e.target===overlay)closeExperienceModal();});
+  const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape"){closeExperienceModal();removeEventListener("keydown",onKey);}};
+  addEventListener("keydown",onKey);
+  requestAnimationFrame(()=>modal.querySelector<HTMLElement>(".experience-close")?.focus());
+  return overlay;
+}
+function quickCards(items:QuickService[]){
+  return items.map((s)=>'<button class="quick-service-card" type="button" data-quick-route="'+esc(s.route)+'"><span class="quick-service-icon">'+icon(s.iconName)+'</span><span><strong>'+esc(s.title)+'</strong><small>'+esc(s.desc)+'</small></span><span class="quick-service-arrow">'+icon("arrow")+'</span></button>').join("");
+}
+function openQuickActions(){
+  const body=
+    '<label class="service-search"><span>'+icon("search")+'</span><input id="serviceSearchInput" autocomplete="off" placeholder="Ej. declarar ICA, pagar, certificado, predial…"></label>'+
+    '<div class="quick-service-grid" id="quickServiceGrid">'+quickCards(quickServices)+'</div>';
+  const overlay=makeExperienceModal("¿Qué necesitas hacer?","Busca un trámite o selecciona una acción frecuente. Te llevamos directamente al módulo correcto.",body,true);
+  const grid=overlay.querySelector<HTMLElement>("#quickServiceGrid")!;
+  const input=overlay.querySelector<HTMLInputElement>("#serviceSearchInput")!;
+  const bindRoutes=()=>grid.querySelectorAll<HTMLElement>("[data-quick-route]").forEach(b=>b.onclick=()=>{closeExperienceModal();location.hash=b.dataset.quickRoute||"dashboard";});
+  bindRoutes();
+  input.addEventListener("input",()=>{
+    const q=input.value.trim().toLowerCase();
+    const filtered=quickServices.filter(s=>(s.title+" "+s.desc+" "+s.keywords).toLowerCase().includes(q));
+    grid.innerHTML=filtered.length?quickCards(filtered):'<div class="quick-empty">No encontramos ese trámite. Prueba con ICA, pago, certificado, predial o registro.</div>';
+    bindRoutes();
+  });
+  requestAnimationFrame(()=>input.focus());
+}
+
+function openIcaEntryModal(){
+  const body=
+    '<form id="icaEntryForm" class="guided-entry-form">'+
+      '<div class="guided-entry-note"><span>'+icon("ica")+'</span><div><strong>Agrega una actividad</strong><small>Solo necesitamos el CIIU y el ingreso gravable de esta actividad.</small></div></div>'+
+      '<div class="field"><label>Código CIIU</label><input class="input" name="ciiu" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required placeholder="Ej. 6201"><span class="hint">Código de 4 dígitos de la actividad realizada en San Pedro.</span></div>'+
+      '<div class="field"><label>Ingreso gravable en San Pedro</label><div class="money-input"><span>$</span><input class="input" name="income" type="number" min="0" step="1" required placeholder="0"></div><span class="hint">Ingresa el valor correspondiente únicamente a esta actividad.</span></div>'+
+      '<div class="guided-entry-actions"><button class="btn ghost" type="button" data-entry-cancel>Cancelar</button><button class="btn" type="submit">Agregar actividad</button></div>'+
+    '</form>';
+  const overlay=makeExperienceModal("Nueva actividad ICA","Completa los datos esenciales. Podrás revisar todas las actividades antes de calcular.",body,false);
+  overlay.querySelector("[data-entry-cancel]")?.addEventListener("click",closeExperienceModal);
+  overlay.querySelector("#icaEntryForm")?.addEventListener("submit",(e)=>{
+    e.preventDefault();
+    const fd=new FormData(e.currentTarget as HTMLFormElement);
+    const ciiu=String(fd.get("ciiu")||"").trim();
+    const income=Math.max(0,Number(fd.get("income")||0));
+    if(!/^\d{4}$/.test(ciiu)){toast("El CIIU debe tener exactamente 4 dígitos.","warn");return;}
+    const count=document.querySelectorAll(".ica-row").length+1;
+    document.querySelector("#icaRows")?.insertAdjacentHTML("beforeend",
+      '<article class="calc-row ica-row experience-enter"><span class="row-number">'+count+'</span><div class="field"><label>Código CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric" value="'+esc(ciiu)+'"></div><div class="field grow"><label>Ingreso gravable en San Pedro</label><div class="money-input"><span>$</span><input class="input" data-income type="number" min="0" value="'+income+'"></div></div></article>');
+    closeExperienceModal();
+    toast("Actividad agregada.");
+  });
+}
+function openReteicaEntryModal(){
+  const body=
+    '<form id="reteEntryForm" class="guided-entry-form">'+
+      '<div class="guided-entry-note"><span>'+icon("reteica")+'</span><div><strong>Agrega una operación</strong><small>Registra CIIU, concepto y base para evaluar la retención.</small></div></div>'+
+      '<div class="field"><label>Código CIIU</label><input class="input" name="ciiu" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required placeholder="Ej. 6201"></div>'+
+      '<div class="field"><label>Concepto</label><select class="select" name="concept"><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div>'+
+      '<div class="field"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" name="base" type="number" min="0" step="1" required placeholder="0"></div></div>'+
+      '<div class="guided-entry-actions"><button class="btn ghost" type="button" data-entry-cancel>Cancelar</button><button class="btn" type="submit">Agregar operación</button></div>'+
+    '</form>';
+  const overlay=makeExperienceModal("Nueva operación RETEICA","Agrega una operación a la vez. El cálculo final compara la base con el umbral vigente.",body,false);
+  overlay.querySelector("[data-entry-cancel]")?.addEventListener("click",closeExperienceModal);
+  overlay.querySelector("#reteEntryForm")?.addEventListener("submit",(e)=>{
+    e.preventDefault();
+    const fd=new FormData(e.currentTarget as HTMLFormElement);
+    const ciiu=String(fd.get("ciiu")||"").trim();
+    const concept=String(fd.get("concept")||"services")==="goods"?"goods":"services";
+    const base=Math.max(0,Number(fd.get("base")||0));
+    if(!/^\d{4}$/.test(ciiu)){toast("El CIIU debe tener exactamente 4 dígitos.","warn");return;}
+    const count=document.querySelectorAll(".rete-row").length+1;
+    document.querySelector("#reteRows")?.insertAdjacentHTML("beforeend",
+      '<article class="calc-row rete-row experience-enter"><span class="row-number">'+count+'</span><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric" value="'+esc(ciiu)+'"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services"'+(concept==="services"?" selected":"")+'>Servicios</option><option value="goods"'+(concept==="goods"?" selected":"")+'>Compras / bienes</option></select></div><div class="field grow"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" data-base type="number" min="0" value="'+base+'"></div></div></article>');
+    closeExperienceModal();
+    toast("Operación agregada.");
+  });
+}
+
+function openContextGuide(){
+  const guide=routeGuides[route] ?? routeGuides.dashboard!;
+  const body=
+    '<div class="guide-steps">'+guide.steps.map((s,i)=>'<div><span>'+(i+1)+'</span><p>'+esc(s)+'</p></div>').join("")+'</div>'+
+    '<div class="guide-footer"><span>'+icon("security")+'</span><p>La ayuda nunca modifica datos por sí sola. Envíos, firmas y pagos siempre requieren una acción explícita.</p></div>';
+  makeExperienceModal(guide.title,guide.intro,body,false);
+}
+let interactionEffectsInstalled=false;
+function installInteractionEffects(){
+  if(interactionEffectsInstalled)return;
+  interactionEffectsInstalled=true;
+  document.addEventListener("pointerdown",(e)=>{
+    const target=(e.target as HTMLElement)?.closest<HTMLElement>(".btn,.module,.next-action,.journey-item,.quick-service-card,.mobile-dock button,.add-row-btn,.top-action-button");
+    if(!target||target.hasAttribute("disabled"))return;
+    const rect=target.getBoundingClientRect();
+    const ripple=document.createElement("span");
+    ripple.className="hc-ripple";
+    ripple.style.left=(e.clientX-rect.left)+"px";
+    ripple.style.top=(e.clientY-rect.top)+"px";
+    target.appendChild(ripple);
+    setTimeout(()=>ripple.remove(),650);
+  },{passive:true});
+  document.addEventListener("focusin",(e)=>{
+    const field=(e.target as HTMLElement).closest?.(".field");
+    document.querySelectorAll(".field.is-focused").forEach(x=>x.classList.remove("is-focused"));
+    field?.classList.add("is-focused");
+  });
+  document.addEventListener("focusout",(e)=>{
+    (e.target as HTMLElement).closest?.(".field")?.classList.remove("is-focused");
+  });
+  document.addEventListener("keydown",(e)=>{
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){
+      e.preventDefault();
+      openQuickActions();
+    }
+  });
+}
+function enhanceRenderedView(){
+  installInteractionEffects();
+  document.querySelectorAll<HTMLElement>(".card,.module,.metric-card,.calculator-card,.result-card,.journey-card,.page-head,.module-hero,.verification-card").forEach((el,i)=>{
+    el.style.setProperty("--enter-delay",Math.min(i*32,260)+"ms");
+    el.classList.add("experience-enter");
+  });
+  document.querySelectorAll<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>(".field input,.field select,.field textarea").forEach((el)=>{
+    const hint=el.closest(".field")?.querySelector<HTMLElement>(".hint");
+    if(hint&&!el.getAttribute("aria-describedby")){
+      if(!hint.id)hint.id="hint-"+Math.random().toString(36).slice(2,9);
+      el.setAttribute("aria-describedby",hint.id);
+    }
+  });
 }
 
 function renderAuth(){
@@ -431,8 +619,9 @@ async function render(){
       case "staff": html=await viewStaff(); break;
       default: route="dashboard"; html=await viewDashboard();
     }
-    app.innerHTML=shell(html); bindShell(); bindView(route);
-  }catch(err:any){app.innerHTML=shell(`<div class="note danger"><strong>No fue posible cargar este módulo.</strong><br>${esc(err.message||err)}</div>`);bindShell();}
+    app.innerHTML=shell(html); bindShell(); bindView(route); enhanceRenderedView();
+    document.querySelector("#dashboardQuickSearch")?.addEventListener("click",openQuickActions);
+  }catch(err:any){app.innerHTML=shell(`<div class="note danger"><strong>No fue posible cargar este módulo.</strong><br>${esc(err.message||err)}</div>`);bindShell();enhanceRenderedView();}
 }
 
 async function viewDashboard(){
@@ -457,6 +646,12 @@ async function viewDashboard(){
       <div class="hero-law">${esc(publicReference.uvtLegalReference)}</div>
     </div>
     <div class="hero-glow glow-a"></div><div class="hero-glow glow-b"></div>
+  </section>
+
+  <section class="citizen-command mb">
+    <div class="citizen-command-copy"><span class="command-icon">${icon("search")}</span><div><strong>¿Qué necesitas hacer hoy?</strong><small>Encuentra declaraciones, pagos, certificados y otros servicios sin recorrer menús.</small></div></div>
+    <button class="citizen-command-search" type="button" id="dashboardQuickSearch"><span>${icon("search")}</span><span>Buscar un trámite o servicio</span><kbd>⌘ K</kbd></button>
+    <div class="citizen-command-actions"><button data-route="ica"><span>${icon("ica")}</span>Declarar ICA</button><button data-route="payments"><span>${icon("payments")}</span>Pagar</button><button data-route="certificates"><span>${icon("certificates")}</span>Certificados</button></div>
   </section>
 
   <section class="journey-card mb">
@@ -1007,10 +1202,7 @@ function refreshActivities(){
 }
 
 function bindIca(){
-  document.querySelector("#addIcaRow")?.addEventListener("click",()=>{
-    const count=document.querySelectorAll(".ica-row").length+1;
-    document.querySelector("#icaRows")?.insertAdjacentHTML("beforeend",`<article class="calc-row ica-row"><span class="row-number">${count}</span><div class="field"><label>Código CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric"></div><div class="field grow"><label>Ingreso gravable en San Pedro</label><div class="money-input"><span>$</span><input class="input" data-income type="number" min="0"></div></div></article>`);
-  });
+  document.querySelector("#addIcaRow")?.addEventListener("click",openIcaEntryModal);
   document.querySelector("#calculateIca")?.addEventListener("click",async()=>{
     const activities=[...document.querySelectorAll<HTMLElement>(".ica-row")].map(r=>({ciiu:(r.querySelector<HTMLInputElement>("[data-ciiu]")?.value||"").trim(),taxableIncomeCop:Number(r.querySelector<HTMLInputElement>("[data-income]")?.value||0)})).filter(x=>x.ciiu);
     try{lastIcaCalculation=await api(supabase.rpc("hc_calculate_ica",{p_activities:activities,p_apply_notices:(document.querySelector<HTMLInputElement>("#icaNotices")?.checked||false),p_tax_year:2026}));document.querySelector("#icaResult")!.innerHTML=renderIcaResult(lastIcaCalculation);(document.querySelector<HTMLButtonElement>("#saveIca")!).disabled=false;toast("Liquidación calculada.");}catch(err:any){toast(err.message,"error");}
@@ -1021,10 +1213,7 @@ function bindIca(){
   });
 }
 function bindReteica(){
-  document.querySelector("#addReteRow")?.addEventListener("click",()=>{
-    const count=document.querySelectorAll(".rete-row").length+1;
-    document.querySelector("#reteRows")?.insertAdjacentHTML("beforeend",`<article class="calc-row rete-row"><span class="row-number">${count}</span><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field grow"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" data-base type="number" min="0"></div></div></article>`);
-  });
+  document.querySelector("#addReteRow")?.addEventListener("click",openReteicaEntryModal);
   document.querySelector("#calculateRete")?.addEventListener("click",async()=>{
     const transactions=[...document.querySelectorAll<HTMLElement>(".rete-row")].map(r=>({ciiu:(r.querySelector<HTMLInputElement>("[data-ciiu]")?.value||"").trim(),concept:(r.querySelector<HTMLSelectElement>("[data-concept]")?.value||"services"),baseCop:Number(r.querySelector<HTMLInputElement>("[data-base]")?.value||0)})).filter(x=>x.ciiu);
     try{lastReteicaCalculation=await api(supabase.rpc("hc_calculate_reteica",{p_transactions:transactions,p_tax_year:2026}));document.querySelector("#reteResult")!.innerHTML=renderReteResult(lastReteicaCalculation);(document.querySelector<HTMLButtonElement>("#saveRete")!).disabled=false;toast("RETEICA calculado.");}catch(err:any){toast(err.message,"error");}
