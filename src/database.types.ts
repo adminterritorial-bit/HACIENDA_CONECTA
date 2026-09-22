@@ -2451,6 +2451,31 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["hc_declaration_status"]
       }
+      hc_submit_certificate_request: {
+        Args: { p_certificate_type: string; p_declaration_id?: string }
+        Returns: string
+      }
+      hc_submit_payment_agreement: {
+        Args: {
+          p_debt_type: string
+          p_principal_cop: number
+          p_requested_installments: number
+        }
+        Returns: string
+      }
+      hc_submit_paz_y_salvo: {
+        Args: { p_property_account_id: string; p_request_type?: string }
+        Returns: string
+      }
+      hc_submit_refund_request: {
+        Args: {
+          p_amount_cop: number
+          p_reason: string
+          p_tax_type: string
+          p_tax_year: number
+        }
+        Returns: string
+      }
       is_admin: { Args: never; Returns: boolean }
       mark_tutorial_seen: { Args: { p_tutorial_code?: string }; Returns: Json }
       next_ticket_number: { Args: never; Returns: string }
