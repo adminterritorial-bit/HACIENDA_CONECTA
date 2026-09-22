@@ -10,6 +10,37 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 
 type Profile = { user_id:string; full_name:string; email:string; phone_e164:string; role:string; identity_verified_at:string|null };
 type AnyRow = Record<string, any>;
+type PublicReference = { taxYear:number; uvtCop:number; uvtLegalReference:string; ciiuCount:number };
+type A11yPrefs = { fontScale:number; highContrast:boolean };
+
+const A11Y_STORAGE_KEY = "hc:a11y:v1";
+const defaultA11yPrefs:A11yPrefs = { fontScale:1, highContrast:false };
+let a11yPrefs:A11yPrefs = (() => {
+  try{
+    const raw=localStorage.getItem(A11Y_STORAGE_KEY);
+    if(!raw) return {...defaultA11yPrefs};
+    const parsed=JSON.parse(raw);
+    return {
+      fontScale:[1,1.125,1.25].includes(Number(parsed.fontScale)) ? Number(parsed.fontScale) : 1,
+      highContrast:Boolean(parsed.highContrast)
+    };
+  }catch{return {...defaultA11yPrefs};}
+})();
+function applyA11yPrefs(){
+  document.documentElement.style.setProperty("--user-font-scale",String(a11yPrefs.fontScale));
+  document.documentElement.toggleAttribute("data-high-contrast",a11yPrefs.highContrast);
+}
+function saveA11yPrefs(){
+  localStorage.setItem(A11Y_STORAGE_KEY,JSON.stringify(a11yPrefs));
+  applyA11yPrefs();
+}
+function changeFontScale(delta:number){
+  const scales=[1,1.125,1.25];
+  const current=Math.max(0,scales.indexOf(a11yPrefs.fontScale));
+  a11yPrefs.fontScale=scales[Math.max(0,Math.min(scales.length-1,current+delta))];
+  saveA11yPrefs();
+}
+applyA11yPrefs();
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const toastRegion = document.querySelector<HTMLDivElement>("#toast-region")!;
@@ -21,6 +52,12 @@ let selectedRegistryActivities: Array<{ciiu:string;activity:string;primary:boole
 let lastIcaCalculation: AnyRow | null = null;
 let lastReteicaCalculation: AnyRow | null = null;
 let registryStep = 1;
+let publicReference:PublicReference = {
+  taxYear:2026,
+  uvtCop:52374,
+  uvtLegalReference:"${esc(publicReference.uvtLegalReference)}",
+  ciiuCount:324
+};
 
 const icon = (name:string) => {
   const common='viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
@@ -48,6 +85,7 @@ const icon = (name:string) => {
 
 const esc = (v:any) => String(v ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]!));
 const money = (v:any) => new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(Number(v||0));
+const copCompact = (v:any) => "$"+new Intl.NumberFormat("es-CO",{maximumFractionDigits:0}).format(Number(v||0));
 const date = (v:any) => v ? new Intl.DateTimeFormat("es-CO",{dateStyle:"medium"}).format(new Date(v)) : "—";
 const statusClass = (s:string) => /APPROVED|PAID|FILED|ISSUED|VERIFIED|ACTIVE|AVAILABLE/i.test(s) ? "ok" : /REJECT|DECLIN|DEFAULT|CANCEL/i.test(s) ? "danger" : /PENDING|DRAFT|REVIEW|SUBMITTED|READY/i.test(s) ? "warn" : "info";
 const humanStatus = (s:any) => String(s||"").replaceAll("_"," ");
@@ -88,8 +126,37 @@ async function loadProfile(){
   const {data}=await supabase.from("hc_profiles").select("user_id,full_name,email,phone_e164,role,identity_verified_at").eq("user_id",session.user.id).maybeSingle();
   profile=data as Profile|null;
 }
+async function loadPublicReference(){
+  try{
+    const [{data:uvt},{count}]=await Promise.all([
+      supabase.from("hc_tax_parameters")
+        .select("tax_year,numeric_value,legal_reference")
+        .eq("key","UVT_COP")
+        .eq("status","ACTIVE_VALIDATED")
+        .order("tax_year",{ascending:false})
+        .limit(1)
+        .maybeSingle(),
+      supabase.from("hc_ica_tariffs")
+        .select("id",{count:"exact",head:true})
+        .in("status",["BASE_VALIDATED","ACTIVE_VALIDATED"])
+    ]);
+    if(uvt?.numeric_value){
+      publicReference={
+        taxYear:Number(uvt.tax_year)||2026,
+        uvtCop:Number(uvt.numeric_value)||52374,
+        uvtLegalReference:String(uvt.legal_reference||"Fuente normativa registrada"),
+        ciiuCount:count ?? publicReference.ciiuCount
+      };
+    }else if(count!==null){
+      publicReference={...publicReference,ciiuCount:count};
+    }
+  }catch{
+    // La interfaz conserva una referencia segura de respaldo si el catálogo público no responde.
+  }
+}
 async function bootstrap(){
-  const {data}=await supabase.auth.getSession(); session=data.session; await loadProfile();
+  const {data}=await supabase.auth.getSession(); session=data.session;
+  await Promise.all([loadProfile(),loadPublicReference()]);
   if(session && route==="dashboard" && await needsPhoneOnboarding()){route="security";location.hash="security";}
   supabase.auth.onAuthStateChange(async (_event,newSession)=>{
     session=newSession;
@@ -97,12 +164,12 @@ async function bootstrap(){
     if(session && route==="dashboard" && await needsPhoneOnboarding()){route="security";location.hash="security";}
     render();
   });
-  addEventListener("hashchange",()=>{route=location.hash.replace("#","")||"dashboard";render();});
+  addEventListener("hashchange",()=>{route=location.hash.replace("#","")||"dashboard";void render().then(()=>requestAnimationFrame(()=>document.querySelector<HTMLElement>("#main-content")?.focus({preventScroll:true})));});
   render();
 }
 
 function navItem(id:string,iconName:string,label:string){
-  return `<button data-route="${id}" class="${route===id?"active":""}">
+  return `<button data-route="${id}" class="${route===id?"active":""}" ${route===id?'aria-current="page"':""}>
     <span class="nav-icon">${icon(iconName)}</span>
     <span class="nav-label">${label}</span>
     <span class="nav-arrow">${icon("arrow")}</span>
@@ -111,7 +178,7 @@ function navItem(id:string,iconName:string,label:string){
 function shell(content:string){
   const official=profile && profile.role!=="citizen";
   return `<div class="app-shell">
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
       <div class="brand">
         <div class="brand-badge"><span>HC</span></div>
         <div class="brand-copy"><strong>Hacienda Conecta</strong><small>San Pedro · Valle del Cauca</small></div>
@@ -120,7 +187,7 @@ function shell(content:string){
         <span class="live-dot"></span>
         <div><strong>Servicios tributarios</strong><small>Plataforma municipal segura</small></div>
       </div>
-      <nav class="nav">
+      <nav class="nav" aria-label="Servicios tributarios">
         <div class="sep">Mi cuenta</div>
         ${navItem("dashboard","dashboard","Inicio")}
         ${navItem("registry","registry","Registro Tributario")}
@@ -142,29 +209,45 @@ function shell(content:string){
       </nav>
       <div class="side-status">
         <div class="side-status-top"><span class="security-shield">${icon("security")}</span><div><strong>Base tributaria 2026</strong><small>Parámetros versionados</small></div></div>
-        <div class="side-stats"><span><b>$52.374</b>UVT</span><span><b>324</b>CIIU</span></div>
+        <div class="side-stats"><span><b>${copCompact(publicReference.uvtCop)}</b>UVT</span><span><b>${publicReference.ciiuCount}</b>CIIU</span></div>
       </div>
     </aside>
     <section class="content">
       <div class="gov-strip"><span>Municipio de San Pedro · Secretaría de Hacienda</span><span class="gov-strip-right">Portal oficial de servicios tributarios</span></div>
       <header class="topbar">
         <div class="top-left">
-          <button class="icon-button mobile-menu" id="menuBtn" aria-label="Abrir menú">☰</button>
+          <button class="icon-button mobile-menu" id="menuBtn" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">☰</button>
           <div><span class="top-title">${route==="dashboard"?"Resumen tributario":"Hacienda Conecta"}</span><span class="top-sub">Gestión segura, trazable y digital</span></div>
         </div>
         <div class="top-actions">
+          <div class="a11y-controls" role="group" aria-label="Controles de accesibilidad">
+            <button class="a11y-button" id="fontDownBtn" type="button" aria-label="Reducir tamaño de texto" title="Reducir tamaño de texto">A−</button>
+            <button class="a11y-button" id="fontUpBtn" type="button" aria-label="Aumentar tamaño de texto" title="Aumentar tamaño de texto">A+</button>
+            <button class="a11y-button contrast" id="contrastBtn" type="button" aria-pressed="${a11yPrefs.highContrast}" aria-label="Alternar alto contraste" title="Alternar alto contraste">◐<span class="a11y-label">Contraste</span></button>
+          </div>
           <span class="secure-pill"><span class="secure-dot"></span>Conexión segura</span>
           ${session?`<div class="user-chip"><span class="avatar">${esc(userInitials())}</span><div class="user-copy"><strong>${esc(profile?.full_name||session.user.email||"Usuario")}</strong><small>${esc(profile?.role==="citizen"?"Contribuyente":profile?.role||"Usuario")}</small></div></div><button class="btn ghost small" id="logoutBtn">Salir</button>`:`<button class="btn small" data-action="login">Ingresar</button>`}
         </div>
       </header>
-      <main class="main">${content}</main>
+      <main class="main" id="main-content" tabindex="-1">${content}</main>
     </section>
   </div>`;
 }
 
 function bindShell(){
-  document.querySelectorAll<HTMLElement>("[data-route]").forEach(b=>b.onclick=()=>{location.hash=b.dataset.route!;});
-  document.querySelector("#menuBtn")?.addEventListener("click",()=>document.querySelector("#sidebar")?.classList.toggle("open"));
+  document.querySelectorAll<HTMLElement>("[data-route]").forEach(b=>b.onclick=()=>{document.querySelector("#sidebar")?.classList.remove("open");location.hash=b.dataset.route!;});
+  document.querySelector("#menuBtn")?.addEventListener("click",(e)=>{
+    const sidebar=document.querySelector("#sidebar");
+    const open=sidebar?.classList.toggle("open")||false;
+    (e.currentTarget as HTMLButtonElement).setAttribute("aria-expanded",String(open));
+  });
+  document.querySelector("#fontDownBtn")?.addEventListener("click",()=>{changeFontScale(-1);});
+  document.querySelector("#fontUpBtn")?.addEventListener("click",()=>{changeFontScale(1);});
+  document.querySelector("#contrastBtn")?.addEventListener("click",(e)=>{
+    a11yPrefs.highContrast=!a11yPrefs.highContrast;
+    saveA11yPrefs();
+    (e.currentTarget as HTMLButtonElement).setAttribute("aria-pressed",String(a11yPrefs.highContrast));
+  });
   document.querySelector("#logoutBtn")?.addEventListener("click",async()=>{await supabase.auth.signOut();location.hash="dashboard";});
   document.querySelectorAll<HTMLElement>('[data-action="login"]').forEach(b=>b.onclick=()=>renderAuth());
 }
@@ -183,7 +266,7 @@ function renderAuth(){
         <article><span class="feature-icon">${icon("ica")}</span><div><strong>Cálculos automáticos</strong><small>ICA y RETEICA con parámetros 2026.</small></div></article>
         <article><span class="feature-icon">${icon("certificates")}</span><div><strong>Documentos verificables</strong><small>Certificados con serial, hash y QR.</small></div></article>
       </div>
-      <div class="auth-trust"><span>UVT 2026 · $52.374</span><span>324 actividades ICA</span><span>RLS + MFA</span></div>
+      <div class="auth-trust"><span>UVT ${publicReference.taxYear} · ${copCompact(publicReference.uvtCop)}</span><span>${publicReference.ciiuCount} actividades ICA</span><span>RLS + MFA</span></div>
       <div class="auth-orb orb-a"></div><div class="auth-orb orb-b"></div>
     </section>
     <section class="auth-panel">
@@ -275,8 +358,8 @@ async function viewDashboard(){
     </div>
     <div class="hero-dashboard">
       <div class="hero-dashboard-head"><span>Estado tributario 2026</span><span class="status ok">En línea</span></div>
-      <div class="hero-stat"><div><small>UVT vigente</small><strong>$52.374</strong></div><span class="hero-stat-icon">UVT</span></div>
-      <div class="hero-stat"><div><small>Catálogo ICA</small><strong>324 actividades</strong></div><span class="hero-stat-icon">CIIU</span></div>
+      <div class="hero-stat"><div><small>UVT vigente</small><strong>${copCompact(publicReference.uvtCop)}</strong></div><span class="hero-stat-icon">UVT</span></div>
+      <div class="hero-stat"><div><small>Catálogo ICA</small><strong>${publicReference.ciiuCount} actividades</strong></div><span class="hero-stat-icon">CIIU</span></div>
       <div class="hero-law">Resolución DIAN 000238 de 2025</div>
     </div>
     <div class="hero-glow glow-a"></div><div class="hero-glow glow-b"></div>
@@ -427,7 +510,7 @@ function renderSelectedActivities(readonly=false){
 }
 
 async function viewIca(){
-  return `<div class="page-head"><div><div class="kicker">Industria y Comercio</div><h1>Liquidación ICA 2026</h1><p>Construye la liquidación por actividades económicas. Hacienda Conecta consulta la tarifa CIIU, aplica mínimo tributario y calcula Avisos y Tableros cuando corresponda.</p></div><div class="head-badges"><span class="status ok">${icon("check")} Motor activo</span><span class="pill">UVT $52.374</span></div></div>
+  return `<div class="page-head"><div><div class="kicker">Industria y Comercio</div><h1>Liquidación ICA 2026</h1><p>Construye la liquidación por actividades económicas. Hacienda Conecta consulta la tarifa CIIU, aplica mínimo tributario y calcula Avisos y Tableros cuando corresponda.</p></div><div class="head-badges"><span class="status ok">${icon("check")} Motor activo</span><span class="pill">UVT ${copCompact(publicReference.uvtCop)}</span></div></div>
   <div class="calculator-layout">
     <section class="calculator-card">
       <div class="calculator-head"><div><span class="kicker">Paso 1</span><h2>Ingresos gravables por actividad</h2><p>Agrega todas las actividades realizadas en jurisdicción de San Pedro.</p></div><span class="calc-badge">Vigencia 2026</span></div>
@@ -462,7 +545,7 @@ async function viewReteica(){
   return `<div class="page-head"><div><div class="kicker">Retención de ICA</div><h1>Calculadora RETEICA</h1><p>Registra operaciones sujetas a retención. El motor compara la base con el umbral en UVT y aplica la tarifa CIIU correspondiente.</p></div><div class="head-badges"><span class="status ok">${icon("check")} Cálculo disponible</span><span class="status warn">Periodicidad por validar</span></div></div>
   <div class="calculator-layout">
     <section class="calculator-card">
-      <div class="calculator-head"><div><span class="kicker">Operaciones</span><h2>Base y concepto de retención</h2><p>Agrega compras o servicios realizados con cada actividad económica.</p></div><span class="calc-badge">UVT $52.374</span></div>
+      <div class="calculator-head"><div><span class="kicker">Operaciones</span><h2>Base y concepto de retención</h2><p>Agrega compras o servicios realizados con cada actividad económica.</p></div><span class="calc-badge">UVT ${copCompact(publicReference.uvtCop)}</span></div>
       <div id="reteRows" class="calc-rows">
         <article class="calc-row rete-row"><span class="row-number">1</span><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" value="1011" inputmode="numeric"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field grow"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" data-base type="number" min="0" value="500000"></div></div></article>
       </div>
@@ -647,7 +730,7 @@ async function viewLegal(){
     supabase.from("hc_filing_calendar").select("*").eq("tax_year",2026)
   ]);
   return `<div class="page-head"><div><div class="kicker">Gobernanza tributaria</div><h1>Normativa y parámetros 2026</h1><p>Cada cálculo automático se apoya en parámetros versionados. Hacienda Conecta distingue fuentes localizadas, reglas validadas y bloqueos pendientes.</p></div><span class="status ok">${icon("check")} Motor auditable</span></div>
-  <div class="legal-hero mb"><span class="legal-hero-icon">${icon("legal")}</span><div><h2>Reglas antes que supuestos</h2><p>Una tarifa, vencimiento o beneficio solo pasa al motor cuando su fuente, vigencia y estado están registrados. Las diferencias normativas permanecen visibles en vez de resolverse por inferencia.</p></div><div class="legal-hero-param"><small>UVT 2026</small><strong>$52.374</strong><span>Res. DIAN 000238/2025</span></div></div>
+  <div class="legal-hero mb"><span class="legal-hero-icon">${icon("legal")}</span><div><h2>Reglas antes que supuestos</h2><p>Una tarifa, vencimiento o beneficio solo pasa al motor cuando su fuente, vigencia y estado están registrados. Las diferencias normativas permanecen visibles en vez de resolverse por inferencia.</p></div><div class="legal-hero-param"><small>UVT ${publicReference.taxYear}</small><strong>${copCompact(publicReference.uvtCop)}</strong><span>Res. DIAN 000238/2025</span></div></div>
   <div class="grid cols-2 mb">
     <section class="card"><div class="section-title"><div><div class="kicker">Motor</div><h2>Parámetros de la vigencia</h2></div></div>${tableRows((params||[]).map((x:any)=>[esc(x.key),x.numeric_value!==null?esc(x.numeric_value):esc(x.text_value),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`,esc(x.legal_reference)]),["Parámetro","Valor","Estado","Fuente"])}</section>
     <section class="card"><div class="section-title"><div><div class="kicker">Vencimientos</div><h2>Calendario tributario 2026</h2></div></div>${calendar?.length?tableRows(calendar.map((x:any)=>[esc(x.tax_type),esc(x.period),date(x.due_date),esc(x.legal_reference)]),["Tributo","Período","Vence","Fuente"]):'<div class="normative-lock"><span>'+icon("security")+'</span><div><strong>Calendario pendiente de fuente oficial</strong><p>La plataforma no inventará fechas de vencimiento usando calendarios de otra vigencia.</p></div></div>'}</section>
