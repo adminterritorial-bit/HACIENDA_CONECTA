@@ -4,6 +4,8 @@ import QRCode from "qrcode";
 
 const SUPABASE_URL = "https://jppykxqsxayzypzdbnqd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_CH1hn5LpS3zWPdDWqiM4jg_F7OuK7Ry";
+const HACIENDA_CANONICAL_URL = "https://hacienda-conecta.vercel.app/";
+const APP_BUILD = "2026.09.21.5";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
@@ -105,8 +107,10 @@ const statusClass = (s:string) => /APPROVED|PAID|FILED|ISSUED|VERIFIED|ACTIVE|AV
 const humanStatus = (s:any) => String(s||"").replaceAll("_"," ");
 const userInitials = () => (profile?.full_name || session?.user.email || "HC").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase();
 const appBaseUrl = () => {
-  const path = location.pathname.endsWith("/") ? location.pathname : location.pathname.replace(/[^/]*$/,"");
-  return location.origin + path;
+  if (location.hostname === "adminterritorial-bit.github.io") {
+    return "https://adminterritorial-bit.github.io/HACIENDA_CONECTA/";
+  }
+  return HACIENDA_CANONICAL_URL;
 };
 const maskPhone = (phone:string) => {
   if(!phone) return "—";
@@ -299,7 +303,7 @@ function renderAuth(){
         <div class="auth-security-note"><span>${icon("security")}</span><p>Google o correo validan tu cuenta. El celular funciona como segundo factor para firma y autorización de pagos.</p></div>
         <button class="text-button" id="publicBtn">Consultar servicios públicos sin iniciar sesión</button>
       </div>
-      <p class="auth-foot">Tus datos tributarios se protegen mediante Row Level Security y controles de acceso por rol.</p>
+      <p class="auth-foot">Tus datos tributarios se protegen mediante Row Level Security y controles de acceso por rol. <span class="build-tag">Build ${APP_BUILD}</span></p>
     </section>
   </div>`;
   document.querySelector("#googleLoginBtn")?.addEventListener("click",async()=>{
