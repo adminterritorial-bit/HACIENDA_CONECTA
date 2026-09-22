@@ -5,7 +5,8 @@ import QRCode from "qrcode";
 const SUPABASE_URL = "https://jppykxqsxayzypzdbnqd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_CH1hn5LpS3zWPdDWqiM4jg_F7OuK7Ry";
 const HACIENDA_CANONICAL_URL = "https://hacienda-conecta.vercel.app/";
-const APP_BUILD = "2026.09.21.5";
+const GOOGLE_WEB_CLIENT_ID = "103022555921-i7cqb3o8tc4lbtf7n9endse1d423ck4m.apps.googleusercontent.com";
+const APP_BUILD = "2026.09.21.6";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
@@ -112,6 +113,77 @@ const appBaseUrl = () => {
   }
   return HACIENDA_CANONICAL_URL;
 };
+
+let googleIdentityLoader: Promise<void> | null = null;
+function ensureGoogleIdentity():Promise<void>{
+  const w=window as any;
+  if(w.google?.accounts?.id) return Promise.resolve();
+  if(googleIdentityLoader) return googleIdentityLoader;
+
+  googleIdentityLoader=new Promise((resolve,reject)=>{
+    const existing=document.querySelector<HTMLScriptElement>('script[data-hc-google-identity="1"]');
+    const done=()=>{
+      if((window as any).google?.accounts?.id) resolve();
+      else reject(new Error("Google Identity Services no quedó disponible."));
+    };
+    if(existing){
+      if((window as any).google?.accounts?.id){resolve();return;}
+      existing.addEventListener("load",done,{once:true});
+      existing.addEventListener("error",()=>reject(new Error("No fue posible cargar Google Identity Services.")),{once:true});
+      return;
+    }
+    const script=document.createElement("script");
+    script.src="https://accounts.google.com/gsi/client";
+    script.async=true;
+    script.defer=true;
+    script.dataset.hcGoogleIdentity="1";
+    script.addEventListener("load",done,{once:true});
+    script.addEventListener("error",()=>reject(new Error("No fue posible cargar Google Identity Services.")),{once:true});
+    document.head.appendChild(script);
+  });
+  return googleIdentityLoader;
+}
+
+async function mountGoogleIdentityButton(){
+  const host=document.querySelector<HTMLElement>("#googleIdentityButton");
+  if(!host) return;
+  try{
+    await ensureGoogleIdentity();
+    if(!document.body.contains(host)) return;
+    const google=(window as any).google;
+    google.accounts.id.initialize({
+      client_id: GOOGLE_WEB_CLIENT_ID,
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      callback: async (response:any)=>{
+        const credential=String(response?.credential||"");
+        if(!credential){toast("Google no entregó una credencial válida.","error");return;}
+        try{
+          const {error}=await supabase.auth.signInWithIdToken({
+            provider:"google",
+            token:credential
+          });
+          if(error) throw error;
+          toast("Ingreso con Google exitoso.");
+        }catch(err:any){
+          toast(err?.message||"No fue posible validar la cuenta de Google en Hacienda Conecta.","error");
+        }
+      }
+    });
+    google.accounts.id.renderButton(host,{
+      type:"standard",
+      theme:"outline",
+      size:"large",
+      text:"continue_with",
+      shape:"rectangular",
+      logo_alignment:"left",
+      width:360
+    });
+  }catch(err:any){
+    host.innerHTML='<button class="google-btn" type="button" disabled><span class="google-g">G</span><span>Google no disponible</span></button>';
+    toast(err?.message||"No fue posible preparar el acceso con Google.","error");
+  }
+}
 const maskPhone = (phone:string) => {
   if(!phone) return "—";
   const clean=phone.replace(/\s+/g,"");
@@ -290,7 +362,7 @@ function renderAuth(){
     <section class="auth-panel">
       <div class="auth-card">
         <div class="auth-card-head"><div class="kicker">Acceso seguro</div><h2>${authMode==="login"?"Bienvenido de nuevo":"Crea tu cuenta"}</h2><p>${authMode==="login"?"Ingresa para continuar con tus obligaciones y trámites.":"Crea tu acceso; después verificaremos tu celular para operaciones sensibles."}</p></div>
-        <button class="google-btn" type="button" id="googleLoginBtn"><span class="google-g">G</span><span>Continuar con Google</span></button>
+        <div id="googleIdentityButton" class="google-identity-host" aria-label="Continuar con Google"></div>
         <div class="auth-divider"><span>o usa tu correo</span></div>
         <div class="auth-tabs"><button id="loginTab" class="${authMode==="login"?"active":""}">Ingresar</button><button id="signupTab" class="${authMode==="signup"?"active":""}">Crear cuenta</button></div>
         <form id="authForm" class="stack">
@@ -306,12 +378,7 @@ function renderAuth(){
       <p class="auth-foot">Tus datos tributarios se protegen mediante Row Level Security y controles de acceso por rol. <span class="build-tag">Build ${APP_BUILD}</span></p>
     </section>
   </div>`;
-  document.querySelector("#googleLoginBtn")?.addEventListener("click",async()=>{
-    try{
-      const {error}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:appBaseUrl()}});
-      if(error) throw error;
-    }catch(err:any){toast(err.message||"Google aún no está habilitado en el proveedor de autenticación.","error");}
-  });
+  void mountGoogleIdentityButton();
   document.querySelector("#loginTab")!.addEventListener("click",()=>{authMode="login";renderAuth();});
   document.querySelector("#signupTab")!.addEventListener("click",()=>{authMode="signup";renderAuth();});
   document.querySelector("#publicBtn")!.addEventListener("click",()=>{route="dashboard";location.hash="dashboard";render();});
