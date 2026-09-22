@@ -48,12 +48,14 @@ await app.register(helmet, {
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'"],
       imgSrc: ["'self'", "data:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "https://jppykxqsxayzypzdbnqd.supabase.co", "wss://jppykxqsxayzypzdbnqd.supabase.co"],
       frameAncestors: ["'none'"],
       baseUri: ["'self'"],
-      formAction: ["'self'"]
+      formAction: ["'self'"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'none'"]
     }
   },
   strictTransportSecurity:
