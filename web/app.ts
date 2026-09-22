@@ -326,6 +326,7 @@ function shell(content:string){
         </div>
       </header>
       <main class="main" id="main-content" tabindex="-1">${content}</main>
+      <button class="floating-guide" id="floatingGuideBtn" type="button" aria-label="Abrir ayuda guiada">${icon("help")}<span>Ayuda</span></button>
       <nav class="mobile-dock" aria-label="Accesos rápidos móviles">
         <button data-route="dashboard" class="${route==="dashboard"?"active":""}"><span>${icon("dashboard")}</span><small>Inicio</small></button>
         <button data-route="ica" class="${route==="ica"?"active":""}"><span>${icon("ica")}</span><small>ICA</small></button>
@@ -356,6 +357,7 @@ function bindShell(){
   document.querySelector("#quickActionsBtn")?.addEventListener("click",openQuickActions);
   document.querySelector("#mobileQuickBtn")?.addEventListener("click",openQuickActions);
   document.querySelector("#guideBtn")?.addEventListener("click",openContextGuide);
+  document.querySelector("#floatingGuideBtn")?.addEventListener("click",openContextGuide);
 }
 
 
@@ -426,6 +428,56 @@ function openQuickActions(){
   });
   requestAnimationFrame(()=>input.focus());
 }
+
+function openIcaEntryModal(){
+  const body=
+    '<form id="icaEntryForm" class="guided-entry-form">'+
+      '<div class="guided-entry-note"><span>'+icon("ica")+'</span><div><strong>Agrega una actividad</strong><small>Solo necesitamos el CIIU y el ingreso gravable de esta actividad.</small></div></div>'+
+      '<div class="field"><label>Código CIIU</label><input class="input" name="ciiu" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required placeholder="Ej. 6201"><span class="hint">Código de 4 dígitos de la actividad realizada en San Pedro.</span></div>'+
+      '<div class="field"><label>Ingreso gravable en San Pedro</label><div class="money-input"><span>$</span><input class="input" name="income" type="number" min="0" step="1" required placeholder="0"></div><span class="hint">Ingresa el valor correspondiente únicamente a esta actividad.</span></div>'+
+      '<div class="guided-entry-actions"><button class="btn ghost" type="button" data-entry-cancel>Cancelar</button><button class="btn" type="submit">Agregar actividad</button></div>'+
+    '</form>';
+  const overlay=makeExperienceModal("Nueva actividad ICA","Completa los datos esenciales. Podrás revisar todas las actividades antes de calcular.",body,false);
+  overlay.querySelector("[data-entry-cancel]")?.addEventListener("click",closeExperienceModal);
+  overlay.querySelector("#icaEntryForm")?.addEventListener("submit",(e)=>{
+    e.preventDefault();
+    const fd=new FormData(e.currentTarget as HTMLFormElement);
+    const ciiu=String(fd.get("ciiu")||"").trim();
+    const income=Math.max(0,Number(fd.get("income")||0));
+    if(!/^\d{4}$/.test(ciiu)){toast("El CIIU debe tener exactamente 4 dígitos.","warn");return;}
+    const count=document.querySelectorAll(".ica-row").length+1;
+    document.querySelector("#icaRows")?.insertAdjacentHTML("beforeend",
+      '<article class="calc-row ica-row experience-enter"><span class="row-number">'+count+'</span><div class="field"><label>Código CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric" value="'+esc(ciiu)+'"></div><div class="field grow"><label>Ingreso gravable en San Pedro</label><div class="money-input"><span>$</span><input class="input" data-income type="number" min="0" value="'+income+'"></div></div></article>');
+    closeExperienceModal();
+    toast("Actividad agregada.");
+  });
+}
+function openReteicaEntryModal(){
+  const body=
+    '<form id="reteEntryForm" class="guided-entry-form">'+
+      '<div class="guided-entry-note"><span>'+icon("reteica")+'</span><div><strong>Agrega una operación</strong><small>Registra CIIU, concepto y base para evaluar la retención.</small></div></div>'+
+      '<div class="field"><label>Código CIIU</label><input class="input" name="ciiu" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required placeholder="Ej. 6201"></div>'+
+      '<div class="field"><label>Concepto</label><select class="select" name="concept"><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div>'+
+      '<div class="field"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" name="base" type="number" min="0" step="1" required placeholder="0"></div></div>'+
+      '<div class="guided-entry-actions"><button class="btn ghost" type="button" data-entry-cancel>Cancelar</button><button class="btn" type="submit">Agregar operación</button></div>'+
+    '</form>';
+  const overlay=makeExperienceModal("Nueva operación RETEICA","Agrega una operación a la vez. El cálculo final compara la base con el umbral vigente.",body,false);
+  overlay.querySelector("[data-entry-cancel]")?.addEventListener("click",closeExperienceModal);
+  overlay.querySelector("#reteEntryForm")?.addEventListener("submit",(e)=>{
+    e.preventDefault();
+    const fd=new FormData(e.currentTarget as HTMLFormElement);
+    const ciiu=String(fd.get("ciiu")||"").trim();
+    const concept=String(fd.get("concept")||"services")==="goods"?"goods":"services";
+    const base=Math.max(0,Number(fd.get("base")||0));
+    if(!/^\d{4}$/.test(ciiu)){toast("El CIIU debe tener exactamente 4 dígitos.","warn");return;}
+    const count=document.querySelectorAll(".rete-row").length+1;
+    document.querySelector("#reteRows")?.insertAdjacentHTML("beforeend",
+      '<article class="calc-row rete-row experience-enter"><span class="row-number">'+count+'</span><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric" value="'+esc(ciiu)+'"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services"'+(concept==="services"?" selected":"")+'>Servicios</option><option value="goods"'+(concept==="goods"?" selected":"")+'>Compras / bienes</option></select></div><div class="field grow"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" data-base type="number" min="0" value="'+base+'"></div></div></article>');
+    closeExperienceModal();
+    toast("Operación agregada.");
+  });
+}
+
 function openContextGuide(){
   const guide=routeGuides[route]||routeGuides.dashboard;
   const body=
@@ -1150,10 +1202,7 @@ function refreshActivities(){
 }
 
 function bindIca(){
-  document.querySelector("#addIcaRow")?.addEventListener("click",()=>{
-    const count=document.querySelectorAll(".ica-row").length+1;
-    document.querySelector("#icaRows")?.insertAdjacentHTML("beforeend",`<article class="calc-row ica-row"><span class="row-number">${count}</span><div class="field"><label>Código CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric"></div><div class="field grow"><label>Ingreso gravable en San Pedro</label><div class="money-input"><span>$</span><input class="input" data-income type="number" min="0"></div></div></article>`);
-  });
+  document.querySelector("#addIcaRow")?.addEventListener("click",openIcaEntryModal);
   document.querySelector("#calculateIca")?.addEventListener("click",async()=>{
     const activities=[...document.querySelectorAll<HTMLElement>(".ica-row")].map(r=>({ciiu:(r.querySelector<HTMLInputElement>("[data-ciiu]")?.value||"").trim(),taxableIncomeCop:Number(r.querySelector<HTMLInputElement>("[data-income]")?.value||0)})).filter(x=>x.ciiu);
     try{lastIcaCalculation=await api(supabase.rpc("hc_calculate_ica",{p_activities:activities,p_apply_notices:(document.querySelector<HTMLInputElement>("#icaNotices")?.checked||false),p_tax_year:2026}));document.querySelector("#icaResult")!.innerHTML=renderIcaResult(lastIcaCalculation);(document.querySelector<HTMLButtonElement>("#saveIca")!).disabled=false;toast("Liquidación calculada.");}catch(err:any){toast(err.message,"error");}
@@ -1164,10 +1213,7 @@ function bindIca(){
   });
 }
 function bindReteica(){
-  document.querySelector("#addReteRow")?.addEventListener("click",()=>{
-    const count=document.querySelectorAll(".rete-row").length+1;
-    document.querySelector("#reteRows")?.insertAdjacentHTML("beforeend",`<article class="calc-row rete-row"><span class="row-number">${count}</span><div class="field"><label>CIIU</label><input class="input" data-ciiu maxlength="4" inputmode="numeric"></div><div class="field"><label>Concepto</label><select class="select" data-concept><option value="services">Servicios</option><option value="goods">Compras / bienes</option></select></div><div class="field grow"><label>Base de la operación</label><div class="money-input"><span>$</span><input class="input" data-base type="number" min="0"></div></div></article>`);
-  });
+  document.querySelector("#addReteRow")?.addEventListener("click",openReteicaEntryModal);
   document.querySelector("#calculateRete")?.addEventListener("click",async()=>{
     const transactions=[...document.querySelectorAll<HTMLElement>(".rete-row")].map(r=>({ciiu:(r.querySelector<HTMLInputElement>("[data-ciiu]")?.value||"").trim(),concept:(r.querySelector<HTMLSelectElement>("[data-concept]")?.value||"services"),baseCop:Number(r.querySelector<HTMLInputElement>("[data-base]")?.value||0)})).filter(x=>x.ciiu);
     try{lastReteicaCalculation=await api(supabase.rpc("hc_calculate_reteica",{p_transactions:transactions,p_tax_year:2026}));document.querySelector("#reteResult")!.innerHTML=renderReteResult(lastReteicaCalculation);(document.querySelector<HTMLButtonElement>("#saveRete")!).disabled=false;toast("RETEICA calculado.");}catch(err:any){toast(err.message,"error");}
