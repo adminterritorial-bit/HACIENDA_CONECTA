@@ -1,0 +1,20 @@
+{
+  "name": "Hacienda Conecta · San Pedro",
+  "short_name": "Hacienda",
+  "description": "Servicios tributarios digitales del Municipio de San Pedro, Valle del Cauca",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fa",
+  "theme_color": "#063b72",
+  "orientation": "any",
+  "lang": "es-CO",
+  "icons": [
+    {
+      "src": "./app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
