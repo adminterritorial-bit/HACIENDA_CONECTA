@@ -2,8 +2,8 @@ import { createClient, type Session, type User } from "@supabase/supabase-js";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import QRCode from "qrcode";
 
-const SUPABASE_URL = "https://dvdpgllezrmttrknbcjq.supabase.co";
-const SUPABASE_KEY = "sb_publishable_u8aF30AdRo_flW3qb-Z8sg_evTHk9Ry";
+const SUPABASE_URL = "https://jppykxqsxayzypzdbnqd.supabase.co";
+const SUPABASE_KEY = "sb_publishable_CH1hn5LpS3zWPdDWqiM4jg_F7OuK7Ry";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 });
@@ -85,7 +85,7 @@ async function api<T=any>(promise:PromiseLike<{data:T|null,error:any}>):Promise<
 }
 async function loadProfile(){
   if(!session){profile=null;return;}
-  const {data}=await supabase.from("profiles").select("user_id,full_name,email,phone_e164,role,identity_verified_at").eq("user_id",session.user.id).maybeSingle();
+  const {data}=await supabase.from("hc_profiles").select("user_id,full_name,email,phone_e164,role,identity_verified_at").eq("user_id",session.user.id).maybeSingle();
   profile=data as Profile|null;
 }
 async function bootstrap(){
@@ -260,8 +260,8 @@ async function render(){
 
 async function viewDashboard(){
   let summary:any={declarations:0,pendingPayments:0,certificates:0,notifications:0,registrationStatus:null};
-  if(session){try{summary=await api(supabase.rpc("dashboard_summary"));}catch{}}
-  const {data:catalog}=await supabase.from("revenue_catalog").select("code,name,implementation_phase,implementation_status").order("implementation_phase").limit(6);
+  if(session){try{summary=await api(supabase.rpc("hc_dashboard_summary"));}catch{}}
+  const {data:catalog}=await supabase.from("hc_revenue_catalog").select("code,name,implementation_phase,implementation_status").order("implementation_phase").limit(6);
   const phoneVerified=session?!!(await getVerifiedPhoneFactor().catch(()=>null)):false;
   const registryReady=!!summary.registrationStatus;
   const journeyStep=!session?1:!phoneVerified?2:!registryReady?3:4;
@@ -343,13 +343,13 @@ async function viewRegistry(){
   }
 
   const [{data:reg},{data:rels}]=await Promise.all([
-    supabase.from("taxpayer_registrations").select("*").eq("user_id",session!.user.id).maybeSingle(),
-    supabase.from("taxpayer_relationships").select("relation_type,related_name,related_email,professional_card").order("created_at",{ascending:false})
+    supabase.from("hc_taxpayer_registrations").select("*").eq("user_id",session!.user.id).maybeSingle(),
+    supabase.from("hc_taxpayer_relationships").select("relation_type,related_name,related_email,professional_card").order("created_at",{ascending:false})
   ]);
-  const {data:acts}=reg?await supabase.from("taxpayer_activities").select("ciiu,is_primary").eq("registration_id",reg.id):{data:null};
+  const {data:acts}=reg?await supabase.from("hc_taxpayer_activities").select("ciiu,is_primary").eq("registration_id",reg.id):{data:null};
   if(acts){
     const codes=(acts as any[]).map(a=>a.ciiu);
-    const {data:catalog}=codes.length?await supabase.from("ica_tariffs").select("ciiu,activity").in("ciiu",codes):{data:[] as any[]};
+    const {data:catalog}=codes.length?await supabase.from("hc_ica_tariffs").select("ciiu,activity").in("ciiu",codes):{data:[] as any[]};
     const names=new Map((catalog||[]).map((x:any)=>[x.ciiu,x.activity]));
     selectedRegistryActivities=(acts as any[]).map(a=>({ciiu:a.ciiu,activity:names.get(a.ciiu)||"",primary:a.is_primary}));
   }
@@ -484,7 +484,7 @@ function renderReteResult(r:any){
 
 async function viewDeclarations(){
   if(!requireSession())return "";
-  const {data}=await supabase.from("declarations").select("*").order("created_at",{ascending:false});
+  const {data}=await supabase.from("hc_declarations").select("*").order("created_at",{ascending:false});
   const rows=data||[];
   const drafts=rows.filter((x:any)=>["DRAFT","IDENTITY_VERIFIED"].includes(x.status)).length;
   const signing=rows.filter((x:any)=>x.status==="READY_TO_SIGN").length;
@@ -513,9 +513,9 @@ function declarationActions(d:any){
 async function viewPayments(){
   if(!requireSession())return "";
   const [{data:reqs},{data:paid},{data:decls}]=await Promise.all([
-    supabase.from("payment_requests").select("*,declarations(tax_type,tax_year,period)").order("created_at",{ascending:false}),
-    supabase.from("payments").select("*,declarations(tax_type,tax_year,period)").order("created_at",{ascending:false}),
-    supabase.from("declarations").select("id,tax_type,tax_year,period,balance_due_cop,status").eq("status","PAYMENT_PENDING")
+    supabase.from("hc_payment_requests").select("*,declarations(tax_type,tax_year,period)").order("created_at",{ascending:false}),
+    supabase.from("hc_payments").select("*,declarations(tax_type,tax_year,period)").order("created_at",{ascending:false}),
+    supabase.from("hc_declarations").select("id,tax_type,tax_year,period,balance_due_cop,status").eq("status","PAYMENT_PENDING")
   ]);
   return `<div class="page-head"><div><div class="kicker">Recaudo</div><h1>Pagos y conciliación</h1><p>La plataforma separa autorización del ciudadano, creación de referencia y confirmación bancaria. Un retorno del navegador nunca cambia por sí solo una obligación a “pagada”.</p></div><span class="status info">Control server-to-server</span></div>
   <section class="payment-flow mb">
@@ -572,9 +572,9 @@ async function viewCertificates(){
   const publicVerify=`<section class="verification-card"><div class="verification-graphic"><span>${icon("certificates")}</span></div><div class="verification-body"><div class="kicker">Consulta pública</div><h2>Verifica un documento</h2><p>Ingresa el token impreso o usa el QR del certificado para comprobar su estado, serial y huella documental.</p><form id="verifyCertForm" class="verification-form"><input class="input" name="token" placeholder="Token de verificación" required><button class="btn">Verificar</button></form><div id="verifyCertResult" class="mt"></div></div></section>`;
   if(!session)return `<div class="page-head"><div><div class="kicker">Documentos verificables</div><h1>Certificados Hacienda</h1><p>Comprueba la autenticidad de documentos emitidos digitalmente por Hacienda Conecta.</p></div></div>${publicVerify}`;
   const [{data:requests},{data:certs},{data:decls}]=await Promise.all([
-    supabase.from("certificate_requests").select("*").order("submitted_at",{ascending:false}),
-    supabase.from("certificates").select("*,declarations(tax_type,tax_year,period)").order("issued_at",{ascending:false}),
-    supabase.from("declarations").select("id,tax_type,tax_year,period,status").in("status",["FILED","CERTIFICATE_AVAILABLE","PAID"])
+    supabase.from("hc_certificate_requests").select("*").order("submitted_at",{ascending:false}),
+    supabase.from("hc_certificates").select("*,declarations(tax_type,tax_year,period)").order("issued_at",{ascending:false}),
+    supabase.from("hc_declarations").select("id,tax_type,tax_year,period,status").in("status",["FILED","CERTIFICATE_AVAILABLE","PAID"])
   ]);
   const issueable=(decls||[]).filter((d:any)=>["FILED","CERTIFICATE_AVAILABLE"].includes(d.status));
   return `<div class="page-head"><div><div class="kicker">Documentos</div><h1>Certificados y constancias</h1><p>Solicita documentos, emite constancias disponibles y verifica certificados mediante serial, token y QR.</p></div><span class="status ok">${icon("check")} Verificación pública activa</span></div>
@@ -598,8 +598,8 @@ async function viewCertificates(){
 async function viewPredial(){
   if(!requireSession())return "";
   const [{data:props},{data:reqs}]=await Promise.all([
-    supabase.from("property_accounts").select("*").order("tax_year",{ascending:false}),
-    supabase.from("paz_y_salvo_requests").select("*").order("submitted_at",{ascending:false})
+    supabase.from("hc_property_accounts").select("*").order("tax_year",{ascending:false}),
+    supabase.from("hc_paz_y_salvo_requests").select("*").order("submitted_at",{ascending:false})
   ]);
   return `<div class="page-head"><div><div class="kicker">Impuesto Predial</div><h1>Predial y paz y salvo</h1><p>Consulta cuentas prediales asociadas a tu identificación y radica solicitudes de paz y salvo cuando la fuente maestra municipal esté conectada.</p></div><span class="status warn">Fuente catastral por integrar</span></div>
   <div class="module-hero compact mb"><span class="module-hero-icon">${icon("predial")}</span><div><h2>Integración preparada</h2><p>La estructura de cuentas, saldos, sobretasa ambiental, sobretasa bomberil y solicitudes ya está en Supabase. No se muestran predios ficticios: el módulo espera la fuente oficial.</p></div><div class="module-hero-stat"><small>Cuentas asociadas</small><strong>${props?.length||0}</strong></div></div>
@@ -610,7 +610,7 @@ async function viewPredial(){
 }
 async function viewAgreements(){
   if(!requireSession())return "";
-  const {data}=await supabase.from("payment_agreements").select("*").order("created_at",{ascending:false});
+  const {data}=await supabase.from("hc_payment_agreements").select("*").order("created_at",{ascending:false});
   return `<div class="page-head"><div><div class="kicker">Cartera</div><h1>Acuerdos de pago</h1><p>Radica solicitudes de facilidad de pago y consulta su estado. El cálculo oficial de intereses y plan de cuotas se habilita cuando Hacienda cargue el reglamento vigente.</p></div></div>
   <div class="request-layout">
     <section class="card request-form-card"><div class="panel-heading"><span class="panel-icon">${icon("agreements")}</span><div><h2>Nueva solicitud</h2><p>Indica la deuda y el plazo solicitado.</p></div></div><form id="agreementForm" class="stack"><div class="field"><label>Tipo de deuda</label><select class="select" name="debt"><option>Predial</option><option>ICA</option><option>RETEICA</option><option>Otra renta</option></select></div><div class="field"><label>Capital adeudado</label><div class="money-input"><span>$</span><input class="input" type="number" min="1" name="principal" required placeholder="0"></div></div><div class="field"><label>Número de cuotas solicitadas</label><input class="input" type="number" min="1" max="120" name="installments" value="12" required></div><button class="btn">Radicar solicitud</button></form><div class="normative-lock mt"><span>${icon("legal")}</span><div><strong>Simulación oficial protegida</strong><p>No se calculan intereses o garantías hasta parametrizar el reglamento de cartera vigente.</p></div></div></section>
@@ -619,7 +619,7 @@ async function viewAgreements(){
 }
 async function viewRefunds(){
   if(!requireSession())return "";
-  const {data}=await supabase.from("refund_requests").select("*").order("created_at",{ascending:false});
+  const {data}=await supabase.from("hc_refund_requests").select("*").order("created_at",{ascending:false});
   return `<div class="page-head"><div><div class="kicker">Devoluciones y compensaciones</div><h1>Saldos a favor</h1><p>Radica una solicitud electrónica, conserva soportes y sigue el expediente hasta la decisión de Hacienda.</p></div></div>
   <div class="request-layout">
     <section class="card request-form-card"><div class="panel-heading"><span class="panel-icon">${icon("refunds")}</span><div><h2>Nueva solicitud</h2><p>Describe el saldo y el fundamento de la petición.</p></div></div><form id="refundForm" class="stack"><div class="form-grid"><div class="field"><label>Tributo</label><select class="select" name="tax"><option>ICA</option><option>RETEICA</option><option>PREDIAL</option><option>OTRO</option></select></div><div class="field"><label>Vigencia</label><input class="input" name="year" type="number" value="2026" min="2021"></div></div><div class="field"><label>Valor solicitado</label><div class="money-input"><span>$</span><input class="input" name="amount" type="number" min="1" required placeholder="0"></div></div><div class="field"><label>Fundamento</label><textarea class="textarea" name="reason" placeholder="Explica el origen del saldo a favor y la solicitud" required></textarea></div><button class="btn">Guardar y radicar</button></form></section>
@@ -628,13 +628,13 @@ async function viewRefunds(){
 }
 async function viewAudit(){
   if(!requireSession())return "";
-  const {data}=await supabase.from("audit_cases").select("*").order("opened_at",{ascending:false});
+  const {data}=await supabase.from("hc_audit_cases").select("*").order("opened_at",{ascending:false});
   return `<div class="page-head"><div><div class="kicker">Fiscalización</div><h1>Expedientes y actuaciones</h1><p>Consulta actuaciones asociadas a tu identificación tributaria. La información se presenta dentro de un entorno sujeto a reserva y control de acceso.</p></div><span class="status info">${icon("security")} Información reservada</span></div>
   <section class="module-hero compact mb"><span class="module-hero-icon">${icon("audit")}</span><div><h2>Expediente tributario digital</h2><p>Requerimientos, pruebas, respuestas y decisiones se organizan por caso para mantener trazabilidad cronológica.</p></div><div class="module-hero-stat"><small>Casos abiertos</small><strong>${(data||[]).filter((x:any)=>x.status!=="CLOSED").length}</strong></div></section>
   <section class="card"><div class="section-title"><div><div class="kicker">Actuaciones</div><h2>Mis expedientes</h2></div><span class="pill">${data?.length||0}</span></div>${data?.length?tableRows(data.map((x:any)=>[esc(x.case_number),esc(x.tax_type),esc(x.current_stage),`<span class="status ${statusClass(x.status)}">${humanStatus(x.status)}</span>`,date(x.opened_at)]),["Expediente","Tributo","Etapa","Estado","Apertura"]):'<div class="empty-state"><span class="empty-state-icon">${icon("audit")}</span><h3>Sin actuaciones vigentes</h3><p>No existen expedientes de fiscalización asociados a tu cuenta.</p></div>'}</section>`;
 }
 async function viewRevenues(){
-  const {data}=await supabase.from("revenue_catalog").select("*").order("implementation_phase").order("name");
+  const {data}=await supabase.from("hc_revenue_catalog").select("*").order("implementation_phase").order("name");
   const items=data||[];
   return `<div class="page-head"><div><div class="kicker">Catálogo municipal</div><h1>Rentas y servicios de Hacienda</h1><p>Inventario funcional de impuestos, tasas, sobretasas, contribuciones y estampillas contempladas por el marco municipal.</p></div><span class="pill">${items.length} conceptos catalogados</span></div>
   <div class="revenue-summary mb"><div><strong>${items.filter((x:any)=>x.implementation_phase===1).length}</strong><span>Fase 1</span></div><div><strong>${items.filter((x:any)=>x.implementation_phase===2).length}</strong><span>Fase 2</span></div><div><strong>${items.filter((x:any)=>x.implementation_phase>=3).length}</strong><span>Catalogadas</span></div></div>
@@ -642,9 +642,9 @@ async function viewRevenues(){
 }
 async function viewLegal(){
   const [{data:sources},{data:params},{data:calendar}]=await Promise.all([
-    supabase.from("legal_sources").select("*").order("norm_year",{ascending:false}),
-    supabase.from("tax_parameters").select("*").eq("tax_year",2026).order("key"),
-    supabase.from("filing_calendar").select("*").eq("tax_year",2026)
+    supabase.from("hc_legal_sources").select("*").order("norm_year",{ascending:false}),
+    supabase.from("hc_tax_parameters").select("*").eq("tax_year",2026).order("key"),
+    supabase.from("hc_filing_calendar").select("*").eq("tax_year",2026)
   ]);
   return `<div class="page-head"><div><div class="kicker">Gobernanza tributaria</div><h1>Normativa y parámetros 2026</h1><p>Cada cálculo automático se apoya en parámetros versionados. Hacienda Conecta distingue fuentes localizadas, reglas validadas y bloqueos pendientes.</p></div><span class="status ok">${icon("check")} Motor auditable</span></div>
   <div class="legal-hero mb"><span class="legal-hero-icon">${icon("legal")}</span><div><h2>Reglas antes que supuestos</h2><p>Una tarifa, vencimiento o beneficio solo pasa al motor cuando su fuente, vigencia y estado están registrados. Las diferencias normativas permanecen visibles en vez de resolverse por inferencia.</p></div><div class="legal-hero-param"><small>UVT 2026</small><strong>$52.374</strong><span>Res. DIAN 000238/2025</span></div></div>
@@ -657,11 +657,11 @@ async function viewLegal(){
 async function viewStaff(){
   if(!profile||profile.role==="citizen")return '<div class="note danger">Esta sección requiere rol autorizado de la Secretaría de Hacienda.</div>';
   const [{data:regs},{data:decls},{data:agreements},{data:refunds},{data:integrations}]=await Promise.all([
-    supabase.from("taxpayer_registrations").select("id,business_name,person_type,status,created_at").order("created_at",{ascending:false}).limit(50),
-    supabase.from("declarations").select("id,tax_type,tax_year,period,status,balance_due_cop,created_at").order("created_at",{ascending:false}).limit(50),
-    supabase.from("payment_agreements").select("*").order("created_at",{ascending:false}).limit(30),
-    supabase.from("refund_requests").select("*").order("created_at",{ascending:false}).limit(30),
-    supabase.from("system_integrations").select("*").order("code")
+    supabase.from("hc_taxpayer_registrations").select("id,business_name,person_type,status,created_at").order("created_at",{ascending:false}).limit(50),
+    supabase.from("hc_declarations").select("id,tax_type,tax_year,period,status,balance_due_cop,created_at").order("created_at",{ascending:false}).limit(50),
+    supabase.from("hc_payment_agreements").select("*").order("created_at",{ascending:false}).limit(30),
+    supabase.from("hc_refund_requests").select("*").order("created_at",{ascending:false}).limit(30),
+    supabase.from("hc_system_integrations").select("*").order("code")
   ]);
   return `<div class="page-head"><div><div class="kicker">Consola interna</div><h1>Gestión operativa de Hacienda</h1><p>Bandejas de consulta con segregación por rol, trazabilidad y acceso a estados del contribuyente.</p></div><span class="status info">${esc(humanStatus(profile.role))}</span></div>
   <div class="metric-grid mb">
@@ -747,7 +747,7 @@ function bindRegistry(){
   const search=async()=>{
     const q=(document.querySelector<HTMLInputElement>("#ciiuSearch")?.value||"").trim();
     if(q.length<2){toast("Escribe al menos 2 caracteres para buscar.","warn");return;}
-    const {data,error}=await supabase.from("ica_tariffs").select("ciiu,activity,rate_per_thousand").or(`ciiu.eq.${q},activity.ilike.%${q}%`).limit(20);
+    const {data,error}=await supabase.from("hc_ica_tariffs").select("ciiu,activity,rate_per_thousand").or(`ciiu.eq.${q},activity.ilike.%${q}%`).limit(20);
     if(error){toast(error.message,"error");return;}
     const box=document.querySelector("#ciiuResults")!;
     box.innerHTML=`<div class="ciiu-results">${(data||[]).map((x:any)=>`<button type="button" class="ciiu-item" data-ciiu-add="${x.ciiu}" data-activity="${esc(x.activity)}"><span class="ciiu-code">${x.ciiu}</span><span class="ciiu-copy"><strong>${esc(x.activity)}</strong><small>Tarifa ${x.rate_per_thousand}‰</small></span><span class="ciiu-add">+</span></button>`).join("")||'<div class="empty">No encontramos actividades con ese criterio.</div>'}</div>`;
@@ -797,7 +797,7 @@ function bindRegistry(){
     const submit=form.querySelector<HTMLButtonElement>('button[type="submit"]');
     if(submit){submit.disabled=true;submit.textContent="Guardando…";}
     try{
-      await api(supabase.rpc("register_taxpayer",{p_data:payload}));
+      await api(supabase.rpc("hc_register_taxpayer",{p_data:payload}));
       toast("Registro Tributario guardado correctamente.");
       registryStep=1;
       await loadProfile();
@@ -836,11 +836,11 @@ function bindIca(){
   });
   document.querySelector("#calculateIca")?.addEventListener("click",async()=>{
     const activities=[...document.querySelectorAll<HTMLElement>(".ica-row")].map(r=>({ciiu:(r.querySelector<HTMLInputElement>("[data-ciiu]")?.value||"").trim(),taxableIncomeCop:Number(r.querySelector<HTMLInputElement>("[data-income]")?.value||0)})).filter(x=>x.ciiu);
-    try{lastIcaCalculation=await api(supabase.rpc("calculate_ica",{p_activities:activities,p_apply_notices:(document.querySelector<HTMLInputElement>("#icaNotices")?.checked||false),p_tax_year:2026}));document.querySelector("#icaResult")!.innerHTML=renderIcaResult(lastIcaCalculation);(document.querySelector<HTMLButtonElement>("#saveIca")!).disabled=false;toast("Liquidación calculada.");}catch(err:any){toast(err.message,"error");}
+    try{lastIcaCalculation=await api(supabase.rpc("hc_calculate_ica",{p_activities:activities,p_apply_notices:(document.querySelector<HTMLInputElement>("#icaNotices")?.checked||false),p_tax_year:2026}));document.querySelector("#icaResult")!.innerHTML=renderIcaResult(lastIcaCalculation);(document.querySelector<HTMLButtonElement>("#saveIca")!).disabled=false;toast("Liquidación calculada.");}catch(err:any){toast(err.message,"error");}
   });
   document.querySelector("#saveIca")?.addEventListener("click",async()=>{
     if(!session){renderAuth();return;} if(!lastIcaCalculation)return;
-    try{const id=await api<string>(supabase.rpc("create_declaration",{p_tax_type:"ICA",p_period:"ANUAL",p_payload:{source:"web",activities:lastIcaCalculation.lines},p_calculation:lastIcaCalculation,p_balance_due_cop:lastIcaCalculation.totalBeforeCreditsCop,p_tax_year:2026}));toast("Declaración ICA guardada.");location.hash="declarations";}catch(err:any){toast(err.message,"error");}
+    try{const id=await api<string>(supabase.rpc("hc_create_declaration",{p_tax_type:"ICA",p_period:"ANUAL",p_payload:{source:"web",activities:lastIcaCalculation.lines},p_calculation:lastIcaCalculation,p_balance_due_cop:lastIcaCalculation.totalBeforeCreditsCop,p_tax_year:2026}));toast("Declaración ICA guardada.");location.hash="declarations";}catch(err:any){toast(err.message,"error");}
   });
 }
 function bindReteica(){
@@ -850,12 +850,12 @@ function bindReteica(){
   });
   document.querySelector("#calculateRete")?.addEventListener("click",async()=>{
     const transactions=[...document.querySelectorAll<HTMLElement>(".rete-row")].map(r=>({ciiu:(r.querySelector<HTMLInputElement>("[data-ciiu]")?.value||"").trim(),concept:(r.querySelector<HTMLSelectElement>("[data-concept]")?.value||"services"),baseCop:Number(r.querySelector<HTMLInputElement>("[data-base]")?.value||0)})).filter(x=>x.ciiu);
-    try{lastReteicaCalculation=await api(supabase.rpc("calculate_reteica",{p_transactions:transactions,p_tax_year:2026}));document.querySelector("#reteResult")!.innerHTML=renderReteResult(lastReteicaCalculation);(document.querySelector<HTMLButtonElement>("#saveRete")!).disabled=false;toast("RETEICA calculado.");}catch(err:any){toast(err.message,"error");}
+    try{lastReteicaCalculation=await api(supabase.rpc("hc_calculate_reteica",{p_transactions:transactions,p_tax_year:2026}));document.querySelector("#reteResult")!.innerHTML=renderReteResult(lastReteicaCalculation);(document.querySelector<HTMLButtonElement>("#saveRete")!).disabled=false;toast("RETEICA calculado.");}catch(err:any){toast(err.message,"error");}
   });
-  document.querySelector("#saveRete")?.addEventListener("click",async()=>{if(!session){renderAuth();return;}if(!lastReteicaCalculation)return;try{await api(supabase.rpc("create_declaration",{p_tax_type:"RETEICA",p_period:"PENDIENTE_DEFINICION_NORMATIVA",p_payload:{source:"web",transactions:lastReteicaCalculation.lines},p_calculation:lastReteicaCalculation,p_balance_due_cop:lastReteicaCalculation.totalWithheldCop,p_tax_year:2026}));toast("Borrador RETEICA guardado.");location.hash="declarations";}catch(err:any){toast(err.message,"error");}});
+  document.querySelector("#saveRete")?.addEventListener("click",async()=>{if(!session){renderAuth();return;}if(!lastReteicaCalculation)return;try{await api(supabase.rpc("hc_create_declaration",{p_tax_type:"RETEICA",p_period:"PENDIENTE_DEFINICION_NORMATIVA",p_payload:{source:"web",transactions:lastReteicaCalculation.lines},p_calculation:lastReteicaCalculation,p_balance_due_cop:lastReteicaCalculation.totalWithheldCop,p_tax_year:2026}));toast("Borrador RETEICA guardado.");location.hash="declarations";}catch(err:any){toast(err.message,"error");}});
 }
 function bindDeclarations(){
-  document.querySelectorAll<HTMLElement>("[data-prepare]").forEach(b=>b.onclick=async()=>{try{await api(supabase.rpc("prepare_declaration_for_signature",{p_declaration_id:b.dataset.prepare}));toast("Documento listo para firma.");render();}catch(e:any){toast(e.message,"error");}});
+  document.querySelectorAll<HTMLElement>("[data-prepare]").forEach(b=>b.onclick=async()=>{try{await api(supabase.rpc("hc_prepare_declaration_for_signature",{p_declaration_id:b.dataset.prepare}));toast("Documento listo para firma.");render();}catch(e:any){toast(e.message,"error");}});
   document.querySelectorAll<HTMLElement>("[data-sign]").forEach(b=>b.onclick=()=>signDeclaration(b.dataset.sign!));
   document.querySelectorAll<HTMLElement>("[data-pay]").forEach(b=>b.onclick=()=>requestPayment(b.dataset.pay!));
   document.querySelectorAll<HTMLElement>("[data-pdf]").forEach(b=>b.onclick=()=>downloadDeclarationPdf(b.dataset.pdf!));
@@ -864,7 +864,7 @@ function bindPayments(){document.querySelectorAll<HTMLElement>("[data-pay]").for
 async function requestPayment(id:string){
   try{
     await withFreshPhoneMfa("Autorizar solicitud de pago",async()=>{
-      const paymentId=await api<string>(supabase.rpc("request_payment",{p_declaration_id:id}));
+      const paymentId=await api<string>(supabase.rpc("hc_request_payment",{p_declaration_id:id}));
       toast("Identidad confirmada. Referencia de pago generada.");
       location.hash="payments";
       render();
@@ -874,10 +874,10 @@ async function requestPayment(id:string){
 async function signDeclaration(id:string){
   try{
     await withFreshPhoneMfa("Firmar declaración",async()=>{
-      const {data:d,error}=await supabase.from("declarations").select("*").eq("id",id).single(); if(error)throw error;
+      const {data:d,error}=await supabase.from("hc_declarations").select("*").eq("id",id).single(); if(error)throw error;
       const canonical=JSON.stringify({id:d.id,tax_type:d.tax_type,tax_year:d.tax_year,period:d.period,payload:d.payload,calculation:d.calculation,balance_due_cop:d.balance_due_cop});
       const hash=await sha256(canonical);
-      const status=await api(supabase.rpc("sign_declaration",{p_declaration_id:id,p_document_sha256:hash,p_auth_method:"PHONE_SMS_MFA_AAL2"}));
+      const status=await api(supabase.rpc("hc_sign_declaration",{p_declaration_id:id,p_document_sha256:hash,p_auth_method:"PHONE_SMS_MFA_AAL2"}));
       toast("Código validado y declaración firmada. Estado: "+humanStatus(status));
       render();
     });
@@ -966,15 +966,15 @@ async function withFreshPhoneMfa(actionLabel:string,onVerified:()=>Promise<void>
 }
 
 function bindCertificates(){
-  document.querySelector("#certRequestForm")?.addEventListener("submit",async(e)=>{e.preventDefault();if(!session)return;const fd=new FormData(e.currentTarget as HTMLFormElement);try{const {error}=await supabase.from("certificate_requests").insert({user_id:session.user.id,declaration_id:String(fd.get("declarationId")||"")||null,certificate_type:String(fd.get("type")),status:"SUBMITTED"});if(error)throw error;toast("Solicitud de certificado radicada.");render();}catch(err:any){toast(err.message,"error");}});
-  const verify=async(token:string)=>{const box=document.querySelector("#verifyCertResult")!;try{const {data,error}=await supabase.functions.invoke("verify-certificate",{body:{token}});if(error)throw error;box.innerHTML=data?.serial?`<div class="note"><strong>${data.valid?"Certificado válido":"Certificado revocado"}</strong><br>Serial: ${esc(data.serial)} · Tipo: ${esc(data.type)} · Emitido: ${date(data.issuedAt)} ${data.revoked?'<br><span class="status danger">REVOCADO</span>':'<br><span class="status ok">VIGENTE</span>'}</div>`:'<div class="note danger">No se encontró un certificado válido con ese token.</div>';}catch(err:any){box.innerHTML=`<div class="note danger">No se encontró un certificado válido o el servicio no respondió.</div>`;}};
+  document.querySelector("#certRequestForm")?.addEventListener("submit",async(e)=>{e.preventDefault();if(!session)return;const fd=new FormData(e.currentTarget as HTMLFormElement);try{const {error}=await supabase.from("hc_certificate_requests").insert({user_id:session.user.id,declaration_id:String(fd.get("declarationId")||"")||null,certificate_type:String(fd.get("type")),status:"SUBMITTED"});if(error)throw error;toast("Solicitud de certificado radicada.");render();}catch(err:any){toast(err.message,"error");}});
+  const verify=async(token:string)=>{const box=document.querySelector("#verifyCertResult")!;try{const {data,error}=await supabase.functions.invoke("hc-verify-certificate",{body:{token}});if(error)throw error;box.innerHTML=data?.serial?`<div class="note"><strong>${data.valid?"Certificado válido":"Certificado revocado"}</strong><br>Serial: ${esc(data.serial)} · Tipo: ${esc(data.type)} · Emitido: ${date(data.issuedAt)} ${data.revoked?'<br><span class="status danger">REVOCADO</span>':'<br><span class="status ok">VIGENTE</span>'}</div>`:'<div class="note danger">No se encontró un certificado válido con ese token.</div>';}catch(err:any){box.innerHTML=`<div class="note danger">No se encontró un certificado válido o el servicio no respondió.</div>`;}};
   document.querySelector("#verifyCertForm")?.addEventListener("submit",async(e)=>{e.preventDefault();const fd=new FormData(e.currentTarget as HTMLFormElement);await verify(String(fd.get("token")||"").trim());});
   const queryToken=new URLSearchParams(location.search).get("certificate"); if(queryToken) verify(queryToken);
-  document.querySelectorAll<HTMLElement>("[data-issue-cert]").forEach(b=>b.onclick=async()=>{try{const cert=await api<any>(supabase.rpc("issue_filing_certificate",{p_declaration_id:b.dataset.issueCert}));toast("Constancia emitida con serial "+cert.serial);await downloadCertificatePdf(cert);history.replaceState({},document.title,location.pathname+"#certificates");render();}catch(err:any){toast(err.message,"error");}});
+  document.querySelectorAll<HTMLElement>("[data-issue-cert]").forEach(b=>b.onclick=async()=>{try{const cert=await api<any>(supabase.rpc("hc_issue_filing_certificate",{p_declaration_id:b.dataset.issueCert}));toast("Constancia emitida con serial "+cert.serial);await downloadCertificatePdf(cert);history.replaceState({},document.title,location.pathname+"#certificates");render();}catch(err:any){toast(err.message,"error");}});
 }
-function bindPredial(){document.querySelectorAll<HTMLElement>("[data-paz]").forEach(b=>b.onclick=async()=>{if(!session)return;try{const {error}=await supabase.from("paz_y_salvo_requests").insert({user_id:session.user.id,property_account_id:b.dataset.paz,request_type:"PREDIAL",status:"SUBMITTED"});if(error)throw error;toast("Solicitud de paz y salvo radicada.");render();}catch(e:any){toast(e.message,"error");}});}
-function bindAgreements(){document.querySelector("#agreementForm")?.addEventListener("submit",async(e)=>{e.preventDefault();if(!session)return;const fd=new FormData(e.currentTarget as HTMLFormElement);const {error}=await supabase.from("payment_agreements").insert({user_id:session.user.id,debt_type:String(fd.get("debt")),principal_cop:Number(fd.get("principal")),interest_cop:0,requested_installments:Number(fd.get("installments")),status:"SUBMITTED"});if(error)toast(error.message,"error");else{toast("Solicitud radicada.");render();}});}
-function bindRefunds(){document.querySelector("#refundForm")?.addEventListener("submit",async(e)=>{e.preventDefault();if(!session)return;const fd=new FormData(e.currentTarget as HTMLFormElement);const {error}=await supabase.from("refund_requests").insert({user_id:session.user.id,tax_type:String(fd.get("tax")),tax_year:Number(fd.get("year")),amount_cop:Number(fd.get("amount")),reason:String(fd.get("reason")),status:"SUBMITTED",submitted_at:new Date().toISOString()});if(error)toast(error.message,"error");else{toast("Solicitud radicada.");render();}});}
+function bindPredial(){document.querySelectorAll<HTMLElement>("[data-paz]").forEach(b=>b.onclick=async()=>{if(!session)return;try{const {error}=await supabase.from("hc_paz_y_salvo_requests").insert({user_id:session.user.id,property_account_id:b.dataset.paz,request_type:"PREDIAL",status:"SUBMITTED"});if(error)throw error;toast("Solicitud de paz y salvo radicada.");render();}catch(e:any){toast(e.message,"error");}});}
+function bindAgreements(){document.querySelector("#agreementForm")?.addEventListener("submit",async(e)=>{e.preventDefault();if(!session)return;const fd=new FormData(e.currentTarget as HTMLFormElement);const {error}=await supabase.from("hc_payment_agreements").insert({user_id:session.user.id,debt_type:String(fd.get("debt")),principal_cop:Number(fd.get("principal")),interest_cop:0,requested_installments:Number(fd.get("installments")),status:"SUBMITTED"});if(error)toast(error.message,"error");else{toast("Solicitud radicada.");render();}});}
+function bindRefunds(){document.querySelector("#refundForm")?.addEventListener("submit",async(e)=>{e.preventDefault();if(!session)return;const fd=new FormData(e.currentTarget as HTMLFormElement);const {error}=await supabase.from("hc_refund_requests").insert({user_id:session.user.id,tax_type:String(fd.get("tax")),tax_year:Number(fd.get("year")),amount_cop:Number(fd.get("amount")),reason:String(fd.get("reason")),status:"SUBMITTED",submitted_at:new Date().toISOString()});if(error)toast(error.message,"error");else{toast("Solicitud radicada.");render();}});}
 
 async function downloadCertificatePdf(cert:any){
   const pdf=await PDFDocument.create(); const page=pdf.addPage([595,842]);
@@ -1001,7 +1001,7 @@ async function downloadCertificatePdf(cert:any){
 
 async function downloadDeclarationPdf(id:string){
   try{
-    const {data:d,error}=await supabase.from("declarations").select("*").eq("id",id).single(); if(error)throw error;
+    const {data:d,error}=await supabase.from("hc_declarations").select("*").eq("id",id).single(); if(error)throw error;
     const pdf=await PDFDocument.create(); const page=pdf.addPage([595,842]); const font=await pdf.embedFont(StandardFonts.Helvetica), bold=await pdf.embedFont(StandardFonts.HelveticaBold);
     page.drawRectangle({x:0,y:770,width:595,height:72,color:rgb(.03,.22,.42)});
     page.drawText("HACIENDA CONECTA",{x:42,y:806,size:18,font:bold,color:rgb(1,1,1)}); page.drawText("Municipio de San Pedro - Valle del Cauca",{x:42,y:785,size:10,font,color:rgb(.83,.91,.98)});
