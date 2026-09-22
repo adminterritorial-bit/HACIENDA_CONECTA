@@ -14,7 +14,161 @@ export type Database = {
   }
   public: {
     Tables: {
-      audit_cases: {
+      activities: {
+        Row: {
+          color_label: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          end_at: string
+          id: string
+          is_all_day: boolean
+          kind: string
+          location: string | null
+          resource_code: string
+          start_at: string
+          status: string
+          ticket_id: string | null
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          color_label?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_at: string
+          id?: string
+          is_all_day?: boolean
+          kind?: string
+          location?: string | null
+          resource_code: string
+          start_at: string
+          status?: string
+          ticket_id?: string | null
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          color_label?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_at?: string
+          id?: string
+          is_all_day?: boolean
+          kind?: string
+          location?: string | null
+          resource_code?: string
+          start_at?: string
+          status?: string
+          ticket_id?: string | null
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_resource_code_fkey"
+            columns: ["resource_code"]
+            isOneToOne: false
+            referencedRelation: "schedule_resources"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "activities_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_secure"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
+      assets: {
+        Row: {
+          asset_tag: string | null
+          assigned_profile_id: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          name: string
+          serial_number: string | null
+          status: string
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          asset_tag?: string | null
+          assigned_profile_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          name: string
+          serial_number?: string | null
+          status?: string
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asset_tag?: string | null
+          assigned_profile_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          name?: string
+          serial_number?: string | null
+          status?: string
+          type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_assigned_profile_id_fkey"
+            columns: ["assigned_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hc_audit_cases: {
         Row: {
           case_number: string
           closed_at: string | null
@@ -51,53 +205,45 @@ export type Database = {
           tax_year?: number | null
           taxpayer_user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "audit_cases_taxpayer_user_id_fkey"
-            columns: ["taxpayer_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
-      audit_events: {
+      hc_audit_events: {
         Row: {
           action: string
-          actor_user_id: string | null
-          event_hash: string
-          id: string
+          actor_id: string | null
+          correlation_id: string
+          id: number
           metadata: Json
           occurred_at: string
-          previous_hash: string | null
           resource_id: string
           resource_type: string
+          result: string
         }
         Insert: {
           action: string
-          actor_user_id?: string | null
-          event_hash: string
-          id?: string
+          actor_id?: string | null
+          correlation_id?: string
+          id?: never
           metadata?: Json
           occurred_at?: string
-          previous_hash?: string | null
           resource_id: string
           resource_type: string
+          result?: string
         }
         Update: {
           action?: string
-          actor_user_id?: string | null
-          event_hash?: string
-          id?: string
+          actor_id?: string | null
+          correlation_id?: string
+          id?: never
           metadata?: Json
           occurred_at?: string
-          previous_hash?: string | null
           resource_id?: string
           resource_type?: string
+          result?: string
         }
         Relationships: []
       }
-      certificate_requests: {
+      hc_certificate_requests: {
         Row: {
           certificate_id: string | null
           certificate_type: string
@@ -133,29 +279,22 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "certificate_requests_certificate_id_fkey"
+            foreignKeyName: "hc_certificate_requests_certificate_id_fkey"
             columns: ["certificate_id"]
             isOneToOne: false
-            referencedRelation: "certificates"
+            referencedRelation: "hc_certificates"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "certificate_requests_declaration_id_fkey"
+            foreignKeyName: "hc_certificate_requests_declaration_id_fkey"
             columns: ["declaration_id"]
             isOneToOne: false
-            referencedRelation: "declarations"
+            referencedRelation: "hc_declarations"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "certificate_requests_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
           },
         ]
       }
-      certificates: {
+      hc_certificates: {
         Row: {
           declaration_id: string
           document_sha256: string
@@ -188,15 +327,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "certificates_declaration_id_fkey"
+            foreignKeyName: "hc_certificates_declaration_id_fkey"
             columns: ["declaration_id"]
             isOneToOne: false
-            referencedRelation: "declarations"
+            referencedRelation: "hc_declarations"
             referencedColumns: ["id"]
           },
         ]
       }
-      declarations: {
+      hc_declarations: {
         Row: {
           balance_due_cop: number
           calculation: Json | null
@@ -206,8 +345,7 @@ export type Database = {
           id: string
           payload: Json
           period: string
-          rule_version_id: string | null
-          status: Database["public"]["Enums"]["declaration_status"]
+          status: Database["public"]["Enums"]["hc_declaration_status"]
           tax_type: string
           tax_year: number
           taxpayer_user_id: string
@@ -222,8 +360,7 @@ export type Database = {
           id?: string
           payload?: Json
           period: string
-          rule_version_id?: string | null
-          status?: Database["public"]["Enums"]["declaration_status"]
+          status?: Database["public"]["Enums"]["hc_declaration_status"]
           tax_type: string
           tax_year: number
           taxpayer_user_id: string
@@ -238,126 +375,56 @@ export type Database = {
           id?: string
           payload?: Json
           period?: string
-          rule_version_id?: string | null
-          status?: Database["public"]["Enums"]["declaration_status"]
+          status?: Database["public"]["Enums"]["hc_declaration_status"]
           tax_type?: string
           tax_year?: number
           taxpayer_user_id?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "declarations_rule_version_id_fkey"
-            columns: ["rule_version_id"]
-            isOneToOne: false
-            referencedRelation: "tax_rule_versions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "declarations_taxpayer_user_id_fkey"
-            columns: ["taxpayer_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
-      document_artifacts: {
-        Row: {
-          artifact_type: string
-          created_at: string
-          declaration_id: string | null
-          id: string
-          mime_type: string
-          owner_user_id: string
-          retention_class: string
-          sha256: string
-          size_bytes: number
-          storage_key: string
-        }
-        Insert: {
-          artifact_type: string
-          created_at?: string
-          declaration_id?: string | null
-          id?: string
-          mime_type: string
-          owner_user_id: string
-          retention_class: string
-          sha256: string
-          size_bytes: number
-          storage_key: string
-        }
-        Update: {
-          artifact_type?: string
-          created_at?: string
-          declaration_id?: string | null
-          id?: string
-          mime_type?: string
-          owner_user_id?: string
-          retention_class?: string
-          sha256?: string
-          size_bytes?: number
-          storage_key?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "document_artifacts_declaration_id_fkey"
-            columns: ["declaration_id"]
-            isOneToOne: false
-            referencedRelation: "declarations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "document_artifacts_owner_user_id_fkey"
-            columns: ["owner_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      establishments: {
+      hc_establishments: {
         Row: {
           address: string
-          closed_at: string | null
           created_at: string
           id: string
+          is_main: boolean
+          municipality: string
           name: string
-          opened_at: string | null
           registration_id: string
           status: string
         }
         Insert: {
           address: string
-          closed_at?: string | null
           created_at?: string
           id?: string
+          is_main?: boolean
+          municipality?: string
           name: string
-          opened_at?: string | null
           registration_id: string
           status?: string
         }
         Update: {
           address?: string
-          closed_at?: string | null
           created_at?: string
           id?: string
+          is_main?: boolean
+          municipality?: string
           name?: string
-          opened_at?: string | null
           registration_id?: string
           status?: string
         }
         Relationships: [
           {
-            foreignKeyName: "establishments_registration_id_fkey"
+            foreignKeyName: "hc_establishments_registration_id_fkey"
             columns: ["registration_id"]
             isOneToOne: false
-            referencedRelation: "taxpayer_registrations"
+            referencedRelation: "hc_taxpayer_registrations"
             referencedColumns: ["id"]
           },
         ]
       }
-      filing_calendar: {
+      hc_filing_calendar: {
         Row: {
           created_at: string
           due_date: string | null
@@ -390,7 +457,7 @@ export type Database = {
         }
         Relationships: []
       }
-      ica_tariffs: {
+      hc_ica_tariffs: {
         Row: {
           activity: string
           ciiu: string
@@ -426,7 +493,7 @@ export type Database = {
         }
         Relationships: []
       }
-      legal_sources: {
+      hc_legal_sources: {
         Row: {
           code: string
           created_at: string
@@ -465,14 +532,13 @@ export type Database = {
         }
         Relationships: []
       }
-      payment_agreements: {
+      hc_payment_agreements: {
         Row: {
           created_at: string
           debt_reference: string | null
           debt_type: string
           id: string
           interest_cop: number
-          legal_rule_version: string | null
           principal_cop: number
           requested_installments: number
           schedule: Json
@@ -486,7 +552,6 @@ export type Database = {
           debt_type: string
           id?: string
           interest_cop?: number
-          legal_rule_version?: string | null
           principal_cop: number
           requested_installments: number
           schedule?: Json
@@ -500,7 +565,6 @@ export type Database = {
           debt_type?: string
           id?: string
           interest_cop?: number
-          legal_rule_version?: string | null
           principal_cop?: number
           requested_installments?: number
           schedule?: Json
@@ -508,30 +572,16 @@ export type Database = {
           submitted_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "payment_agreements_legal_rule_version_fkey"
-            columns: ["legal_rule_version"]
-            isOneToOne: false
-            referencedRelation: "tax_rule_versions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payment_agreements_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
-      payment_requests: {
+      hc_payment_requests: {
         Row: {
           amount_cop: number
           checkout_url: string | null
           created_at: string
           declaration_id: string
           id: string
+          idempotency_key: string
           provider: string | null
           reference: string
           status: string
@@ -544,6 +594,7 @@ export type Database = {
           created_at?: string
           declaration_id: string
           id?: string
+          idempotency_key?: string
           provider?: string | null
           reference: string
           status?: string
@@ -556,6 +607,7 @@ export type Database = {
           created_at?: string
           declaration_id?: string
           id?: string
+          idempotency_key?: string
           provider?: string | null
           reference?: string
           status?: string
@@ -564,22 +616,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payment_requests_declaration_id_fkey"
+            foreignKeyName: "hc_payment_requests_declaration_id_fkey"
             columns: ["declaration_id"]
             isOneToOne: false
-            referencedRelation: "declarations"
+            referencedRelation: "hc_declarations"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payment_requests_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
           },
         ]
       }
-      payments: {
+      hc_payments: {
         Row: {
           amount_cop: number
           created_at: string
@@ -618,15 +663,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payments_declaration_id_fkey"
+            foreignKeyName: "hc_payments_declaration_id_fkey"
             columns: ["declaration_id"]
             isOneToOne: false
-            referencedRelation: "declarations"
+            referencedRelation: "hc_declarations"
             referencedColumns: ["id"]
           },
         ]
       }
-      paz_y_salvo_requests: {
+      hc_paz_y_salvo_requests: {
         Row: {
           certificate_id: string | null
           decided_at: string | null
@@ -662,29 +707,22 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "paz_y_salvo_requests_certificate_id_fkey"
+            foreignKeyName: "hc_paz_y_salvo_requests_certificate_id_fkey"
             columns: ["certificate_id"]
             isOneToOne: false
-            referencedRelation: "certificates"
+            referencedRelation: "hc_certificates"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "paz_y_salvo_requests_property_account_id_fkey"
+            foreignKeyName: "hc_paz_y_salvo_requests_property_account_id_fkey"
             columns: ["property_account_id"]
             isOneToOne: false
-            referencedRelation: "property_accounts"
+            referencedRelation: "hc_property_accounts"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "paz_y_salvo_requests_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
           },
         ]
       }
-      profiles: {
+      hc_profiles: {
         Row: {
           created_at: string
           document_number_hash: string
@@ -693,7 +731,7 @@ export type Database = {
           full_name: string
           identity_verified_at: string | null
           phone_e164: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["hc_app_role"]
           updated_at: string
           user_id: string
         }
@@ -705,7 +743,7 @@ export type Database = {
           full_name: string
           identity_verified_at?: string | null
           phone_e164: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["hc_app_role"]
           updated_at?: string
           user_id: string
         }
@@ -717,13 +755,13 @@ export type Database = {
           full_name?: string
           identity_verified_at?: string | null
           phone_e164?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["hc_app_role"]
           updated_at?: string
           user_id?: string
         }
         Relationships: []
       }
-      property_accounts: {
+      hc_property_accounts: {
         Row: {
           address: string
           assessed_value_cop: number | null
@@ -769,17 +807,9 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "property_accounts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
-      refund_requests: {
+      hc_refund_requests: {
         Row: {
           amount_cop: number
           bank_account_masked: string | null
@@ -819,17 +849,9 @@ export type Database = {
           tax_year?: number | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "refund_requests_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
-      revenue_catalog: {
+      hc_revenue_catalog: {
         Row: {
           category: string
           code: string
@@ -859,18 +881,15 @@ export type Database = {
         }
         Relationships: []
       }
-      signature_evidence: {
+      hc_signature_evidence: {
         Row: {
           auth_method: string
           declaration_id: string
           document_sha256: string
           evidence: Json
           id: string
-          ip_hash: string | null
-          otp_challenge_id: string | null
           signed_at: string
           signer_user_id: string
-          user_agent_hash: string | null
         }
         Insert: {
           auth_method: string
@@ -878,11 +897,8 @@ export type Database = {
           document_sha256: string
           evidence?: Json
           id?: string
-          ip_hash?: string | null
-          otp_challenge_id?: string | null
-          signed_at: string
+          signed_at?: string
           signer_user_id: string
-          user_agent_hash?: string | null
         }
         Update: {
           auth_method?: string
@@ -890,30 +906,20 @@ export type Database = {
           document_sha256?: string
           evidence?: Json
           id?: string
-          ip_hash?: string | null
-          otp_challenge_id?: string | null
           signed_at?: string
           signer_user_id?: string
-          user_agent_hash?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "signature_evidence_declaration_id_fkey"
+            foreignKeyName: "hc_signature_evidence_declaration_id_fkey"
             columns: ["declaration_id"]
             isOneToOne: false
-            referencedRelation: "declarations"
+            referencedRelation: "hc_declarations"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "signature_evidence_signer_user_id_fkey"
-            columns: ["signer_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
           },
         ]
       }
-      system_integrations: {
+      hc_system_integrations: {
         Row: {
           code: string
           display_name: string
@@ -940,7 +946,7 @@ export type Database = {
         }
         Relationships: []
       }
-      tax_parameters: {
+      hc_tax_parameters: {
         Row: {
           created_at: string
           id: string
@@ -973,46 +979,7 @@ export type Database = {
         }
         Relationships: []
       }
-      tax_rule_versions: {
-        Row: {
-          approved_at: string | null
-          approved_by: string | null
-          created_at: string
-          id: string
-          legal_reference: string
-          rules: Json
-          status: string
-          tax_type: string
-          valid_from: string
-          valid_to: string | null
-        }
-        Insert: {
-          approved_at?: string | null
-          approved_by?: string | null
-          created_at?: string
-          id?: string
-          legal_reference: string
-          rules: Json
-          status: string
-          tax_type: string
-          valid_from: string
-          valid_to?: string | null
-        }
-        Update: {
-          approved_at?: string | null
-          approved_by?: string | null
-          created_at?: string
-          id?: string
-          legal_reference?: string
-          rules?: Json
-          status?: string
-          tax_type?: string
-          valid_from?: string
-          valid_to?: string | null
-        }
-        Relationships: []
-      }
-      taxpayer_activities: {
+      hc_taxpayer_activities: {
         Row: {
           ciiu: string
           id: string
@@ -1039,15 +1006,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "taxpayer_activities_registration_id_fkey"
+            foreignKeyName: "hc_taxpayer_activities_registration_id_fkey"
             columns: ["registration_id"]
             isOneToOne: false
-            referencedRelation: "taxpayer_registrations"
+            referencedRelation: "hc_taxpayer_registrations"
             referencedColumns: ["id"]
           },
         ]
       }
-      taxpayer_registrations: {
+      hc_taxpayer_registrations: {
         Row: {
           business_name: string
           created_at: string
@@ -1069,10 +1036,10 @@ export type Database = {
           created_at?: string
           data_policy_accepted_at: string
           data_policy_version: string
-          department: string
+          department?: string
           fiscal_address: string
           id?: string
-          municipality: string
+          municipality?: string
           person_type: string
           status?: string
           tax_identifier_hash: string
@@ -1096,17 +1063,9 @@ export type Database = {
           user_id?: string
           verified_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "taxpayer_registrations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
-      taxpayer_relationships: {
+      hc_taxpayer_relationships: {
         Row: {
           created_at: string
           evidence_sha256: string | null
@@ -1151,22 +1110,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "taxpayer_relationships_registration_id_fkey"
+            foreignKeyName: "hc_taxpayer_relationships_registration_id_fkey"
             columns: ["registration_id"]
             isOneToOne: false
-            referencedRelation: "taxpayer_registrations"
+            referencedRelation: "hc_taxpayer_registrations"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "taxpayer_relationships_related_user_id_fkey"
-            columns: ["related_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
           },
         ]
       }
-      user_notifications: {
+      hc_user_notifications: {
         Row: {
           action_url: string | null
           body: string
@@ -1197,22 +1149,1263 @@ export type Database = {
           type?: string
           user_id?: string
         }
+        Relationships: []
+      }
+      import_jobs: {
+        Row: {
+          created_at: string
+          created_by: string
+          error_rows: number
+          errors: Json
+          file_name: string | null
+          id: string
+          import_type: string
+          status: string
+          total_rows: number
+          valid_rows: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          error_rows?: number
+          errors?: Json
+          file_name?: string | null
+          id?: string
+          import_type: string
+          status?: string
+          total_rows?: number
+          valid_rows?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          error_rows?: number
+          errors?: Json
+          file_name?: string | null
+          id?: string
+          import_type?: string
+          status?: string
+          total_rows?: number
+          valid_rows?: number
+        }
         Relationships: [
           {
-            foreignKeyName: "user_notifications_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "import_jobs_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      institutional_emails: {
+        Row: {
+          aliases: string[] | null
+          created_at: string
+          display_name: string | null
+          email: string
+          id: string
+          metadata: Json
+          profile_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          aliases?: string[] | null
+          created_at?: string
+          display_name?: string | null
+          email: string
+          id?: string
+          metadata?: Json
+          profile_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          aliases?: string[] | null
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          id?: string
+          metadata?: Json
+          profile_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "institutional_emails_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_articles: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_articles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      launch_admin_emails: {
+        Row: {
+          created_at: string
+          email: string
+          label: string | null
+          role_code: string
+          team_code: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          label?: string | null
+          role_code: string
+          team_code?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          label?: string | null
+          role_code?: string
+          team_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "launch_admin_emails_role_code_fkey"
+            columns: ["role_code"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "launch_admin_emails_team_code_fkey"
+            columns: ["team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      modules: {
+        Row: {
+          code: string
+          description: string | null
+          is_active: boolean
+          label: string
+          nav_order: number
+          required_permission: string | null
+        }
+        Insert: {
+          code: string
+          description?: string | null
+          is_active?: boolean
+          label: string
+          nav_order?: number
+          required_permission?: string | null
+        }
+        Update: {
+          code?: string
+          description?: string | null
+          is_active?: boolean
+          label?: string
+          nav_order?: number
+          required_permission?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modules_required_permission_fkey"
+            columns: ["required_permission"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      notification_delivery_queue: {
+        Row: {
+          attempts: number
+          channel: string
+          created_at: string
+          destination: string | null
+          id: string
+          last_attempt_at: string | null
+          last_error: string | null
+          locked_at: string | null
+          max_attempts: number
+          next_attempt_at: string | null
+          notification_id: string | null
+          payload: Json
+          processed_by: string | null
+          profile_id: string | null
+          provider: string
+          sent_at: string | null
+          status: string
+          ticket_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          channel: string
+          created_at?: string
+          destination?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          locked_at?: string | null
+          max_attempts?: number
+          next_attempt_at?: string | null
+          notification_id?: string | null
+          payload?: Json
+          processed_by?: string | null
+          profile_id?: string | null
+          provider?: string
+          sent_at?: string | null
+          status?: string
+          ticket_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          channel?: string
+          created_at?: string
+          destination?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          locked_at?: string | null
+          max_attempts?: number
+          next_attempt_at?: string | null
+          notification_id?: string | null
+          payload?: Json
+          processed_by?: string | null
+          profile_id?: string | null
+          provider?: string
+          sent_at?: string | null
+          status?: string
+          ticket_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_delivery_queue_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_delivery_queue_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_delivery_queue_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_delivery_queue_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_secure"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          body: string | null
+          channel: string
+          created_at: string
+          delivered_at: string | null
+          event_type: string | null
+          id: string
+          metadata: Json
+          profile_id: string
+          read_at: string | null
+          severity: string
+          ticket_id: string | null
+          title: string
+        }
+        Insert: {
+          action_url?: string | null
+          body?: string | null
+          channel?: string
+          created_at?: string
+          delivered_at?: string | null
+          event_type?: string | null
+          id?: string
+          metadata?: Json
+          profile_id: string
+          read_at?: string | null
+          severity?: string
+          ticket_id?: string | null
+          title: string
+        }
+        Update: {
+          action_url?: string | null
+          body?: string | null
+          channel?: string
+          created_at?: string
+          delivered_at?: string | null
+          event_type?: string | null
+          id?: string
+          metadata?: Json
+          profile_id?: string
+          read_at?: string | null
+          severity?: string
+          ticket_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_secure"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permissions: {
+        Row: {
+          code: string
+          description: string
+        }
+        Insert: {
+          code: string
+          description: string
+        }
+        Update: {
+          code?: string
+          description?: string
+        }
+        Relationships: []
+      }
+      profile_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          profile_id: string
+          role_code: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          profile_id: string
+          role_code: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          profile_id?: string
+          role_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_roles_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_roles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_roles_role_code_fkey"
+            columns: ["role_code"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      profile_teams: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          profile_id: string
+          team_code: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          profile_id: string
+          team_code: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          profile_id?: string
+          team_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_teams_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_teams_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_teams_team_code_fkey"
+            columns: ["team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          permission_code: string
+          role_code: string
+        }
+        Insert: {
+          permission_code: string
+          role_code: string
+        }
+        Update: {
+          permission_code?: string
+          role_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_code_fkey"
+            columns: ["permission_code"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_code_fkey"
+            columns: ["role_code"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          is_admin: boolean
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          is_admin?: boolean
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          is_admin?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
+      schedule_resources: {
+        Row: {
+          code: string
+          created_at: string
+          display_order: number
+          initials: string
+          is_active: boolean
+          name: string
+          profile_id: string | null
+          role_label: string
+          team_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          display_order?: number
+          initials: string
+          is_active?: boolean
+          name: string
+          profile_id?: string | null
+          role_label: string
+          team_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          display_order?: number
+          initials?: string
+          is_active?: boolean
+          name?: string
+          profile_id?: string | null
+          role_label?: string
+          team_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_resources_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_resources_team_code_fkey"
+            columns: ["team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          category: string | null
+          code: string
+          created_at: string
+          description: string | null
+          icon_key: string | null
+          id: string
+          is_active: boolean
+          is_requestable: boolean
+          name: string
+          team_code: string
+          updated_at: string
+          visual_order: number
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          created_at?: string
+          description?: string | null
+          icon_key?: string | null
+          id?: string
+          is_active?: boolean
+          is_requestable?: boolean
+          name: string
+          team_code: string
+          updated_at?: string
+          visual_order?: number
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          created_at?: string
+          description?: string | null
+          icon_key?: string | null
+          id?: string
+          is_active?: boolean
+          is_requestable?: boolean
+          name?: string
+          team_code?: string
+          updated_at?: string
+          visual_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_team_code_fkey"
+            columns: ["team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          code: string
+          description: string | null
+          is_operational: boolean
+          name: string
+        }
+        Insert: {
+          code: string
+          description?: string | null
+          is_operational?: boolean
+          name: string
+        }
+        Update: {
+          code?: string
+          description?: string | null
+          is_operational?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
+      ticket_attachments: {
+        Row: {
+          activity_id: string | null
+          created_at: string
+          description: string | null
+          drive_download_url: string | null
+          drive_file_id: string | null
+          drive_folder_id: string | null
+          drive_url: string | null
+          file_name: string
+          id: string
+          message_id: string | null
+          metadata: Json
+          mime_type: string | null
+          size_bytes: number | null
+          source: string
+          ticket_id: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          activity_id?: string | null
+          created_at?: string
+          description?: string | null
+          drive_download_url?: string | null
+          drive_file_id?: string | null
+          drive_folder_id?: string | null
+          drive_url?: string | null
+          file_name: string
+          id?: string
+          message_id?: string | null
+          metadata?: Json
+          mime_type?: string | null
+          size_bytes?: number | null
+          source?: string
+          ticket_id?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          activity_id?: string | null
+          created_at?: string
+          description?: string | null
+          drive_download_url?: string | null
+          drive_file_id?: string | null
+          drive_folder_id?: string | null
+          drive_url?: string | null
+          file_name?: string
+          id?: string
+          message_id?: string | null
+          metadata?: Json
+          mime_type?: string | null
+          size_bytes?: number | null
+          source?: string
+          ticket_id?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_attachments_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_attachments_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_activities_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_attachments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_attachments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_counters: {
+        Row: {
+          current_number: number
+          year: number
+        }
+        Insert: {
+          current_number?: number
+          year: number
+        }
+        Update: {
+          current_number?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      ticket_messages: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          ticket_id: string
+          visibility: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          ticket_id: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          ticket_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_secure"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          assigned_resource_code: string | null
+          assigned_team_code: string
+          closed_at: string | null
+          created_at: string
+          description: string
+          estimated_due_at: string | null
+          estimated_minutes: number | null
+          id: string
+          payload: Json
+          preferred_date: string | null
+          priority: string
+          requester_id: string
+          requires_schedule: boolean
+          resolved_at: string | null
+          service_id: string
+          status: string
+          ticket_number: string
+          title: string
+          updated_at: string
+          work_mode: string | null
+          workload_score: number
+          workload_warning: string | null
+        }
+        Insert: {
+          assigned_resource_code?: string | null
+          assigned_team_code: string
+          closed_at?: string | null
+          created_at?: string
+          description: string
+          estimated_due_at?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          payload?: Json
+          preferred_date?: string | null
+          priority?: string
+          requester_id: string
+          requires_schedule?: boolean
+          resolved_at?: string | null
+          service_id: string
+          status?: string
+          ticket_number: string
+          title: string
+          updated_at?: string
+          work_mode?: string | null
+          workload_score?: number
+          workload_warning?: string | null
+        }
+        Update: {
+          assigned_resource_code?: string | null
+          assigned_team_code?: string
+          closed_at?: string | null
+          created_at?: string
+          description?: string
+          estimated_due_at?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          payload?: Json
+          preferred_date?: string | null
+          priority?: string
+          requester_id?: string
+          requires_schedule?: boolean
+          resolved_at?: string | null
+          service_id?: string
+          status?: string
+          ticket_number?: string
+          title?: string
+          updated_at?: string
+          work_mode?: string | null
+          workload_score?: number
+          workload_warning?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_assigned_resource_code_fkey"
+            columns: ["assigned_resource_code"]
+            isOneToOne: false
+            referencedRelation: "schedule_resources"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "tickets_assigned_team_code_fkey"
+            columns: ["assigned_team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "tickets_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_tutorial_status: {
+        Row: {
+          created_at: string
+          last_step: number
+          profile_id: string
+          seen_at: string | null
+          tutorial_code: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          last_step?: number
+          profile_id: string
+          seen_at?: string | null
+          tutorial_code?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          last_step?: number
+          profile_id?: string
+          seen_at?: string | null
+          tutorial_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_tutorial_status_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      schedule_activities_public: {
+        Row: {
+          color_label: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_at: string | null
+          id: string | null
+          initials: string | null
+          is_all_day: boolean | null
+          kind: string | null
+          location: string | null
+          profile_id: string | null
+          resource_code: string | null
+          resource_name: string | null
+          role_label: string | null
+          start_at: string | null
+          status: string | null
+          team_code: string | null
+          ticket_id: string | null
+          title: string | null
+          updated_at: string | null
+          visibility: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_resource_code_fkey"
+            columns: ["resource_code"]
+            isOneToOne: false
+            referencedRelation: "schedule_resources"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "activities_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_resources_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_resources_team_code_fkey"
+            columns: ["team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      ticket_attachments_secure: {
+        Row: {
+          activity_id: string | null
+          created_at: string | null
+          description: string | null
+          drive_download_url: string | null
+          drive_file_id: string | null
+          drive_folder_id: string | null
+          drive_url: string | null
+          file_name: string | null
+          id: string | null
+          message_id: string | null
+          metadata: Json | null
+          mime_type: string | null
+          size_bytes: number | null
+          source: string | null
+          ticket_id: string | null
+          ticket_number: string | null
+          ticket_title: string | null
+          uploaded_by: string | null
+          uploaded_by_email: string | null
+          uploaded_by_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_attachments_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_attachments_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_activities_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_attachments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_attachments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets_secure: {
+        Row: {
+          assigned_resource_code: string | null
+          assigned_resource_name: string | null
+          assigned_team_code: string | null
+          created_at: string | null
+          description: string | null
+          estimated_due_at: string | null
+          estimated_minutes: number | null
+          id: string | null
+          payload: Json | null
+          preferred_date: string | null
+          priority: string | null
+          requester_id: string | null
+          requires_schedule: boolean | null
+          service_category: string | null
+          service_code: string | null
+          service_icon_key: string | null
+          service_name: string | null
+          service_team_code: string | null
+          status: string | null
+          ticket_number: string | null
+          title: string | null
+          updated_at: string | null
+          work_mode: string | null
+          workload_score: number | null
+          workload_warning: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_team_code_fkey"
+            columns: ["service_team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "tickets_assigned_resource_code_fkey"
+            columns: ["assigned_resource_code"]
+            isOneToOne: false
+            referencedRelation: "schedule_resources"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "tickets_assigned_team_code_fkey"
+            columns: ["assigned_team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "tickets_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      calculate_ica: {
+      admin_upsert_profile: {
+        Args: {
+          p_actor_id: string
+          p_email: string
+          p_full_name: string
+          p_profile_id: string
+          p_role_code: string
+          p_team_code: string
+        }
+        Returns: undefined
+      }
+      app_bootstrap: { Args: never; Returns: Json }
+      can_access_team: { Args: { p_team: string }; Returns: boolean }
+      create_activity: {
+        Args: {
+          p_end_at: string
+          p_kind?: string
+          p_resource_code: string
+          p_start_at: string
+          p_title: string
+        }
+        Returns: Json
+      }
+      create_activity_for_ticket_v2: {
+        Args: {
+          p_description?: string
+          p_end_at: string
+          p_kind?: string
+          p_location?: string
+          p_resource_code: string
+          p_start_at: string
+          p_ticket_id: string
+          p_title: string
+        }
+        Returns: Json
+      }
+      create_activity_v2: {
+        Args: {
+          p_color_label?: string
+          p_description?: string
+          p_end_at: string
+          p_is_all_day?: boolean
+          p_kind?: string
+          p_location?: string
+          p_resource_code: string
+          p_start_at: string
+          p_title: string
+          p_visibility?: string
+        }
+        Returns: Json
+      }
+      create_ticket: {
+        Args: {
+          p_description: string
+          p_payload?: Json
+          p_preferred_date?: string
+          p_service_code: string
+          p_title: string
+        }
+        Returns: Json
+      }
+      current_profile_id: { Args: never; Returns: string }
+      ensure_launch_profile: { Args: never; Returns: undefined }
+      get_my_tutorial_status: {
+        Args: { p_tutorial_code?: string }
+        Returns: Json
+      }
+      has_permission: { Args: { p_permission: string }; Returns: boolean }
+      has_permission_for_user: {
+        Args: { p_permission: string; p_user_id: string }
+        Returns: boolean
+      }
+      has_role: { Args: { p_role: string }; Returns: boolean }
+      hc_calculate_ica: {
         Args: {
           p_activities: Json
           p_apply_notices?: boolean
@@ -1220,11 +2413,11 @@ export type Database = {
         }
         Returns: Json
       }
-      calculate_reteica: {
+      hc_calculate_reteica: {
         Args: { p_tax_year?: number; p_transactions: Json }
         Returns: Json
       }
-      create_declaration: {
+      hc_create_declaration: {
         Args: {
           p_balance_due_cop: number
           p_calculation: Json
@@ -1235,44 +2428,83 @@ export type Database = {
         }
         Returns: string
       }
-      dashboard_summary: { Args: never; Returns: Json }
-      issue_filing_certificate: {
+      hc_dashboard_summary: { Args: never; Returns: Json }
+      hc_issue_filing_certificate: {
         Args: { p_declaration_id: string }
         Returns: Json
       }
-      prepare_declaration_for_signature: {
+      hc_prepare_declaration_for_signature: {
         Args: { p_declaration_id: string }
-        Returns: Database["public"]["Enums"]["declaration_status"]
+        Returns: Database["public"]["Enums"]["hc_declaration_status"]
       }
-      register_taxpayer: { Args: { p_data: Json }; Returns: string }
-      request_payment: { Args: { p_declaration_id: string }; Returns: string }
-      sign_declaration: {
+      hc_register_taxpayer: { Args: { p_data: Json }; Returns: string }
+      hc_registry_snapshot: { Args: never; Returns: Json }
+      hc_request_payment: {
+        Args: { p_declaration_id: string }
+        Returns: string
+      }
+      hc_sign_declaration: {
         Args: {
           p_auth_method?: string
           p_declaration_id: string
           p_document_sha256: string
         }
-        Returns: Database["public"]["Enums"]["declaration_status"]
+        Returns: Database["public"]["Enums"]["hc_declaration_status"]
       }
-      verify_certificate: {
-        Args: { p_token: string }
-        Returns: {
-          document_sha256: string
-          issued_at: string
-          revoked: boolean
-          serial: string
-          type: string
-        }[]
+      hc_submit_certificate_request: {
+        Args: { p_certificate_type: string; p_declaration_id?: string }
+        Returns: string
+      }
+      hc_submit_payment_agreement: {
+        Args: {
+          p_debt_type: string
+          p_principal_cop: number
+          p_requested_installments: number
+        }
+        Returns: string
+      }
+      hc_submit_paz_y_salvo: {
+        Args: { p_property_account_id: string; p_request_type?: string }
+        Returns: string
+      }
+      hc_submit_refund_request: {
+        Args: {
+          p_amount_cop: number
+          p_reason: string
+          p_tax_type: string
+          p_tax_year: number
+        }
+        Returns: string
+      }
+      is_admin: { Args: never; Returns: boolean }
+      mark_tutorial_seen: { Args: { p_tutorial_code?: string }; Returns: Json }
+      next_ticket_number: { Args: never; Returns: string }
+      profile_initials: {
+        Args: { p_email: string; p_full_name: string }
+        Returns: string
+      }
+      refresh_schedule_resource_names: { Args: never; Returns: Json }
+      resource_week_load: {
+        Args: { p_anchor_date?: string; p_resource_code: string }
+        Returns: Json
+      }
+      service_default_minutes: {
+        Args: {
+          p_service_code: string
+          p_service_name?: string
+          p_work_mode?: string
+        }
+        Returns: number
       }
     }
     Enums: {
-      app_role:
+      hc_app_role:
         | "citizen"
         | "accountant"
         | "hacienda_reviewer"
         | "hacienda_admin"
         | "auditor"
-      declaration_status:
+      hc_declaration_status:
         | "DRAFT"
         | "IDENTITY_VERIFIED"
         | "READY_TO_SIGN"
@@ -1410,14 +2642,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: [
+      hc_app_role: [
         "citizen",
         "accountant",
         "hacienda_reviewer",
         "hacienda_admin",
         "auditor",
       ],
-      declaration_status: [
+      hc_declaration_status: [
         "DRAFT",
         "IDENTITY_VERIFIED",
         "READY_TO_SIGN",

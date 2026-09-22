@@ -679,3 +679,94 @@ a:hover{text-decoration:underline}
   .revenue-grid,.legal-source-grid{grid-template-columns:1fr}
   .revenue-summary{overflow:auto}
 }
+
+/* Accessibility and inclusive interaction baseline */
+html{
+  --user-font-scale:1;
+  font-size:calc(16px * var(--user-font-scale));
+  scroll-padding-top:110px;
+}
+html[data-font-scale="1.125"]{--user-font-scale:1.125}\nhtml[data-font-scale="1.25"]{--user-font-scale:1.25}\nbody{line-height:1.5}
+.skip-link{
+  position:fixed;left:16px;top:12px;z-index:1000;
+  transform:translateY(-180%);padding:12px 16px;border-radius:10px;
+  background:#fff;color:var(--navy-950);border:3px solid var(--gold-500);
+  font-weight:800;box-shadow:var(--shadow-md)
+}
+.skip-link:focus{transform:translateY(0)}
+#main-content:focus{outline:none}
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid #f2c94c !important;
+  outline-offset:3px !important
+}
+.nav button{min-height:48px}
+.btn{min-height:44px}
+.btn.small{min-height:40px}
+.icon-button{width:44px;height:44px}
+.input,.select{min-height:48px}
+.field label{font-size:max(.75rem,12px)}
+.hint{font-size:max(.68rem,12px);line-height:1.55}
+.app-shell small,.auth-page small{font-size:max(.68rem,12px);line-height:1.45}
+.module p,.page-head p,.security-copy,.verification-body p,.integration-banner p{line-height:1.65}
+.status,.pill{font-size:max(.66rem,11px)}
+.a11y-controls{
+  display:flex;align-items:center;gap:5px;padding:3px;
+  border:1px solid var(--slate-200);border-radius:12px;background:#f7fafc
+}
+.a11y-button{
+  min-width:40px;min-height:38px;padding:7px 9px;border:0;border-radius:9px;
+  background:transparent;color:var(--slate-800);font-weight:900;font-size:.76rem
+}
+.a11y-button:hover{background:#fff;box-shadow:var(--shadow-xs)}
+.a11y-button.contrast{display:flex;align-items:center;gap:5px;min-width:auto}
+.a11y-label{font-size:.65rem;font-weight:800}
+html[data-high-contrast]{
+  --slate-950:#000;
+  --slate-800:#101010;
+  --slate-700:#242424;
+  --slate-600:#343434;
+  --slate-500:#454545;
+  --slate-300:#777;
+  --slate-200:#a0a0a0;
+  --slate-100:#e7e7e7;
+  --slate-50:#fff;
+  --canvas:#fff;
+  --blue-700:#004a87;
+  --blue-600:#005ca8;
+}
+html[data-high-contrast] .card,
+html[data-high-contrast] .module,
+html[data-high-contrast] .metric-card,
+html[data-high-contrast] .journey-card,
+html[data-high-contrast] .calculator-card,
+html[data-high-contrast] .result-card{border-color:#777;box-shadow:none}
+html[data-high-contrast] .topbar{background:#fff;border-bottom-color:#555}
+html[data-high-contrast] .a11y-button[aria-pressed="true"]{background:#000;color:#fff}
+html[data-high-contrast] .input,
+html[data-high-contrast] .select,
+html[data-high-contrast] .textarea{border-width:2px;border-color:#555}
+.card,.module,.metric-card,.journey-card{animation:hc-enter .24s ease-out both}
+@keyframes hc-enter{
+  from{opacity:.72;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.btn:active,.a11y-button:active,.nav button:active,.journey-item:active{transform:scale(.98)}
+@media(max-width:900px){
+  .a11y-label{display:none}
+  .a11y-button.contrast{min-width:40px;justify-content:center}
+}
+@media(max-width:680px){
+  .a11y-controls{gap:2px}
+  .a11y-button{min-width:38px;padding:6px}
+  .top-actions{gap:6px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important
+  }
+}
+
