@@ -499,6 +499,8 @@ function enhanceRenderedView(){
 }
 
 function renderAuth(){
+  const authQuery=new URLSearchParams(location.search);
+  const authError=authQuery.get("error_description")||authQuery.get("error_code")||authQuery.get("error")||"";
   app.innerHTML=`<div class="auth-page">
     <section class="auth-visual">
       <div class="auth-brand"><div class="brand-badge large"><span>HC</span></div><div><strong>Hacienda Conecta</strong><small>Municipio de San Pedro · Valle del Cauca</small></div></div>
@@ -517,7 +519,8 @@ function renderAuth(){
     </section>
     <section class="auth-panel">
       <div class="auth-card">
-        <div class="auth-card-head"><div class="kicker">Acceso seguro</div><h2>${authMode==="login"?"Bienvenido de nuevo":"Crea tu cuenta"}</h2><p>${authMode==="login"?"Ingresa para continuar con tus obligaciones y trámites.":"Crea tu acceso; después verificaremos tu celular para operaciones sensibles."}</p></div>
+        <div class="auth-card-head"><div class="kicker">Acceso seguro obligatorio</div><h2>${authMode==="login"?"Bienvenido de nuevo":"Crea tu cuenta"}</h2><p>${authMode==="login"?"Ingresa para consultar y gestionar tus obligaciones y trámites.":"Crea tu acceso; después verificaremos tu celular para operaciones sensibles."}</p></div>
+        ${authError?`<div class="note danger auth-error-note"><strong>No fue posible completar el acceso.</strong><br>${esc(authError)}</div>`:""}
         <button class="google-btn google-oauth-btn" id="googleOAuthBtn" type="button"><span class="google-g">G</span><span>Continuar con Google</span></button>
         <div class="auth-divider"><span>o usa tu correo</span></div>
         <div class="auth-tabs"><button id="loginTab" class="${authMode==="login"?"active":""}">Ingresar</button><button id="signupTab" class="${authMode==="signup"?"active":""}">Crear cuenta</button></div>
