@@ -320,7 +320,16 @@ function renderAuth(){
         toast("Ingreso exitoso.");
       }else{
         const name=String(fd.get("name")||"").trim(), phone=String(fd.get("phone")||"").trim();
-        const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name,phone}}}); if(error)throw error;
+        const {data,error}=await supabase.auth.signUp({
+          email,
+          password,
+          options:{
+            data:{full_name:name,phone},
+            // Evita que la confirmación de correo use la Site URL global
+            // de otro aplicativo que comparta este proyecto Supabase.
+            emailRedirectTo:appBaseUrl()
+          }
+        }); if(error)throw error;
         if(!data.session) toast("Cuenta creada. Confirma tu correo y luego verificaremos tu celular.","warn"); else {toast("Cuenta creada. Verifica tu celular para continuar.");location.hash="security";}
       }
     }catch(err:any){toast(err.message||"No fue posible autenticar.","error");}
