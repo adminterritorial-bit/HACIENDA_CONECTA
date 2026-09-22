@@ -479,7 +479,7 @@ function openReteicaEntryModal(){
 }
 
 function openContextGuide(){
-  const guide=routeGuides[route]||routeGuides.dashboard;
+  const guide=routeGuides[route] ?? routeGuides.dashboard!;
   const body=
     '<div class="guide-steps">'+guide.steps.map((s,i)=>'<div><span>'+(i+1)+'</span><p>'+esc(s)+'</p></div>').join("")+'</div>'+
     '<div class="guide-footer"><span>'+icon("security")+'</span><p>La ayuda nunca modifica datos por sí sola. Envíos, firmas y pagos siempre requieren una acción explícita.</p></div>';
