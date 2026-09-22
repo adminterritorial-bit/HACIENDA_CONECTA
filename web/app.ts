@@ -358,6 +358,126 @@ function bindShell(){
   document.querySelector("#guideBtn")?.addEventListener("click",openContextGuide);
 }
 
+
+type QuickService = { route:string; iconName:string; title:string; desc:string; keywords:string };
+const quickServices:QuickService[]=[
+  {route:"registry",iconName:"registry",title:"Registro Tributario",desc:"Crea o consulta tu información tributaria.",keywords:"registro rit contribuyente nit ciiu"},
+  {route:"ica",iconName:"ica",title:"Declarar ICA",desc:"Liquida ICA y Avisos y Tableros.",keywords:"ica industria comercio avisos declaración"},
+  {route:"reteica",iconName:"reteica",title:"Calcular RETEICA",desc:"Calcula retenciones por operación.",keywords:"reteica retención compras servicios"},
+  {route:"payments",iconName:"payments",title:"Pagos",desc:"Consulta referencias y pagos confirmados.",keywords:"pago pse referencia recaudo"},
+  {route:"certificates",iconName:"certificates",title:"Certificados",desc:"Solicita o verifica documentos tributarios.",keywords:"certificado paz salvo constancia qr"},
+  {route:"predial",iconName:"predial",title:"Predial y paz y salvo",desc:"Gestiona servicios asociados al predial.",keywords:"predial inmueble paz salvo"},
+  {route:"agreements",iconName:"agreements",title:"Acuerdos de pago",desc:"Radica una solicitud de facilidad de pago.",keywords:"acuerdo cuotas deuda"},
+  {route:"refunds",iconName:"refunds",title:"Devoluciones",desc:"Solicita devolución o compensación.",keywords:"devolución saldo favor compensación"},
+  {route:"legal",iconName:"legal",title:"Normativa tributaria",desc:"Consulta fuentes y reglas versionadas.",keywords:"normativa estatuto ley decreto resolución"}
+];
+
+const routeGuides:Record<string,{title:string;intro:string;steps:string[]}>={
+  dashboard:{title:"Tu centro tributario",intro:"Empieza por la acción que necesitas. Hacienda Conecta te muestra solo los pasos necesarios para completar cada trámite.",steps:["Verifica tus datos y celular antes de firmar o pagar.","Usa Acciones rápidas para ir directo al trámite.","Las tarjetas muestran estados, pendientes y documentos disponibles."]},
+  registry:{title:"Registro Tributario guiado",intro:"Completa el perfil en pasos cortos. Puedes regresar antes de enviar la información.",steps:["Identifica al contribuyente.","Selecciona actividades CIIU y marca una principal.","Registra responsables cuando corresponda.","Revisa todo antes de enviar."]},
+  ica:{title:"Declaración ICA paso a paso",intro:"Agrega cada actividad económica y su ingreso gravable en San Pedro; el motor aplica únicamente reglas activas y versionadas.",steps:["Escribe el CIIU de 4 dígitos.","Ingresa el valor gravable de la actividad.","Activa Avisos y Tableros solo si corresponde.","Calcula y revisa el resumen antes de guardar."]},
+  reteica:{title:"RETEICA guiado",intro:"Registra una operación por fila y Hacienda Conecta evalúa base, umbral y tarifa.",steps:["Indica CIIU y concepto.","Registra la base de la operación.","Calcula la retención.","Guarda el borrador cuando el resultado sea correcto."]},
+  payments:{title:"Pagos seguros",intro:"El pago se separa de la declaración y exige una autorización reforzada antes de crear la referencia.",steps:["Selecciona una obligación lista para pagar.","Confirma identidad mediante SMS.","Genera la referencia.","Espera confirmación server-to-server de la pasarela."]},
+  security:{title:"Identidad y firma",intro:"Google o correo permiten entrar. Las operaciones sensibles requieren además el celular verificado.",steps:["Vincula un celular propio.","Valida el código SMS.","La sesión sube a AAL2 para firmar o pagar.","Cada firma se vincula al hash del documento."]},
+  certificates:{title:"Documentos verificables",intro:"Puedes solicitar, emitir y validar documentos mediante serial, token y QR.",steps:["Selecciona el tipo de documento.","Radica o emite cuando esté disponible.","Descarga el PDF.","Verifica posteriormente con token o QR."]}
+};
+
+function closeExperienceModal(){
+  document.querySelector(".experience-backdrop")?.remove();
+}
+function makeExperienceModal(title:string,intro:string,body:string,wide=false){
+  closeExperienceModal();
+  const overlay=document.createElement("div");
+  overlay.className="experience-backdrop";
+  const modal=document.createElement("section");
+  modal.className="experience-modal"+(wide?" wide":"");
+  modal.setAttribute("role","dialog");
+  modal.setAttribute("aria-modal","true");
+  modal.innerHTML=
+    '<button class="experience-close" type="button" aria-label="Cerrar">'+icon("close")+'</button>'+
+    '<div class="experience-heading"><span class="experience-badge">'+icon("sparkle")+' Asistente Hacienda</span><h2>'+esc(title)+'</h2><p>'+esc(intro)+'</p></div>'+
+    body;
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  modal.querySelector(".experience-close")?.addEventListener("click",closeExperienceModal);
+  overlay.addEventListener("click",(e)=>{if(e.target===overlay)closeExperienceModal();});
+  const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape"){closeExperienceModal();removeEventListener("keydown",onKey);}};
+  addEventListener("keydown",onKey);
+  requestAnimationFrame(()=>modal.querySelector<HTMLElement>(".experience-close")?.focus());
+  return overlay;
+}
+function quickCards(items:QuickService[]){
+  return items.map((s)=>'<button class="quick-service-card" type="button" data-quick-route="'+esc(s.route)+'"><span class="quick-service-icon">'+icon(s.iconName)+'</span><span><strong>'+esc(s.title)+'</strong><small>'+esc(s.desc)+'</small></span><span class="quick-service-arrow">'+icon("arrow")+'</span></button>').join("");
+}
+function openQuickActions(){
+  const body=
+    '<label class="service-search"><span>'+icon("search")+'</span><input id="serviceSearchInput" autocomplete="off" placeholder="Ej. declarar ICA, pagar, certificado, predial…"></label>'+
+    '<div class="quick-service-grid" id="quickServiceGrid">'+quickCards(quickServices)+'</div>';
+  const overlay=makeExperienceModal("¿Qué necesitas hacer?","Busca un trámite o selecciona una acción frecuente. Te llevamos directamente al módulo correcto.",body,true);
+  const grid=overlay.querySelector<HTMLElement>("#quickServiceGrid")!;
+  const input=overlay.querySelector<HTMLInputElement>("#serviceSearchInput")!;
+  const bindRoutes=()=>grid.querySelectorAll<HTMLElement>("[data-quick-route]").forEach(b=>b.onclick=()=>{closeExperienceModal();location.hash=b.dataset.quickRoute||"dashboard";});
+  bindRoutes();
+  input.addEventListener("input",()=>{
+    const q=input.value.trim().toLowerCase();
+    const filtered=quickServices.filter(s=>(s.title+" "+s.desc+" "+s.keywords).toLowerCase().includes(q));
+    grid.innerHTML=filtered.length?quickCards(filtered):'<div class="quick-empty">No encontramos ese trámite. Prueba con ICA, pago, certificado, predial o registro.</div>';
+    bindRoutes();
+  });
+  requestAnimationFrame(()=>input.focus());
+}
+function openContextGuide(){
+  const guide=routeGuides[route]||routeGuides.dashboard;
+  const body=
+    '<div class="guide-steps">'+guide.steps.map((s,i)=>'<div><span>'+(i+1)+'</span><p>'+esc(s)+'</p></div>').join("")+'</div>'+
+    '<div class="guide-footer"><span>'+icon("security")+'</span><p>La ayuda nunca modifica datos por sí sola. Envíos, firmas y pagos siempre requieren una acción explícita.</p></div>';
+  makeExperienceModal(guide.title,guide.intro,body,false);
+}
+let interactionEffectsInstalled=false;
+function installInteractionEffects(){
+  if(interactionEffectsInstalled)return;
+  interactionEffectsInstalled=true;
+  document.addEventListener("pointerdown",(e)=>{
+    const target=(e.target as HTMLElement)?.closest<HTMLElement>(".btn,.module,.next-action,.journey-item,.quick-service-card,.mobile-dock button,.add-row-btn,.top-action-button");
+    if(!target||target.hasAttribute("disabled"))return;
+    const rect=target.getBoundingClientRect();
+    const ripple=document.createElement("span");
+    ripple.className="hc-ripple";
+    ripple.style.left=(e.clientX-rect.left)+"px";
+    ripple.style.top=(e.clientY-rect.top)+"px";
+    target.appendChild(ripple);
+    setTimeout(()=>ripple.remove(),650);
+  },{passive:true});
+  document.addEventListener("focusin",(e)=>{
+    const field=(e.target as HTMLElement).closest?.(".field");
+    document.querySelectorAll(".field.is-focused").forEach(x=>x.classList.remove("is-focused"));
+    field?.classList.add("is-focused");
+  });
+  document.addEventListener("focusout",(e)=>{
+    (e.target as HTMLElement).closest?.(".field")?.classList.remove("is-focused");
+  });
+  document.addEventListener("keydown",(e)=>{
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){
+      e.preventDefault();
+      openQuickActions();
+    }
+  });
+}
+function enhanceRenderedView(){
+  installInteractionEffects();
+  document.querySelectorAll<HTMLElement>(".card,.module,.metric-card,.calculator-card,.result-card,.journey-card,.page-head,.module-hero,.verification-card").forEach((el,i)=>{
+    el.style.setProperty("--enter-delay",Math.min(i*32,260)+"ms");
+    el.classList.add("experience-enter");
+  });
+  document.querySelectorAll<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>(".field input,.field select,.field textarea").forEach((el)=>{
+    const hint=el.closest(".field")?.querySelector<HTMLElement>(".hint");
+    if(hint&&!el.getAttribute("aria-describedby")){
+      if(!hint.id)hint.id="hint-"+Math.random().toString(36).slice(2,9);
+      el.setAttribute("aria-describedby",hint.id);
+    }
+  });
+}
+
 function renderAuth(){
   app.innerHTML=`<div class="auth-page">
     <section class="auth-visual">
