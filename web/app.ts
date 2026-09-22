@@ -5,7 +5,15 @@ import QRCode from "qrcode";
 const SUPABASE_URL = "https://jppykxqsxayzypzdbnqd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_CH1hn5LpS3zWPdDWqiM4jg_F7OuK7Ry";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "pkce" }
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: "pkce",
+    // Aísla la sesión de Hacienda de otros aplicativos que comparten el mismo
+    // proyecto Supabase y, en GitHub Pages, el mismo origen del navegador.
+    storageKey: "hc-jppykxqsxayzypzdbnqd-auth-token"
+  }
 });
 
 type Profile = { user_id:string; full_name:string; email:string; phone_e164:string; role:string; identity_verified_at:string|null };
