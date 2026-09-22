@@ -37,7 +37,7 @@ function saveA11yPrefs(){
 function changeFontScale(delta:number){
   const scales=[1,1.125,1.25];
   const current=Math.max(0,scales.indexOf(a11yPrefs.fontScale));
-  a11yPrefs.fontScale=scales[Math.max(0,Math.min(scales.length-1,current+delta))];
+  a11yPrefs.fontScale=scales[Math.max(0,Math.min(scales.length-1,current+delta))] ?? 1;
   saveA11yPrefs();
 }
 applyA11yPrefs();
