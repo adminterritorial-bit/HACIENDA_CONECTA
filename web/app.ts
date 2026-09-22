@@ -567,8 +567,9 @@ async function render(){
       case "staff": html=await viewStaff(); break;
       default: route="dashboard"; html=await viewDashboard();
     }
-    app.innerHTML=shell(html); bindShell(); bindView(route);
-  }catch(err:any){app.innerHTML=shell(`<div class="note danger"><strong>No fue posible cargar este módulo.</strong><br>${esc(err.message||err)}</div>`);bindShell();}
+    app.innerHTML=shell(html); bindShell(); bindView(route); enhanceRenderedView();
+    document.querySelector("#dashboardQuickSearch")?.addEventListener("click",openQuickActions);
+  }catch(err:any){app.innerHTML=shell(`<div class="note danger"><strong>No fue posible cargar este módulo.</strong><br>${esc(err.message||err)}</div>`);bindShell();enhanceRenderedView();}
 }
 
 async function viewDashboard(){
@@ -593,6 +594,12 @@ async function viewDashboard(){
       <div class="hero-law">${esc(publicReference.uvtLegalReference)}</div>
     </div>
     <div class="hero-glow glow-a"></div><div class="hero-glow glow-b"></div>
+  </section>
+
+  <section class="citizen-command mb">
+    <div class="citizen-command-copy"><span class="command-icon">${icon("search")}</span><div><strong>¿Qué necesitas hacer hoy?</strong><small>Encuentra declaraciones, pagos, certificados y otros servicios sin recorrer menús.</small></div></div>
+    <button class="citizen-command-search" type="button" id="dashboardQuickSearch"><span>${icon("search")}</span><span>Buscar un trámite o servicio</span><kbd>⌘ K</kbd></button>
+    <div class="citizen-command-actions"><button data-route="ica"><span>${icon("ica")}</span>Declarar ICA</button><button data-route="payments"><span>${icon("payments")}</span>Pagar</button><button data-route="certificates"><span>${icon("certificates")}</span>Certificados</button></div>
   </section>
 
   <section class="journey-card mb">
