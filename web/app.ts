@@ -198,29 +198,27 @@ async function loadPublicReference(){
     // La interfaz conserva una referencia segura de respaldo si el catálogo público no responde.
   }
 }
-async function bootstrap(){
-  const {data,error}=await supabase.auth.getSession();
-  if(error) throw error;
-  session=data.session;
+async function syncAuthenticatedUi(newSession:Session|null){
+  session=newSession;
   if(session){
     await Promise.all([loadProfile(),loadPublicReference()]);
     if(route==="dashboard" && await needsPhoneOnboarding()){route="security";location.hash="security";}
   }else{
     profile=null;
+    route="dashboard";
   }
-  supabase.auth.onAuthStateChange(async (_event,newSession)=>{
+  await render();
+}
+
+async function bootstrap(){
+  const {data,error}=await supabase.auth.getSession();
+  if(error) throw error;
+  await syncAuthenticatedUi(data.session);
+  supabase.auth.onAuthStateChange((_event,newSession)=>{
     session=newSession;
-    if(session){
-      await Promise.all([loadProfile(),loadPublicReference()]);
-      if(route==="dashboard" && await needsPhoneOnboarding()){route="security";location.hash="security";}
-    }else{
-      profile=null;
-      route="dashboard";
-    }
-    render();
+    setTimeout(()=>{void syncAuthenticatedUi(newSession);},0);
   });
   addEventListener("hashchange",()=>{route=location.hash.replace("#","")||"dashboard";void render().then(()=>requestAnimationFrame(()=>document.querySelector<HTMLElement>("#main-content")?.focus({preventScroll:true})));});
-  render();
 }
 
 function navItem(id:string,iconName:string,label:string){
