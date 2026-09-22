@@ -55,7 +55,7 @@ let registryStep = 1;
 let publicReference:PublicReference = {
   taxYear:2026,
   uvtCop:52374,
-  uvtLegalReference:"${esc(publicReference.uvtLegalReference)}",
+  uvtLegalReference:"Resolución DIAN 000238 de 2025",
   ciiuCount:324
 };
 
@@ -360,7 +360,7 @@ async function viewDashboard(){
       <div class="hero-dashboard-head"><span>Estado tributario 2026</span><span class="status ok">En línea</span></div>
       <div class="hero-stat"><div><small>UVT vigente</small><strong>${copCompact(publicReference.uvtCop)}</strong></div><span class="hero-stat-icon">UVT</span></div>
       <div class="hero-stat"><div><small>Catálogo ICA</small><strong>${publicReference.ciiuCount} actividades</strong></div><span class="hero-stat-icon">CIIU</span></div>
-      <div class="hero-law">Resolución DIAN 000238 de 2025</div>
+      <div class="hero-law">${esc(publicReference.uvtLegalReference)}</div>
     </div>
     <div class="hero-glow glow-a"></div><div class="hero-glow glow-b"></div>
   </section>
