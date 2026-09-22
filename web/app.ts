@@ -4,7 +4,8 @@ import QRCode from "qrcode";
 
 const SUPABASE_URL = "https://jppykxqsxayzypzdbnqd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_CH1hn5LpS3zWPdDWqiM4jg_F7OuK7Ry";
-const APP_BUILD = "2026.09.21.8";
+const GOOGLE_WEB_CLIENT_ID = "103022555921-i7cqb3o8tc4lbtf7n9endse1d423ck4m.apps.googleusercontent.com";
+const APP_BUILD = "2026.09.21.9";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
@@ -115,26 +116,81 @@ const appBaseUrl = () => {
   return new URL(basePath || "/",location.origin).toString();
 };
 
-async function loginWithGoogle(){
-  const button=document.querySelector<HTMLButtonElement>("#googleOAuthBtn");
-  const original=button?.innerHTML||"";
-  if(button){button.disabled=true;button.innerHTML='<span class="google-g">G</span><span>Conectando con Google…</span>';}
+let googleIdentityLoader:Promise<void>|null=null;
+function ensureGoogleIdentity():Promise<void>{
+  const w=window as any;
+  if(w.google?.accounts?.id) return Promise.resolve();
+  if(googleIdentityLoader) return googleIdentityLoader;
+  googleIdentityLoader=new Promise((resolve,reject)=>{
+    const existing=document.querySelector<HTMLScriptElement>('script[data-hc-google-identity="1"]');
+    const finish=()=>{
+      if((window as any).google?.accounts?.id) resolve();
+      else reject(new Error("Google Identity Services no quedó disponible."));
+    };
+    if(existing){
+      existing.addEventListener("load",finish,{once:true});
+      existing.addEventListener("error",()=>reject(new Error("No fue posible cargar Google Identity Services.")),{once:true});
+      setTimeout(()=>{if((window as any).google?.accounts?.id)resolve();},0);
+      return;
+    }
+    const script=document.createElement("script");
+    script.src="https://accounts.google.com/gsi/client?hl=es-419";
+    script.async=true;
+    script.defer=true;
+    script.dataset.hcGoogleIdentity="1";
+    script.addEventListener("load",finish,{once:true});
+    script.addEventListener("error",()=>reject(new Error("No fue posible cargar Google Identity Services.")),{once:true});
+    document.head.appendChild(script);
+  });
+  return googleIdentityLoader;
+}
+
+async function handleGoogleCredential(response:any){
+  const credential=String(response?.credential||"");
+  if(!credential){toast("Google no entregó una credencial válida.","error");return;}
   try{
-    sessionStorage.setItem("hc:auth-origin",appBaseUrl());
-    const {data,error}=await supabase.auth.signInWithOAuth({
-      provider:"google",
-      options:{
-        redirectTo:appBaseUrl(),
-        skipBrowserRedirect:true,
-        queryParams:{prompt:"select_account"}
-      }
-    });
+    const {error}=await supabase.auth.signInWithIdToken({provider:"google",token:credential});
     if(error) throw error;
-    if(!data.url) throw new Error("Google no devolvió una URL de autenticación.");
-    location.assign(data.url);
+    toast("Ingreso con Google exitoso.");
   }catch(err:any){
-    if(button){button.disabled=false;button.innerHTML=original;}
-    toast(err?.message||"No fue posible iniciar sesión con Google.","error");
+    toast(err?.message||"No fue posible validar la cuenta de Google.","error");
+  }
+}
+
+async function mountGoogleIdentityButton(){
+  const host=document.querySelector<HTMLElement>("#googleIdentityButton");
+  if(!host) return;
+  host.innerHTML='<div class="google-loading">Preparando acceso con Google…</div>';
+  try{
+    await ensureGoogleIdentity();
+    if(!document.body.contains(host))return;
+    const google=(window as any).google;
+    google.accounts.id.initialize({
+      client_id:GOOGLE_WEB_CLIENT_ID,
+      callback:handleGoogleCredential,
+      auto_select:false,
+      cancel_on_tap_outside:true,
+      ux_mode:"popup",
+      itp_support:true,
+      use_fedcm_for_button:true
+    });
+    host.innerHTML="";
+    google.accounts.id.renderButton(host,{
+      type:"standard",
+      theme:"outline",
+      size:"large",
+      text:"continue_with",
+      shape:"rectangular",
+      logo_alignment:"left",
+      width:360
+    });
+    setTimeout(()=>{
+      if(document.body.contains(host)&&!host.querySelector("iframe")&&!host.children.length){
+        host.innerHTML='<div class="note danger"><strong>Google no pudo inicializarse.</strong><br>Verifica que este dominio esté autorizado en Google Cloud o usa correo y contraseña.</div>';
+      }
+    },1800);
+  }catch(err:any){
+    host.innerHTML='<div class="note danger"><strong>Google no está disponible.</strong><br>'+esc(err?.message||"No fue posible cargar el acceso con Google.")+'</div>';
   }
 }
 
@@ -499,6 +555,7 @@ function enhanceRenderedView(){
 function renderAuth(){
   const authQuery=new URLSearchParams(location.search);
   const authError=authQuery.get("error_description")||authQuery.get("error_code")||authQuery.get("error")||"";
+  if(authError||authQuery.get("code")){history.replaceState({},document.title,location.pathname+location.hash);}
   app.innerHTML=`<div class="auth-page">
     <section class="auth-visual">
       <div class="auth-brand"><div class="brand-badge large"><span>HC</span></div><div><strong>Hacienda Conecta</strong><small>Municipio de San Pedro · Valle del Cauca</small></div></div>
@@ -519,7 +576,7 @@ function renderAuth(){
       <div class="auth-card">
         <div class="auth-card-head"><div class="kicker">Acceso seguro obligatorio</div><h2>${authMode==="login"?"Bienvenido de nuevo":"Crea tu cuenta"}</h2><p>${authMode==="login"?"Ingresa para consultar y gestionar tus obligaciones y trámites.":"Crea tu acceso; después verificaremos tu celular para operaciones sensibles."}</p></div>
         ${authError?`<div class="note danger auth-error-note"><strong>No fue posible completar el acceso.</strong><br>${esc(authError)}</div>`:""}
-        <button class="google-btn google-oauth-btn" id="googleOAuthBtn" type="button"><span class="google-g">G</span><span>Continuar con Google</span></button>
+        <div id="googleIdentityButton" class="google-identity-host" aria-label="Continuar con Google"></div>
         <div class="auth-divider"><span>o usa tu correo</span></div>
         <div class="auth-tabs"><button id="loginTab" class="${authMode==="login"?"active":""}">Ingresar</button><button id="signupTab" class="${authMode==="signup"?"active":""}">Crear cuenta</button></div>
         <form id="authForm" class="stack">
@@ -535,7 +592,7 @@ function renderAuth(){
       <p class="auth-foot">Tus datos tributarios se protegen mediante Row Level Security y controles de acceso por rol. <span class="build-tag">Build ${APP_BUILD}</span></p>
     </section>
   </div>`;
-  document.querySelector("#googleOAuthBtn")?.addEventListener("click",()=>void loginWithGoogle());
+  void mountGoogleIdentityButton();
   document.querySelector("#loginTab")!.addEventListener("click",()=>{authMode="login";renderAuth();});
   document.querySelector("#signupTab")!.addEventListener("click",()=>{authMode="signup";renderAuth();});
   document.querySelector("#authForm")!.addEventListener("submit",async(e)=>{
