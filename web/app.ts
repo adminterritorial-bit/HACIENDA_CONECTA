@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 const SUPABASE_URL = "https://jppykxqsxayzypzdbnqd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_CH1hn5LpS3zWPdDWqiM4jg_F7OuK7Ry";
 const GOOGLE_WEB_CLIENT_ID = "103022555921-i7cqb3o8tc4lbtf7n9endse1d423ck4m.apps.googleusercontent.com";
-const APP_BUILD = "2026.09.21.9";
+const APP_BUILD = "2026.09.21.10";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
@@ -116,6 +116,51 @@ const appBaseUrl = () => {
   return new URL(basePath || "/",location.origin).toString();
 };
 
+const isIOSBrowser = () => /iPad|iPhone|iPod/i.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+const randomOAuthValue = () => {
+  const bytes=new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
+};
+function startGoogleIosRedirect(){
+  const state=randomOAuthValue();
+  const nonce=randomOAuthValue();
+  sessionStorage.setItem("hc:google:state",state);
+  sessionStorage.setItem("hc:google:nonce",nonce);
+  const params=new URLSearchParams({
+    client_id:GOOGLE_WEB_CLIENT_ID,
+    redirect_uri:appBaseUrl(),
+    response_type:"id_token",
+    response_mode:"fragment",
+    scope:"openid email profile",
+    state,
+    nonce,
+    prompt:"select_account"
+  });
+  location.assign("https://accounts.google.com/o/oauth2/v2/auth?"+params.toString());
+}
+async function consumeGoogleIosRedirect(){
+  const hash=location.hash.startsWith("#")?location.hash.slice(1):"";
+  if(!hash || (!hash.includes("id_token=")&&!hash.includes("error="))) return false;
+  const params=new URLSearchParams(hash);
+  const error=params.get("error");
+  const errorDescription=params.get("error_description")||error;
+  const returnedState=params.get("state")||"";
+  const expectedState=sessionStorage.getItem("hc:google:state")||"";
+  const nonce=sessionStorage.getItem("hc:google:nonce")||"";
+  sessionStorage.removeItem("hc:google:state");
+  sessionStorage.removeItem("hc:google:nonce");
+  history.replaceState({},document.title,location.pathname+location.search);
+  route="dashboard";
+  if(errorDescription) throw new Error(errorDescription);
+  if(!returnedState||!expectedState||returnedState!==expectedState) throw new Error("La validación de seguridad del acceso con Google no coincidió. Intenta nuevamente.");
+  const token=params.get("id_token")||"";
+  if(!token) throw new Error("Google no devolvió un token de identidad.");
+  const {error:signInError}=await supabase.auth.signInWithIdToken({provider:"google",token,nonce});
+  if(signInError) throw signInError;
+  return true;
+}
+
 let googleIdentityLoader:Promise<void>|null=null;
 function ensureGoogleIdentity():Promise<void>{
   const w=window as any;
@@ -172,7 +217,6 @@ async function mountGoogleIdentityButton(){
       cancel_on_tap_outside:true,
       ux_mode:"popup",
       itp_support:true,
-      use_fedcm_for_button:true
     });
     host.innerHTML="";
     google.accounts.id.renderButton(host,{
@@ -267,6 +311,11 @@ async function syncAuthenticatedUi(newSession:Session|null){
 }
 
 async function bootstrap(){
+  try{
+    await consumeGoogleIosRedirect();
+  }catch(err:any){
+    sessionStorage.setItem("hc:auth:error",String(err?.message||err||"No fue posible completar el acceso con Google."));
+  }
   const {data,error}=await supabase.auth.getSession();
   if(error) throw error;
   await syncAuthenticatedUi(data.session);
@@ -554,8 +603,10 @@ function enhanceRenderedView(){
 
 function renderAuth(){
   const authQuery=new URLSearchParams(location.search);
-  const authError=authQuery.get("error_description")||authQuery.get("error_code")||authQuery.get("error")||"";
-  if(authError||authQuery.get("code")){history.replaceState({},document.title,location.pathname+location.hash);}
+  const storedAuthError=sessionStorage.getItem("hc:auth:error")||"";
+  if(storedAuthError)sessionStorage.removeItem("hc:auth:error");
+  const authError=storedAuthError||authQuery.get("error_description")||authQuery.get("error_code")||authQuery.get("error")||"";
+  if(authQuery.get("error")||authQuery.get("code")){history.replaceState({},document.title,location.pathname+location.hash);}
   app.innerHTML=`<div class="auth-page">
     <section class="auth-visual">
       <div class="auth-brand"><div class="brand-badge large"><span>HC</span></div><div><strong>Hacienda Conecta</strong><small>Municipio de San Pedro · Valle del Cauca</small></div></div>
@@ -592,7 +643,15 @@ function renderAuth(){
       <p class="auth-foot">Tus datos tributarios se protegen mediante Row Level Security y controles de acceso por rol. <span class="build-tag">Build ${APP_BUILD}</span></p>
     </section>
   </div>`;
-  void mountGoogleIdentityButton();
+  if(isIOSBrowser()){
+    const host=document.querySelector<HTMLElement>("#googleIdentityButton");
+    if(host){
+      host.innerHTML='<button class="google-btn google-oauth-btn" id="googleIosBtn" type="button"><span class="google-g">G</span><span>Continuar con Google</span></button><small class="google-mobile-hint">En iPhone/iPad se abrirá Google en esta misma pestaña y regresarás automáticamente a Hacienda Conecta.</small>';
+      host.querySelector("#googleIosBtn")?.addEventListener("click",startGoogleIosRedirect);
+    }
+  }else{
+    void mountGoogleIdentityButton();
+  }
   document.querySelector("#loginTab")!.addEventListener("click",()=>{authMode="login";renderAuth();});
   document.querySelector("#signupTab")!.addEventListener("click",()=>{authMode="signup";renderAuth();});
   document.querySelector("#authForm")!.addEventListener("submit",async(e)=>{
