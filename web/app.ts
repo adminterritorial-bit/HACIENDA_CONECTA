@@ -106,7 +106,12 @@ const date = (v:any) => v ? new Intl.DateTimeFormat("es-CO",{dateStyle:"medium"}
 const statusClass = (s:string) => /APPROVED|PAID|FILED|ISSUED|VERIFIED|ACTIVE|AVAILABLE/i.test(s) ? "ok" : /REJECT|DECLIN|DEFAULT|CANCEL/i.test(s) ? "danger" : /PENDING|DRAFT|REVIEW|SUBMITTED|READY/i.test(s) ? "warn" : "info";
 const humanStatus = (s:any) => String(s||"").replaceAll("_"," ");
 const userInitials = () => (profile?.full_name || session?.user.email || "HC").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase();
-const appBaseUrl = () => HACIENDA_CANONICAL_URL;
+const appBaseUrl = () => {
+  if (location.hostname === "adminterritorial-bit.github.io") {
+    return "https://adminterritorial-bit.github.io/HACIENDA_CONECTA/";
+  }
+  return HACIENDA_CANONICAL_URL;
+};
 const maskPhone = (phone:string) => {
   if(!phone) return "—";
   const clean=phone.replace(/\s+/g,"");
